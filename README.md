@@ -1,2 +1,2 @@
 # Ephemerides
-A modern binary ephemeris reader for Julia, in Julia
+A Modern Binary Ephemeris Reader for Julia, in Julia
