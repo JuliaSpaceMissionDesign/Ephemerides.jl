@@ -1,0 +1,20 @@
+\begindata
+INPUT_DATA_FILE   = '/home/michele/projects/Ephemerider/inputdata_seg5.txt'
+INPUT_DATA_TYPE   = 'ELEMENTS'
+OUTPUT_SPK_FILE   = 'res/example1spk_seg5.bsp'
+OUTPUT_SPK_TYPE   = 5
+OBJECT_ID         = 505
+OBJECT_NAME       = 'AMALTHEA'
+CENTER_ID         = 599
+CENTER_NAME       = 'EARTH'
+REF_FRAME_NAME    = 'J2000'
+PRODUCER_ID       = 'M. Ceresoli'
+DATA_ORDER        = 'EPOCH RP E INC NOD PER MEAN SKIP'
+INPUT_DATA_UNITS  = ('ANGLES=DEGREES' 'DISTANCES=km')
+DATA_DELIMITER    = ' '
+LINES_PER_RECORD  = 2
+IGNORE_FIRST_LINE = 3
+LEAPSECONDS_FILE  = '/home/michele/spice/kernels/lsk/naif0012.tls'
+CENTER_GM         = 1.266865319003704E+08
+SEGMENT_ID        = 'SPK_ELEMENTS_05'
+\begintext
