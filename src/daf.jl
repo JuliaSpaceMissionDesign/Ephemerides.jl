@@ -207,7 +207,7 @@ function parse_spk_segment_descriptor(summary::Vector{UInt8}, lend::Bool, fid::I
     # Get target, center and axes NAIF IDs
     tid = get_int(summary, 16, lend)
     cid = get_int(summary, 20, lend)
-    axesid = get_int(summary, 24, lend)
+    aid = get_int(summary, 24, lend)
 
     # Get SPK segment type 
     segtype = get_int(summary, 28, lend)
@@ -216,7 +216,7 @@ function parse_spk_segment_descriptor(summary::Vector{UInt8}, lend::Bool, fid::I
     iaa = get_int(summary, 32, lend)
     faa = get_int(summary, 36, lend)
 
-    DAFSegmentDescriptor(segtype, tstart, tend, tid, cid, axesid, iaa, faa, fid)
+    DAFSegmentDescriptor(segtype, tstart, tend, tid, cid, aid, iaa, faa, fid)
 
 end
 
