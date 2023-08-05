@@ -10,14 +10,13 @@ struct DAFHeader
     name::String    # Internal name\description of the file
     lend::Bool      # True if the file was generated in little endian 
 end
-
-
 struct DAF 
     filepath::String
     array::Vector{UInt8}
     header::DAFHeader
     comment::String 
     ftype::Int       # 1 for SPK, 2 for PCK 
+    seglist::SPKSegmentList
 end
 
 
@@ -46,7 +45,11 @@ function DAF(filename::String)
     header = parse_daf_header(array)
     comment = parse_daf_comment(array, header)
 
-    DAF(filename, array, header, comment, ftype)
+    # Initialise segment types list 
+    seglist = SPKSegmentList()
+
+    DAF(filename, array, header, comment, ftype, seglist)
+    
 end
 
 
@@ -231,7 +234,7 @@ function parse_pck_segment_descriptor(summary::Vector{UInt8}, lend::Bool, fid::I
 
     # Get target and reference axes NAIF IDs
     tid = get_int(summary, 16, lend)
-    rid = get_int(summary, 20, lend)
+    cid = get_int(summary, 20, lend)
 
     # Get PCK segment type 
     segtype = get_int(summary, 24, lend)
@@ -240,8 +243,9 @@ function parse_pck_segment_descriptor(summary::Vector{UInt8}, lend::Bool, fid::I
     iaa = get_int(summary, 28, lend)
     faa = get_int(summary, 32, lend)
     
-    # For PCK segments, the center defaults to -1
-    DAFSegmentDescriptor(segtype, tstart, tend, tid, -1, rid, iaa, faa, fid)
+    # For PCK segments, the reference axis defaults to -1, whereas the center 
+    # is the set of axis wrt which these pair is defined
+    DAFSegmentDescriptor(segtype, tstart, tend, tid, cid, -1, iaa, faa, fid)
 
 end
 
