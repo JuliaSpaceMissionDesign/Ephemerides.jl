@@ -87,6 +87,46 @@ function add_spklinks!(table::Dict, desc::DAFSegmentDescriptor, fid::Int)
 
 end
 
+function optimise_links(links::Vector{SPKLink})
+
+    # Initialise with the highest priority segment
+    t_start = [links[1].desc.tstart]
+    t_end   = [links[1].desc.tend]
+
+    # new_links = SPKLink[links[1]] # The fid and spk settings need to be changed! 
+    
+    for link in links[2:end]
+        
+        # Retrieve segment start and end times 
+        ts, te = link.desc.tstart, link.desc.tend
+
+        j = findfirst(x->x > ts, t_start)
+        k = findfirst(x->x < te, t_end)
+
+        is_lb = !isnothing(j)
+        is_ub = !isnothing(k) 
+
+        if is_lb && is_ub 
+            # This segment expands both ends, all the intermediate segments 
+            # should be removed! 
+            t_start, t_end = [ts], [te]
+            
+        elseif is_lb 
+            
+
+        elseif is_ub 
+
+        else 
+            # Not certain that the segment should be discarded!
+
+        end
+
+    end
+
+    # return new_links
+    return t_start, t_end 
+end
+
 
 kernels = ["/home/michele/spice/kernels/spk/de440.bsp",
            "/home/michele/spice/kernels/spk/de430.bsp"]
@@ -94,8 +134,13 @@ kernels = ["/home/michele/spice/kernels/spk/de440.bsp",
 # using BenchmarkTools
 eph, linktable = EphemerisProvider(kernels);
 
+optimise_links(linktable[399][3])
+
 eph1 = EphemerisProvider(kernels[1]);
 eph2 = EphemerisProvider(kernels[2]);
 
 # @benchmark eph = EphemerisProvider($kernels)
 
+# @noinline function test_find(table::Dict, cid, tid)
+#     table[cid][tid]
+# end
