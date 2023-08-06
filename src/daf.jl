@@ -107,11 +107,60 @@ function DAF(filename::String)
 end
 
 """
+    get_comment(daf::DAF)
+
+Return the comment written in the DAF comment section. 
+"""
+@inline get_comment(daf::DAF) = daf.comment
+
+"""
+    get_header(daf::DAF)
+
+Return the [`DAFHeader`](@ref) header of the DAF file.
+"""
+@inline get_header(daf::DAF) = daf.header
+
+""" 
+    get_array(daf::DAF) 
+
+Return the byte content of the DAF file.
+"""
+@inline get_array(daf::DAF) = daf.array
+
+"""
+    get_segment_list(daf::DAF)
+
+Return the [`SPKSegmentList`](@ref) list of segments stored in the DAF file.
+"""
+@inline get_segment_list(daf::DAF) = daf.seglist
+
+"""
+    filepath(daf::DAF)
+    
+Return the system path of the DAF file.
+"""
+@inline filepath(daf::DAF) = daf.filepath
+
+"""
     summary_size(daf::DAF)
 
 Compute the size of a single summary record of a DAF file, in bytes.
 """
 @inline summary_size(daf::DAF) = 8*(daf.header.nd + (daf.header.ni + 1) ÷ 2)
+
+"""
+    is_spk(daf::DAF)
+
+Return `true` if the DAF stores SPK data.
+"""
+@inline is_spk(daf::DAF) = daf.ftype == 1
+
+"""
+    is_pck(daf::DAF)
+
+Return `true` if the DAF stores PCK data.
+"""
+@inline is_pck(daf::DAF) = daf.ftype == 2
 
 
 """
