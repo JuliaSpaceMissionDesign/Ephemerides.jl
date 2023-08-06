@@ -1,3 +1,11 @@
+"""
+    DAF_RECORD_LENGTH
+
+DAF record length, in bytes.
+
+### References
+- [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
+"""
 
 # Each record in the DAF is of 1024 bytes 
 const DAF_RECORD_LENGTH = 1024; 
