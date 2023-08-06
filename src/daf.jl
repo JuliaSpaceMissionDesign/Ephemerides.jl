@@ -42,6 +42,13 @@ struct DAFHeader
 end
 
 """
+    endian(head::DAFHeader)
+
+Return `true` if the DAF file is in little-endian.
+"""
+@inline endian(head::DAFHeader) = head.lend
+
+"""
     DAF 
 
 ### Fields 
@@ -162,6 +169,13 @@ Return `true` if the DAF stores PCK data.
 """
 @inline is_pck(daf::DAF) = daf.ftype == 2
 
+"""
+    endian(daf::DAF)
+
+Return `true` if the DAF is in little-endian.
+"""
+@inline endian(daf::DAF) = endian(get_header(daf))
+
 
 """
     parse_daf_header(record::Vector{UInt8})
@@ -261,14 +275,14 @@ function parse_daf_summaries(daf::DAF)
     nc = summary_size(daf)
 
     # Keep parsing summaries until next != 0
-    next = Int(daf.header.fwd) 
+    next = Int(get_header(daf).fwd) 
     while next != 0 
 
-        record = get_record(daf.array, next)
+        record = get_record(get_array(daf), next)
 
         # Get the control items of this summary record
-        next = Int(get_float(record, 0, daf.header.lend))
-        nsum = Int(get_float(record, 16, daf.header.lend))
+        next = Int(get_float(record, 0, endian(daf)))
+        nsum = Int(get_float(record, 16, endian(daf)))
 
         # update summaries with all those found in record
         for j = 1:nsum 
@@ -320,10 +334,10 @@ end
 
 """
 function DAFSegmentDescriptor(daf::DAF, summary::Vector{UInt8})
-    if daf.ftype == 1
-        parse_spk_segment_descriptor(summary, daf.header.lend)
+    if is_spk(daf)
+        parse_spk_segment_descriptor(summary, endian(daf))
     else 
-        parse_pck_segment_descriptor(summary, daf.header.lend)
+        parse_pck_segment_descriptor(summary, endian(daf))
     end
 end
 
