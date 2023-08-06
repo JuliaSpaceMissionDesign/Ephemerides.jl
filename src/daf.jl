@@ -41,6 +41,8 @@ struct DAFHeader
     lend::Bool      
 end
 
+# TODO: add more interfaces! 
+
 """
     endian(head::DAFHeader)
 
