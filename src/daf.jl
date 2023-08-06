@@ -1,16 +1,63 @@
 
+"""
+    FTPSTR 
 
-# assume this is a DAF/SPK!
+Validation string that guarantees the integrity of a DAF file. 
+
+### References 
+- [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
+"""
+const FTPSTR = "FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP";
+
+
+"""
+    DAFHeader 
+
+The DAF header, or file record, is the first physical record in a DAF and stores general 
+information about the content of the file. 
+
+### Fields 
+- `nd` -- `Int32` number of double components in each array summar
+- `ni` -- `Int32` number of integer components in each array summa
+- `fwd` -- `Int32` record number of initial summary record
+- `bwd` -- `Int32` record number of final summary record
+- `ffa` -- `Int32` first free address of the file 
+- `name` -- `String` internal name of the file
+-- `lend` -- `Bool` true if the file was generated in little endian 
+
+### References 
+- [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
+
+### See Also 
+See also [`DAF`](@ref) and [`EphemerisProvider`](@ref)
+"""
 struct DAFHeader
-    nd::Int32       # Number of double components in each array summary
-    ni::Int32       # Number of integer components in each array summary
-    fwd::Int32      # Record number of initial summary record
-    bwd::Int32      # Record number of final summary record
-    ffa::Int32      # First free address of the file 
-    name::String    # Internal name\description of the file
-    lend::Bool      # True if the file was generated in little endian 
+    nd::Int32       
+    ni::Int32       
+    fwd::Int32      
+    bwd::Int32      
+    ffa::Int32      
+    name::String    
+    lend::Bool      
 end
 
+"""
+    DAF 
+
+### Fields 
+- `filepath` -- `String`
+- `array` -- `Vector{UInt8}`
+- `header` -- `DAFHeader`
+- `comment` -- `String`
+- `ftype` -- `Int`
+- `seglist` -- `SPKSegmentList`
+
+### References 
+- [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
+
+### See Also 
+See also [`DAFHeader`](@ref), [`SPKSegmentList`](@ref) and [`EphemerisProvider`](@ref)
+"""
 struct DAF 
     filepath::String
     array::Vector{UInt8}
@@ -20,11 +67,14 @@ struct DAF
     seglist::SPKSegmentList
 end
 
-
 """
     DAF(filename::String)
 
 Parse a DAF file and retrieve its content.
+
+!!! warning 
+    Only DAF files with identification word equal to "DAF/SPK" or "DAF/PCK" are 
+    accepted, otherwise an error is thrown.
 """
 function DAF(filename::String)
 
@@ -38,8 +88,11 @@ function DAF(filename::String)
     elseif locidw == "DAF/PCK"
         ftype = 2
     else 
-        # TODO: improve error description
-        throw(ArgumentError("Invalid ephemeris file format."))
+        throw(
+            EphemerisError(
+                "Invalid ephemeris file format. Only DAF/SPK and DAF/PCK files are accepted."
+            )
+        )
     end
 
     # Retrieve DAF file record and comment section
@@ -53,7 +106,6 @@ function DAF(filename::String)
     
 end
 
-
 """
     summary_size(daf::DAF)
 
@@ -61,15 +113,18 @@ Compute the size of a single summary record of a DAF file, in bytes.
 """
 @inline summary_size(daf::DAF) = 8*(daf.header.nd + (daf.header.ni + 1) ÷ 2)
 
-# Validation string to check whether the file is intact!
-const FTPSTR = "FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP";
-
 
 """
     parse_daf_header(record::Vector{UInt8})
 
 Parse the header (file record) of the DAF file, i.e., the first physical record in a DAF 
 which contains global information about the file.
+
+### References 
+- [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
+
+### See Also 
+See also [`DAF`](@ref), [`parse_daf_comment`](@ref) and [`parse_daf_summaries`](@ref)
 """
 function parse_daf_header(record::Vector{UInt8})
 
@@ -103,7 +158,13 @@ end
 """ 
     parse_daf_comment(array::Vector{UInt8}, header::DAFHeader)
 
-Retrieve the comment section of a binary DAF file
+Retrieve the comment section of a binary DAF file.
+
+### References 
+- [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
+
+### See Also 
+See also [`DAF`](@ref), [`parse_daf_header`](@ref) and [`parse_daf_summaries`](@ref)
 """
 function parse_daf_comment(array::Vector{UInt8}, header::DAFHeader)
 
@@ -135,9 +196,14 @@ function parse_daf_comment(array::Vector{UInt8}, header::DAFHeader)
 
 end 
 
-
 """ 
     parse_daf_summaries
+
+### References 
+- [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
+
+### See Also 
+See also [`DAF`](@ref), [`parse_daf_header`](@ref) and [`parse_daf_comment`](@ref)
 """
 function parse_daf_summaries(daf::DAF)
 
@@ -167,6 +233,23 @@ function parse_daf_summaries(daf::DAF)
 end
 
 
+"""
+    DAFSegmentDescriptor
+
+### Fields 
+- `segtype` -- `Int32`
+- `tstart` -- `Float64`
+- `tend` -- `Float64`
+- `tid` -- `Int32`
+- `cid` -- `Int32`
+- `axesid` -- `Int32`
+- `iaa` -- `Int32`
+- `faa` -- `Int32`
+
+### References 
+- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
+- [PCK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html)
+"""
 struct DAFSegmentDescriptor
 
     segtype::Int32      # Segment Type 
@@ -198,6 +281,9 @@ end
 
 """ 
     parse_spk_segment_descriptor(summary::Vector{UInt8}, lend::Bool)
+
+### References 
+- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
 """
 function parse_spk_segment_descriptor(summary::Vector{UInt8}, lend::Bool)
 
@@ -223,6 +309,9 @@ end
 
 """ 
     parse_pck_segment_descriptor(summary::Vector{UInt8}, lend::Bool)
+
+### References 
+- [PCK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html)
 """
 function parse_pck_segment_descriptor(summary::Vector{UInt8}, lend::Bool)
 

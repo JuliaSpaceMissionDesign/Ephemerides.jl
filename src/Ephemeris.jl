@@ -27,5 +27,4 @@ include("orient.jl")
 # Provide compatibility with JSMDInterfaces
 # include("interfaces.jl")
 
-
 # TODO: thread-safe version (i.e., tante cache quanti threads)
