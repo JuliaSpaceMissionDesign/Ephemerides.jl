@@ -47,5 +47,3 @@ function get_float(array, address::Integer, lend::Bool)
     ptr = unsafe_load(Ptr{Float64}(pointer(array, address+1)))
     get_num(ptr, lend)
 end
-
-# TODO: overload di get_flow in modo da non dover specificare ogni volta lend ma con DAF type
