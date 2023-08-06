@@ -10,6 +10,7 @@ struct DAFHeader
     name::String    # Internal name\description of the file
     lend::Bool      # True if the file was generated in little endian 
 end
+
 struct DAF 
     filepath::String
     array::Vector{UInt8}
@@ -179,29 +180,26 @@ struct DAFSegmentDescriptor
 
     iaa::Int32          # Initial array address
     faa::Int32          # Final array address
-
-    fid::Int            # Associated File index 
-
 end
 
 
 """ 
-    DAFSegmentDescriptor(daf::DAF, summary::Vector{UInt8}, fid::Int)
+    DAFSegmentDescriptor(daf::DAF, summary::Vector{UInt8})
 
 """
-function DAFSegmentDescriptor(daf::DAF, summary::Vector{UInt8}, fid::Int)
+function DAFSegmentDescriptor(daf::DAF, summary::Vector{UInt8})
     if daf.ftype == 1
-        parse_spk_segment_descriptor(summary, daf.header.lend, fid)
+        parse_spk_segment_descriptor(summary, daf.header.lend)
     else 
-        parse_pck_segment_descriptor(summary, daf.header.lend, fid)
+        parse_pck_segment_descriptor(summary, daf.header.lend)
     end
 end
 
 
 """ 
-    parse_spk_segment_descriptor(summary::Vector{UInt8}, lend::Bool, fid::Int)
+    parse_spk_segment_descriptor(summary::Vector{UInt8}, lend::Bool)
 """
-function parse_spk_segment_descriptor(summary::Vector{UInt8}, lend::Bool, fid::Int)
+function parse_spk_segment_descriptor(summary::Vector{UInt8}, lend::Bool)
 
     # Get initial and final epoch in seconds past J2000
     tstart = get_float(summary, 0, lend)
@@ -219,14 +217,14 @@ function parse_spk_segment_descriptor(summary::Vector{UInt8}, lend::Bool, fid::I
     iaa = get_int(summary, 32, lend)
     faa = get_int(summary, 36, lend)
 
-    DAFSegmentDescriptor(segtype, tstart, tend, tid, cid, aid, iaa, faa, fid)
+    DAFSegmentDescriptor(segtype, tstart, tend, tid, cid, aid, iaa, faa)
 
 end
 
 """ 
-    parse_pck_segment_descriptor(summary::Vector{UInt8}, lend::Bool, fid::Int)
+    parse_pck_segment_descriptor(summary::Vector{UInt8}, lend::Bool)
 """
-function parse_pck_segment_descriptor(summary::Vector{UInt8}, lend::Bool, fid::Int)
+function parse_pck_segment_descriptor(summary::Vector{UInt8}, lend::Bool)
 
     # Get initial and final epoch in seconds past J2000
     tstart = get_float(summary, 0, lend)
@@ -245,7 +243,7 @@ function parse_pck_segment_descriptor(summary::Vector{UInt8}, lend::Bool, fid::I
     
     # For PCK segments, the reference axis defaults to -1, whereas the center 
     # is the set of axis wrt which these pair is defined
-    DAFSegmentDescriptor(segtype, tstart, tend, tid, cid, -1, iaa, faa, fid)
+    DAFSegmentDescriptor(segtype, tstart, tend, tid, cid, -1, iaa, faa)
 
 end
 

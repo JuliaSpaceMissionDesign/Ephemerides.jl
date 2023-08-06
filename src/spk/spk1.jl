@@ -31,3 +31,6 @@ function SPKSegmentType1(daf::DAF, desc::DAFSegmentDescriptor)
     )
 
 end
+
+@inline spk_field(spk::SPKSegmentType1) = 1
+

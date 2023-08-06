@@ -94,3 +94,23 @@ struct SPKSegmentList
         )
     end
 end
+
+
+"""
+    spk_field(spk::AbstractSPKSegment)
+
+Return the field number in the [`SPKSegmentList`](@ref) associated to the given SPK 
+segment type.
+"""
+function spk_field(::T) where {T <: AbstractSPKSegment}
+    throw(ErrorException("`spk_field` must be implemented for SPK segmetn type $T"))
+end
+
+"""
+    add_segment!(list::SPKSegmentList, spk::AbstractSPKSegment)
+
+Add the SPK segment to the proper vector within the given [`SPKSegmentList`](@ref) `list` 
+"""
+@inline function add_segment!(list::SPKSegmentList, spk::AbstractSPKSegment)
+    push!(getfield(list, spk_field(spk)), spk)
+end
