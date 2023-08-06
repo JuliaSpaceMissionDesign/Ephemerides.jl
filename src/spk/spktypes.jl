@@ -103,7 +103,7 @@ Return the field number in the [`SPKSegmentList`](@ref) associated to the given 
 segment type.
 """
 function spk_field(::T) where {T <: AbstractSPKSegment}
-    throw(ErrorException("`spk_field` must be implemented for SPK segmetn type $T"))
+    throw(ErrorException("`spk_field` must be implemented for SPK segment type $T"))
 end
 
 """
