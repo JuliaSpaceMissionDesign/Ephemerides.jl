@@ -6,17 +6,17 @@ function SPKSegmentHeader2(daf::DAF, desc::DAFSegmentDescriptor)
 
     i0 = 8*(desc.faa-4)
 
-    tstart = get_float(daf.array, i0, daf.header.lend)
-    tlen = get_float(daf.array, i0+8, daf.header.lend)
+    tstart = get_float(array(daf), i0, endian(daf))
+    tlen = get_float(array(daf), i0+8, endian(daf))
 
     # polynomial order 
-    rsize = Int(get_float(daf.array, i0+16, daf.header.lend))
+    rsize = Int(get_float(array(daf), i0+16, endian(daf)))
 
     # The order of the polynomial is actually = (order-1)
     order = (rsize - 2) ÷ 3
 
     # number of records
-    n = Int(get_float(daf.array, i0+24, daf.header.lend))
+    n = Int(get_float(array(daf), i0+24, endian(daf)))
 
     SPKSegmentHeader2(tstart, tlen, order, n)
 
@@ -86,12 +86,12 @@ function get_coefficients!(daf::DAF, seg::SPKSegmentType2,
     recsize = 8*(seg.head.order*ncomp+2)
 
     # address of desired logical record (skipping mid and radius because they are all = )
-    k = 8*(desc.iaa-1) + recsize*index + 16
+    k = 8*(initial_address(desc)-1) + recsize*index + 16
 
     @inbounds for j = 1:seg.head.order 
         for i = 1:ncomp
             seg.cache.A[i, j] = get_float(
-                daf.array, k + 8*(j-1) + 8*(i-1)*seg.head.order, daf.header.lend
+                array(daf), k + 8*(j-1) + 8*(i-1)*seg.head.order, endian(daf)
             )
         end
     end

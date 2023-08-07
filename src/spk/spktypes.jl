@@ -177,7 +177,6 @@ end
 @inline header(spk::SPKSegmentType2) = spk.head 
 @inline cache(spk::SPKSegmentType2) = spk.cache
 
-
 """
     SPK_SEGMENT_MAPPING
 
