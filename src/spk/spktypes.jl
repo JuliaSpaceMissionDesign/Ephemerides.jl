@@ -21,6 +21,25 @@ function spk_field(::T) where {T <: AbstractSPKSegment}
 end
 
 """
+    header(spk::AbstractSPKSegment)
+
+Return the segment header.
+"""
+function header(::T) where {T <: AbstractSPKSegment}
+    throw(ErrorException("`header` must be implemented for SPK segment type $T"))
+end
+
+"""
+    cache(spk::AbstractSPKSegment)
+
+Return the segment cache data.
+"""
+function cache(::T) where {T <: AbstractSPKSegment}
+    throw(ErrorException("`cache` must be implemented for SPK segment type $T"))
+end
+
+
+"""
     AbstractSPKHeader 
 
 Abstract type for all SPK segment type headers. 
