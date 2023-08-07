@@ -363,8 +363,8 @@ A container object to store both SPK and PCK descriptors information.
 
 ### Fields 
 - `segtype` -- `Int32` SPK/PCK segment type
-- `tstart` -- `Float64` initial segment type, in seconds since J2000.0
-- `tend` -- `Float64` final segment type, in seconds since J2000.0
+- `tstart` -- `Float64` initial segment type, in TDB seconds since J2000.0
+- `tend` -- `Float64` final segment type, in TDB seconds since J2000.0
 - `tid` -- `Int32` target object NAIF ID
 - `cid` -- `Int32` center object NAIF ID
 - `axesid` -- `Int32` reference axes ID. Defaults to -1 for PCKs

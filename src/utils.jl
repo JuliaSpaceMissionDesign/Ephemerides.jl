@@ -24,6 +24,7 @@ end
 Return true if the array corresponds to the string indicating a little-endian format.
 """
 function is_little_endian(array::Vector{UInt8})
+    # TODO: add support for VAX-GFLT and VAX-DFLT
     endian = get_string(array, 88, 8);
     if endian == "LTL-IEEE"
         return true
