@@ -42,7 +42,7 @@ function SPKSegmentType2(daf::DAF, desc::DAFSegmentDescriptor)
 
 end
 
-@inline spk_field(spk::SPKSegmentType2) = 2
+@inline spk_field(::SPKSegmentType2) = SPK_SEGMENTLIST_MAPPING[2]
 
 
 function ephem_vector3(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor, time::Number) 

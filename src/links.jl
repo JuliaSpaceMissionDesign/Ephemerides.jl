@@ -1,37 +1,54 @@
-# TODO: check whether table should become implementation of dict?
 
 """
-    SPKLink 
+    SPKLink
+
+# TODO: fill description 
+
+### Fields 
+- `desc` -- `DAFSegmentDescriptor` for the segment associated to this link
+- `fid` -- `Int` index of the DAF containg the link data.
+- `lid` -- `Int` field number in the [`SPKSegmentList`](@ref) for this segment type.
+- `eid` -- `Int` index of the inner segment list that stores this SPK segment.
+- `fct` -- `Int` 1 or -1 depending on whether the (from, to) directions must be reversed.
+
+### See Also 
+See also [`SPKLinkTable`](@ref), [`SPKSegmentList`](@ref) and [`add_spklinks!`](@ref).
 """
 struct SPKLink 
-    desc::DAFSegmentDescriptor # The actual descriptor (with modified interval values!)
-    did::Int # DAF File ID containing the data 
-    fid::Int # Field number of in the SPKSegmentList associated to this type
-    lid::Int # Index in the `fid`-th field of the SPKSegmentList from which to retrieve the SPK Segment
-    fct::Int # 1 or -1 to check whether the link must be reversed! 
+    desc::DAFSegmentDescriptor 
+    fid::Int 
+    lid::Int 
+    eid::Int 
+    fct::Int 
 end
 
 """
     descriptor(link::SPKLink)
 
-Return the [DAFSegmentDescriptor](@ref) associated to this link
+Return the SPK/PCK segment descriptor associated to this link.
 """
 @inline descriptor(link::SPKLink) = link.desc
 
 """
     file_id(link::SPKLink)
-"""
-@inline file_id(link::SPKLink) = link.dif
 
+Return the DAF file index.
 """
-    field_id(link::SPKLink)
-"""
-@inline field_id(link::SPKLink) = link.fid
+@inline file_id(link::SPKLink) = link.fid
 
 """
     list_id(link::SPKLink)
+
+Return the index of the list containing the segments of the given SPK/PCK type.
 """
-@inline list_id(link::SPKLink) = link.lid 
+@inline list_id(link::SPKLink) = link.lid
+
+"""
+    element_id(link::SPKLink)
+
+Return the segment index in the inner SPK/PCK segment list.
+"""
+@inline element_id(link::SPKLink) = link.eid 
 
 """
     factor(link::SPKLink)
@@ -40,6 +57,21 @@ Return the direction multiplicative factor.
 """
 @inline factor(link::SPKLink) = link.fct
 
+"""
+    initial_time(link::SPKLink)
+
+Return the initial epoch of the interval for which ephemeris data are contained in the 
+segment associated to this link, in seconds since J2000.0
+"""
+@inline initial_time(link::SPKLink) = initial_time(descriptor(link))
+
+"""
+    final_time(link::SPKLink)
+
+Return the final epoch of the interval for which ephemeris data are contained in the 
+segment associated to this link, in seconds since J2000.0
+"""
+@inline final_time(link::SPKLink) = final_time(descriptor(link))
 
 """ 
     reverse_link(link::SPKLink)
@@ -47,30 +79,71 @@ Return the direction multiplicative factor.
 Reverse the sign, i.e. change the sign of the multiplicative factor, of the link.
 """
 function reverse_link(link::SPKLink)
-    SPKLink(link.desc, link.did, link.fid, link.lid, -link.fct)
+    SPKLink(
+        descriptor(link), file_id(link), list_id(link), element_id(link), -factor(link)
+    )
+end
+
+
+"""
+    SPKLinkTable 
+
+Dictionary object providing all the [`SPKLink`](@ref) available between a set of (from, to)
+objects
+"""
+SPKLinkTable = Dict{Int, Dict{Int, Vector{SPKLink}}} 
+
+"""
+    create_linktables(dafs::Vector{DAF})
+"""
+function create_linktables(dafs::Vector{DAF})
+
+    spklinks, pcklinks = SPKLinkTable(), SPKLinkTable()
+    for j in reverse(eachindex(dafs))
+        add_spklinks!(is_spk(dafs[j]) ? spklinks : pcklinks, dafs[j], j)
+    end
+
+    return spklinks, pcklinks
+
 end
 
 """
-    add_spklinks!(table::Dict, desc::DAFSegmentDescriptor, seg::AbstractSPKSegment, did::Int)
+    add_spklinks!(table::SPKLinkTable, daf::DAF, fid::Int)
 """
-function add_spklinks!(table::Dict, daf::DAF, desc::DAFSegmentDescriptor, 
-            seg::AbstractSPKSegment, did::Int)
+function add_spklinks!(table::SPKLinkTable, daf::DAF, fid::Int)
 
-    # NB: the mapping is [FROM][TO] -> SegmentDescriptors
+    # Initialise the number of elements contained in each list
+    nfields = fieldcount(SPKSegmentList)
+    counter = zeros(nfields)
 
-    # Retrieve field index, and inner list index
-    fid = spk_field(seg)
-    lid = length(getfield(get_segment_list(daf), fid))
+    for desc in get_descriptors(daf)
 
-    # Create the forward and backward SPKLink if not already available 
-    f_map = get!(table, center(desc), Dict{Int, Vector{SPKLink}}())
-    b_map = get!(table, target(desc), Dict{Int, Vector{SPKLink}}())
+        segtype = segment_type(desc)
 
-    f_link = SPKLink(desc, did, fid, lid, 1)
+        # Get the field index of the list for this segment type
+        lid = SPK_SEGMENTLIST_MAPPING[segtype]
 
-    # Populate with both the forward and backward links, initialising the 
-    # SPKLink key if a link between the two bodies was yet to be found
-    push!(get!(f_map, target(desc), SPKLink[]), f_link)
-    push!(get!(b_map, center(desc), SPKLink[]), reverse_link(f_link))
+        counter[lid] += 1
+
+        # Create the forward and backward SPKLink if not already available 
+        f_map = get!(table, center(desc), Dict{Int, Vector{SPKLink}}())
+        b_map = get!(table, target(desc), Dict{Int, Vector{SPKLink}}())
+
+        f_link = SPKLink(desc, fid, lid, counter[lid], 1)
+
+        # Populate with both the forward and backward links, initialising the 
+        # SPKLink key if a link between the two bodies was yet to be found
+        push!(get!(f_map, target(desc), SPKLink[]), f_link)
+        push!(get!(b_map, center(desc), SPKLink[]), reverse_link(f_link))
+    end
 
 end
+
+# """
+#     get_segment(daf::DAF, link::SPKLink)
+
+# Return the SPK segment in the [`DAF`](@ref) associated to the given [`SPKLink`](@ref).
+# """
+# @inline function get_segment(daf::DAF, link::SPKLink) 
+#     get_segment(get_segment_list(daf), list_id(link), element_id(link))
+# end

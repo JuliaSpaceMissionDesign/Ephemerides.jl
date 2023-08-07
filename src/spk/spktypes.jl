@@ -143,6 +143,16 @@ struct SPKSegmentType2 <: AbstractSPKSegment
 end
 
 
+"""
+    SPK_SEGMENT_MAPPING
+
+A dictionary mapping SPK segment types to the field index of the [`SPKSegmentList`](@ref).
+"""
+const SPK_SEGMENTLIST_MAPPING = Dict(
+    1 => 1,
+    2 => 2,
+)
+
 # ----------------------------------
 # SPK SEGMENT LIST
 # ----------------------------------
@@ -194,4 +204,12 @@ Add the SPK segment to the proper vector within the given [`SPKSegmentList`](@re
 """
 @inline function add_segment!(list::SPKSegmentList, spk::AbstractSPKSegment)
     push!(getfield(list, spk_field(spk)), spk)
+    nothing
 end
+
+"""
+    get_segment(list::SPKSegmentList, lid::Int, eid::Int)
+
+Return the segment contained in the `lid` list at index `eid`.
+"""
+@inline get_segment(list::SPKSegmentList, lid::Int, eid::Int) = getfield(list, lid)[eid]

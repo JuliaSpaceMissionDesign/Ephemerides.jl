@@ -18,8 +18,8 @@ EphemerisProvider([])
 """
 struct EphemerisProvider <: jEph.AbstractEphemerisProvider
     files::Vector{DAF}
-    descriptors::Vector{DAFSegmentDescriptor} 
-    linktable::Dict{Int, Dict{Int, Vector{SPKLink}}}
+    spklinks::SPKLinkTable
+    pcklinks::SPKLinkTable
 end
 
 EphemerisProvider(files::AbstractString) = EphemerisProvider([files])
@@ -28,52 +28,42 @@ function EphemerisProvider(files::Vector{<:AbstractString})
 
     # Initial parsing of each DAF file 
     ndafs = length(files)
-    dafs = Vector{DAF}(undef, ndafs)
-
-    seg_descr = DAFSegmentDescriptor[]
     
-    # Temporary SPK links table 
-    linktable = Dict{Int, Dict{Int, Vector{SPKLink}}}()
-
-    @inbounds for did = ndafs:-1:1
-        # Retrieve the header, comment, and content of each DAF 
-        dafs[did] = DAF(files[did])
-
-        # Retrieve all the summary records of this DAF  
-        summaries = parse_daf_summaries(dafs[did])
-
-        # Parse the descriptors from the last to first to account for 
-        # segment priority ordering
-        for k in eachindex(reverse(summaries))
-
-            # Parse the segment descriptor
-            desc = DAFSegmentDescriptor(dafs[did], summaries[k])
-            push!(seg_descr, desc)
-
-            # Create the SPK segment and add it to the DAF SPK list
-            seg = create_spk_segment(dafs[did], desc)
-            add_segment!(get_segment_list(dafs[did]), seg)
-
-            # Add the spk links
-            add_spklinks!(linktable, dafs[did], desc, seg, did)
-        end
+    dafs = Vector{DAF}(undef, ndafs)
+    @inbounds for fid = ndafs:-1:1
+        dafs[fid] = DAF(files[fid])
+        initialise_segments!(dafs[fid])
     end
 
-    return EphemerisProvider(dafs, seg_descr, linktable) 
+    spklinks, pcklinks = create_linktables(dafs)
+    return EphemerisProvider(dafs, spklinks, pcklinks) 
 
 end
 
+"""
+    daf(eph::EphemerisProvider)
+
+Return the [`DAF`](@ref) files stored in the ephemeris provider. 
+"""
+@inline get_daf(eph::EphemerisProvider) = eph.files
 
 """
-    create_spk_segment(daf::DAF, desc::DAFSegmentDescriptor)
+    daf(eph::EphemerisProvider, id::Int)
 
-Initialise an SPK segment according to the segment type defined in the 
-[`DAFSegmentDescriptor`](@ref) `desc`.
+Return the [`DAF`](@ref) file in the ephemeris provider at index `id`.
 """
-function create_spk_segment(daf::DAF, desc::DAFSegmentDescriptor)
-    if desc.segtype in (1,)
-        SPKSegmentType1(daf, desc)
-    elseif desc.segtype in (2, )
-        SPKSegmentType2(daf, desc)
-    end
-end
+@inline get_daf(eph::EphemerisProvider, id::Int) = get_daf(eph)[id]
+
+"""
+    spk_links(eph::EphemerisProvider)
+
+Return the [`SPKLinkTable`] for the SPK segments.
+"""
+@inline spk_links(eph::EphemerisProvider) = eph.spklinks
+
+"""
+    pck_links(eph::EphemerisProvider)
+
+Return the [`SPKLinkTable`](@ref) for the PCK segments.
+"""
+@inline pck_links(eph::EphemerisProvider) = eph.pcklinks

@@ -32,5 +32,5 @@ function SPKSegmentType1(daf::DAF, desc::DAFSegmentDescriptor)
 
 end
 
-@inline spk_field(spk::SPKSegmentType1) = 1
+@inline spk_field(::SPKSegmentType1) = SPK_SEGMENTLIST_MAPPING[1]
 
