@@ -483,14 +483,14 @@ See also [`DAF`](@ref), [`DAFHeader`](@ref) and [`parse_daf_summaries`](@ref)
 function parse_daf_comment(array::Vector{UInt8}, header::DAFHeader)
 
     cmt = "" 
-    @inbounds for idx = 2:header.fwd-1
+    @inbounds for idx = 2:initial_record(header)-1
 
         # Get record and look for EOT byte 
         record = get_record(array, idx)
         eot = findfirst(c->c==0x04, record)
     
         if isnothing(eot)
-            if idx == header.fwd-1 
+            if idx == initial_record(header)-1 
                 throw(ArgumentError("Could not find the EOT byte in the DAF comment."))
             end 
             
