@@ -6,14 +6,11 @@ kernels = ["/home/michele/spice/kernels/spk/de440.bsp",
 # using BenchmarkTools
 eph = EphemerisProvider(kernels);
 
-eph1 = EphemerisProvider(kernels[1]);
-eph2 = EphemerisProvider(kernels[2]);
-
-vector3(eph, 399, 3, 0.0)
+# eph1 = EphemerisProvider(kernels[1]);
+# eph2 = EphemerisProvider(kernels[2]);
 
 using BenchmarkTools
 using FrameTransformations
-@benchmark vector3($eph, 399, 3, 0.0)
 
 using CALCEPH
 using JSMDInterfaces.Ephemeris

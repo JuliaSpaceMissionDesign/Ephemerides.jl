@@ -138,12 +138,3 @@ function add_spklinks!(table::SPKLinkTable, daf::DAF, fid::Int)
     end
 
 end
-
-# """
-#     get_segment(daf::DAF, link::SPKLink)
-
-# Return the SPK segment in the [`DAF`](@ref) associated to the given [`SPKLink`](@ref).
-# """
-# @inline function get_segment(daf::DAF, link::SPKLink) 
-#     get_segment(get_segment_list(daf), list_id(link), element_id(link))
-# end
