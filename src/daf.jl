@@ -389,35 +389,35 @@ end
 
 Return the comment written in the DAF comment section. 
 """
-@inline get_comment(daf::DAF) = daf.comment
+@inline comment(daf::DAF) = daf.comment
 
 """
     get_header(daf::DAF)
 
 Return the [`DAFHeader`](@ref) header of the DAF.
 """
-@inline get_header(daf::DAF) = daf.header
+@inline header(daf::DAF) = daf.header
 
 """ 
     get_array(daf::DAF) 
 
 Return the byte content of the DAF file.
 """
-@inline get_array(daf::DAF) = daf.array
+@inline array(daf::DAF) = daf.array
 
 """
     get_descriptors(daf::DAF) 
 
 Return the SPK/PCK segment descriptors contained in the DAF.
 """
-@inline get_descriptors(daf::DAF) = daf.desc
+@inline descriptors(daf::DAF) = daf.desc
 
 """
     get_segment_list(daf::DAF)
 
 Return the [`SPKSegmentList`](@ref) list of segments stored in the DAF.
 """
-@inline get_segment_list(daf::DAF) = daf.seglist
+@inline segment_list(daf::DAF) = daf.seglist
 
 """
     filepath(daf::DAF)
@@ -445,14 +445,14 @@ Return `true` if the DAF stores PCK data.
 
 Return the record number of the initial summary record in the DAF.
 """
-@inline initial_record(daf::DAF) = initial_record(get_header(daf))
+@inline initial_record(daf::DAF) = initial_record(header(daf))
 
 """
     final_record(daf::DAF)
 
 Return the record number of the final summary record in the DAF.
 """
-@inline final_record(daf::DAF) = final_record(get_header(daf))
+@inline final_record(daf::DAF) = final_record(header(daf))
 
 """
     free_address(daf::DAF)
@@ -460,14 +460,14 @@ Return the record number of the final summary record in the DAF.
 Return the first free address in the file, i.e., the address at which the first element of 
 the next array is to be added.
 """
-@inline free_address(daf::DAF) = free_address(get_header(daf))
+@inline free_address(daf::DAF) = free_address(header(daf))
 
 """
     endian(daf::DAF)
 
 Return `true` if the DAF is in little-endian.
 """
-@inline endian(daf::DAF) = endian(get_header(daf))
+@inline endian(daf::DAF) = endian(header(daf))
 
 """ 
     parse_daf_comment(array::Vector{UInt8}, header::DAFHeader)
@@ -560,9 +560,9 @@ See also [`DAF`](@ref) and [`create_spk_segment`](@ref)
 """
 function initialise_segments!(daf::DAF)
 
-    for desc in get_descriptors(daf)
+    for desc in descriptors(daf)
         # Create the SPK segment type associated to the above descriptor
-        add_segment!(get_segment_list(daf), create_spk_segment(daf, desc)) 
+        add_segment!(segment_list(daf), create_spk_segment(daf, desc)) 
     end
 
     nothing

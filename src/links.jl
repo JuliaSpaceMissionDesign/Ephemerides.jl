@@ -116,7 +116,7 @@ function add_spklinks!(table::SPKLinkTable, daf::DAF, fid::Int)
     nfields = fieldcount(SPKSegmentList)
     counter = zeros(nfields)
 
-    for desc in get_descriptors(daf)
+    for desc in descriptors(daf)
 
         segtype = segment_type(desc)
 

@@ -26,11 +26,11 @@ function ephem_vector3(daf::DAF, link::SPKLink, time::Number)
     
     if lid == 1 
         return ephem_vector3(
-            daf, get_segment(get_segment_list(daf), 1, eid), descriptor(link), time
+            daf, get_segment(segment_list(daf), 1, eid), descriptor(link), time
         )
     else 
         return ephem_vector3(
-            daf, get_segment(get_segment_list(daf), 2, eid), descriptor(link), time
+            daf, get_segment(segment_list(daf), 2, eid), descriptor(link), time
         )
     end
         
