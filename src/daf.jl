@@ -17,8 +17,8 @@ The DAF header, or file record, is the first physical record in a DAF and stores
 information about the content of the file. 
 
 ### Fields 
-- `nd` -- `Int32` number of double components in each array summar
-- `ni` -- `Int32` number of integer components in each array summa
+- `nd` -- `Int32` number of double components in each array summary
+- `ni` -- `Int32` number of integer components in each array summary
 - `fwd` -- `Int32` record number of initial summary record
 - `bwd` -- `Int32` record number of final summary record
 - `ffa` -- `Int32` first free address of the file 
@@ -41,7 +41,68 @@ struct DAFHeader
     lend::Bool      
 end
 
-# TODO: add more interfaces! 
+"""
+    DAFHeader(record::Vector{UInt8})
+
+Parse the header (file record) of the DAF file, i.e., the first physical record in a DAF 
+which contains global information about the file.
+
+### References 
+- [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
+
+### See Also 
+See also [`DAF`](@ref), [`parse_daf_comment`](@ref) and [`parse_daf_summaries`](@ref)
+"""
+function DAFHeader(record::Vector{UInt8})
+
+    # Check FTP validation string 
+    ftpval = get_string(record, 699, 28)
+    if ftpval != FTPSTR
+        throw(ArgumentError("The DAF FTP validation string is not valid.\n"))
+    end 
+
+    # Get spk endiannes 
+    lend = is_little_endian(record)
+    
+    # Internal name/description of the file
+    name = get_string(record, 16, 60)
+
+    # Number of double and integer components
+    nd = get_int(record, 8, lend)
+    ni = get_int(record, 12, lend)
+
+    # Record number of initial and final summary records
+    fwd = get_int(record, 76, lend)
+    bwd = get_int(record, 80, lend)
+
+    # First free address in the file if you need to write something!
+    ffa = get_int(record, 84, lend)
+    
+    DAFHeader(nd, ni, fwd, bwd, ffa, name, lend)
+
+end
+
+"""
+    initial_record(head::DAFHeader)
+
+Return the record number of the initial summary record in the DAF 
+"""
+@inline intial_record(head::DAFHeader) = head.fwd
+
+"""
+    final_record(head::DAFHeader)
+
+Return the record number of the final summary record in the DAF 
+"""
+@inline final_record(head::DAFHeader) = head.bwd
+
+"""
+    free_address(head::DAFHeader)
+
+Return the first free address in the file, i.e., the address at which the first element of 
+the next array is to be added.
+"""
+@inline free_address(head::DAFHeader) = head.ffa
 
 """
     endian(head::DAFHeader)
@@ -51,15 +112,25 @@ Return `true` if the DAF file is in little-endian.
 @inline endian(head::DAFHeader) = head.lend
 
 """
+    filename(head::DAFHeader)
+
+Return the internal description of the DAF.
+"""
+@inline filename(head::DAFHeader) = head.name
+
+
+"""
     DAF 
 
+Container to hold the information of NAIF's Double precision Array File (DAF). 
+
 ### Fields 
-- `filepath` -- `String`
-- `array` -- `Vector{UInt8}`
-- `header` -- `DAFHeader`
-- `comment` -- `String`
-- `ftype` -- `Int`
-- `seglist` -- `SPKSegmentList`
+- `filepath` -- `String` system filepath of the DAF 
+- `array` -- `Vector{UInt8}` binary content of the DAF
+- `header` -- `DAFHeader` file record of the DAF
+- `comment` -- `String` text within the DAF comment area 
+- `ftype` -- `Int` file type, equals 1 for SPK and 2 for PCK
+- `seglist` -- `SPKSegmentList` list of the SPK/PCK segments within the DAF
 
 ### References 
 - [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
@@ -105,7 +176,7 @@ function DAF(filename::String)
     end
 
     # Retrieve DAF file record and comment section
-    header = parse_daf_header(array)
+    header = DAFHeader(array)
     comment = parse_daf_comment(array, header)
 
     # Initialise segment types list 
@@ -155,7 +226,7 @@ Return the system path of the DAF file.
 
 Compute the size of a single summary record of a DAF file, in bytes.
 """
-@inline summary_size(daf::DAF) = 8*(daf.header.nd + (daf.header.ni + 1) ÷ 2)
+@inline summary_size(daf::DAF) = 8*(get_header(daf).nd + (get_header(daf).ni + 1) ÷ 2)
 
 """
     is_spk(daf::DAF)
@@ -172,53 +243,34 @@ Return `true` if the DAF stores PCK data.
 @inline is_pck(daf::DAF) = daf.ftype == 2
 
 """
+    initial_record(daf::DAF)
+
+Return the record number of the initial summary record in the DAF 
+"""
+@inline intial_record(daf::DAF) = initial_record(get_header(daf))
+
+"""
+    final_record(daf::DAF)
+
+Return the record number of the final summary record in the DAF 
+"""
+@inline final_record(daf::DAF) = final_record(get_header(daf))
+
+"""
+    free_address(daf::DAF)
+
+Return the first free address in the file, i.e., the address at which the first element of 
+the next array is to be added.
+"""
+@inline free_address(daf::DAF) = free_address(get_header(daf))
+
+"""
     endian(daf::DAF)
 
 Return `true` if the DAF is in little-endian.
 """
 @inline endian(daf::DAF) = endian(get_header(daf))
 
-
-"""
-    parse_daf_header(record::Vector{UInt8})
-
-Parse the header (file record) of the DAF file, i.e., the first physical record in a DAF 
-which contains global information about the file.
-
-### References 
-- [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
-
-### See Also 
-See also [`DAF`](@ref), [`parse_daf_comment`](@ref) and [`parse_daf_summaries`](@ref)
-"""
-function parse_daf_header(record::Vector{UInt8})
-
-    # Check FTP validation string 
-    ftpval = get_string(record, 699, 28)
-    if ftpval != FTPSTR
-        throw(ArgumentError("The DAF FTP validation string is not valid.\n"))
-    end 
-
-    # Get spk endiannes 
-    lend = is_little_endian(record)
-    
-    # Internal name/description of the file
-    name = get_string(record, 16, 60)
-
-    # Number of double and integer components
-    nd = get_int(record, 8, lend)
-    ni = get_int(record, 12, lend)
-
-    # Record number of initial and final summary records
-    fwd = get_int(record, 76, lend)
-    bwd = get_int(record, 80, lend)
-
-    # First free address in the file if you need to write something!
-    ffa = get_int(record, 84, lend)
-    
-    DAFHeader(nd, ni, fwd, bwd, ffa, name, lend)
-
-end
 
 """ 
     parse_daf_comment(array::Vector{UInt8}, header::DAFHeader)
@@ -229,7 +281,7 @@ Retrieve the comment section of a binary DAF file.
 - [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
 
 ### See Also 
-See also [`DAF`](@ref), [`parse_daf_header`](@ref) and [`parse_daf_summaries`](@ref)
+See also [`DAF`](@ref), [`DAFHeader`](@ref) and [`parse_daf_summaries`](@ref)
 """
 function parse_daf_comment(array::Vector{UInt8}, header::DAFHeader)
 
@@ -262,13 +314,13 @@ function parse_daf_comment(array::Vector{UInt8}, header::DAFHeader)
 end 
 
 """ 
-    parse_daf_summaries
+    parse_daf_summaries(daf::DAF)
 
 ### References 
 - [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
 
 ### See Also 
-See also [`DAF`](@ref), [`parse_daf_header`](@ref) and [`parse_daf_comment`](@ref)
+See also [`DAF`](@ref), [`DAFHeader`](@ref) and [`parse_daf_comment`](@ref)
 """
 function parse_daf_summaries(daf::DAF)
 
@@ -277,7 +329,7 @@ function parse_daf_summaries(daf::DAF)
     nc = summary_size(daf)
 
     # Keep parsing summaries until next != 0
-    next = Int(get_header(daf).fwd) 
+    next = Int(initial_record(daf)) 
     while next != 0 
 
         record = get_record(get_array(daf), next)
@@ -301,39 +353,37 @@ end
 """
     DAFSegmentDescriptor
 
+A container object to store both SPK and PCK descriptors information.
+
 ### Fields 
-- `segtype` -- `Int32`
-- `tstart` -- `Float64`
-- `tend` -- `Float64`
-- `tid` -- `Int32`
-- `cid` -- `Int32`
-- `axesid` -- `Int32`
-- `iaa` -- `Int32`
-- `faa` -- `Int32`
+- `segtype` -- `Int32` SPK/PCK segment type
+- `tstart` -- `Float64` initial segment type, in seconds since J2000.0
+- `tend` -- `Float64` final segment type, in seconds since J2000.0
+- `tid` -- `Int32` target object NAIF ID
+- `cid` -- `Int32` center object NAIF ID
+- `axesid` -- `Int32` reference axes ID. Defaults to -1 for PCKs
+- `iaa` -- `Int32` initial array address
+- `faa` -- `Int32` final array address
 
 ### References 
 - [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
 - [PCK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html)
 """
 struct DAFSegmentDescriptor
-
-    segtype::Int32      # Segment Type 
-
-    tstart::Float64     # Initial segment time 
-    tend::Float64       # Final segment time
-
-    tid::Int32          # Target object ID 
-    cid::Int32          # Center object ID  (only for SPK)
-    axesid::Int32       # Reference axes ID (only for SPK)
-
-    iaa::Int32          # Initial array address
-    faa::Int32          # Final array address
+    segtype::Int32       
+    tstart::Float64      
+    tend::Float64       
+    tid::Int32           
+    cid::Int32          
+    axesid::Int32       
+    iaa::Int32          
+    faa::Int32          
 end
-
 
 """ 
     DAFSegmentDescriptor(daf::DAF, summary::Vector{UInt8})
 
+Generate an SPK or PCK descriptor by parsing a DAF summary.
 """
 function DAFSegmentDescriptor(daf::DAF, summary::Vector{UInt8})
     if is_spk(daf)
@@ -343,9 +393,69 @@ function DAFSegmentDescriptor(daf::DAF, summary::Vector{UInt8})
     end
 end
 
+"""
+    segment_type(desc::DAFSegmentDescriptor)
+
+Return the SPK/PCK segment type.
+"""
+@inline segment_type(desc::DAFSegmentDescriptor) = desc.segtype
+
+"""
+    initial_time(desc::DAFSegmentDescriptor)
+
+Return the initial epoch of the interval for which ephemeris data are contained in the 
+segment, in seconds since J2000.0
+"""
+@inline initial_time(desc::DAFSegmentDescriptor) = desc.tstart
+
+"""
+    final_time(desc::DAFSegmentDescriptor)
+
+Return the final epoch of the interval for which ephemeris data are contained in the 
+segment, in seconds since J2000.0
+"""
+@inline final_time(desc::DAFSegmentDescriptor) = desc.tend
+
+"""
+    center(desc::DAFSegmentDescriptor)
+
+Return the NAIF integer code for the reference object or axes for SPK and PCK, respectively.
+"""
+@inline center(desc::DAFSegmentDescriptor) = desc.cid
+
+"""
+    target(desc::DAFSegmentDescriptor)
+
+Return the NAIF integer code for the target object or axes for SPK and PCK, respectively.
+"""
+@inline target(desc::DAFSegmentDescriptor) = desc.tid
+
+"""
+    axes(desc::DAFSegmentDescriptor)
+
+Return the NAIF integer code for the reference axes. It is valid only for SPK files and 
+defaults to -1 for PCKs. 
+"""
+@inline axes(desc::DAFSegmentDescriptor) = desc.axesid
+
+"""
+    initial_address(desc::DAFSegmentDescriptor)
+
+Return the initial address of the segment array in the DAF.
+"""
+@inline initial_address(desc::DAFSegmentDescriptor) = desc.iaa
+
+"""
+    final_address(desc::DAFSegmentDescriptor)
+
+Return the final address of the segment array in teh DAF.
+"""
+@inline final_address(desc::DAFSegmentDescriptor) = desc.faa
 
 """ 
     parse_spk_segment_descriptor(summary::Vector{UInt8}, lend::Bool)
+
+Create a [`DAFSegmentDescriptor`](@ref) object by parsing a binary SPK segment descriptor.
 
 ### References 
 - [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
@@ -374,6 +484,10 @@ end
 
 """ 
     parse_pck_segment_descriptor(summary::Vector{UInt8}, lend::Bool)
+
+Create a [`DAFSegmentDescriptor`](@ref) object by parsing a binary PCK segment descriptor. 
+A default value of -1 is used to fill the reference frame field. The target and center
+fields are used for the actual target and center axes.
 
 ### References 
 - [PCK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html)
