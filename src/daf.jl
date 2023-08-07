@@ -143,7 +143,7 @@ struct DAF
     array::Vector{UInt8}
     header::DAFHeader
     comment::String 
-    ftype::Int       # 1 for SPK, 2 for PCK 
+    ftype::Int
     seglist::SPKSegmentList
 end
 
