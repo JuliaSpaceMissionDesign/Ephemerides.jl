@@ -52,7 +52,7 @@ function EphemerisProvider(files::Vector{<:AbstractString})
 
             # Create the SPK segment and add it to the DAF SPK list
             seg = create_spk_segment(dafs[did], desc)
-            add_segment!(dafs[did].seglist, seg)
+            add_segment!(get_segment_list(dafs[did]), seg)
 
             # Add the spk links
             add_spklinks!(linktable, dafs[did], desc, seg, did)
