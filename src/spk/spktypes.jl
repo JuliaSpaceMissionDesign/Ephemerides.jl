@@ -11,6 +11,16 @@ Abstract type for all SPK segment types.
 abstract type AbstractSPKSegment end 
 
 """
+    spk_field(spk::AbstractSPKSegment)
+
+Return the field number in the [`SPKSegmentList`](@ref) associated to the given SPK 
+segment type.
+"""
+function spk_field(::T) where {T <: AbstractSPKSegment}
+    throw(ErrorException("`spk_field` must be implemented for SPK segment type $T"))
+end
+
+"""
     AbstractSPKHeader 
 
 Abstract type for all SPK segment type headers. 
@@ -184,17 +194,6 @@ struct SPKSegmentList
             SPKSegmentType2[]
         )
     end
-end
-
-
-"""
-    spk_field(spk::AbstractSPKSegment)
-
-Return the field number in the [`SPKSegmentList`](@ref) associated to the given SPK 
-segment type.
-"""
-function spk_field(::T) where {T <: AbstractSPKSegment}
-    throw(ErrorException("`spk_field` must be implemented for SPK segment type $T"))
 end
 
 """
