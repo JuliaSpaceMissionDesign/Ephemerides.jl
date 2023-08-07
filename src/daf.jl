@@ -247,7 +247,7 @@ Return `true` if the DAF stores PCK data.
 
 Return the record number of the initial summary record in the DAF 
 """
-@inline intial_record(daf::DAF) = initial_record(get_header(daf))
+@inline initial_record(daf::DAF) = initial_record(get_header(daf))
 
 """
     final_record(daf::DAF)
