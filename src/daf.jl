@@ -23,7 +23,7 @@ information about the content of the file.
 - `bwd` -- `Int32` record number of final summary record
 - `ffa` -- `Int32` first free address of the file 
 - `name` -- `String` internal name of the file
--- `lend` -- `Bool` true if the file was generated in little endian 
+- `lend` -- `Bool` true if the file was generated in little endian 
 
 ### References 
 - [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
