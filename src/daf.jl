@@ -186,6 +186,12 @@ function DAF(filename::String)
     
 end
 
+function Base.show(io::IO, daf::DAF)
+    println(io, "DAF/$(is_spk(daf) ? "SPK" : "PCK")")
+    println(io, " filepath = \"$(daf.filepath)\"")
+    println(io, " header = $(daf.header)")
+end
+
 """
     get_comment(daf::DAF)
 
