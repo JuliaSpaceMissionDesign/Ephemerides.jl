@@ -113,6 +113,9 @@ struct SPKSegmentType1 <: AbstractSPKSegment
     cache::SPKSegmentCache1
 end
 
+@inline header(spk::SPKSegmentType1) = spk.head 
+@inline cache(spk::SPKSegmentType1) = spk.cache
+
 
 # ----------------------------------
 # SPK TYPE 2
@@ -170,6 +173,9 @@ struct SPKSegmentType2 <: AbstractSPKSegment
     head::SPKSegmentHeader2
     cache::SPKSegmentCache2
 end
+
+@inline header(spk::SPKSegmentType2) = spk.head 
+@inline cache(spk::SPKSegmentType2) = spk.cache
 
 
 """
