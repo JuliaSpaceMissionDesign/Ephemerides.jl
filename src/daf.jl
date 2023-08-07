@@ -87,7 +87,7 @@ end
 
 Return the record number of the initial summary record in the DAF 
 """
-@inline intial_record(head::DAFHeader) = head.fwd
+@inline initial_record(head::DAFHeader) = head.fwd
 
 """
     final_record(head::DAFHeader)
