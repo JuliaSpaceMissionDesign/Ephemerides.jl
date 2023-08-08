@@ -45,7 +45,7 @@ end
 @inline spk_field(::SPKSegmentType2) = SPK_SEGMENTLIST_MAPPING[2]
 
 
-function ephem_vector3(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor, time::Number) 
+function spk_vector3(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor, time::Number) 
 
     index, tfrac = find_logical_record(seg, time)
     get_coefficients!(daf, seg, desc, index);
