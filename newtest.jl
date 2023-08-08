@@ -17,16 +17,19 @@ using JSMDInterfaces.Ephemeris
 using CalcephEphemeris
 
 ephem = CalcephProvider(kernels[2])
+
+ephem_position_records(ephem)
+
 # prefetch(ephem)
 
 # compute(eph::Ephem,jd0::Float64,time::Float64,
    # target::Integer,center::Integer,unit::Integer)
 
-ephem_vector3(eph, 399, 3, 0.0)
+y1 = ephem_vector3(eph, 399, 3, 0.0)
 # compute(ephem, Float64(DJ2000), 0.0, 3, 399, useNaifId+unitKM+unitSec, 0)
 
-y = @MVector zeros(3)
-ephem_compute!(y, ephem, DJ2000, 0.0, 3, 399, 0)
+y2 = @MVector zeros(3)
+ephem_compute!(y2, ephem, DJ2000, 0.0, 3, 399, 0)
 
 # jd0 = Float64(DJ2000)
 # unit = useNaifId+unitKM+unitSec
