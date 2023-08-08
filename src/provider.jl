@@ -23,7 +23,7 @@ struct EphemerisProvider <: jEph.AbstractEphemerisProvider
 end
 
 EphemerisProvider(files::AbstractString) = EphemerisProvider([files])
-
+# TODO: warning if no file is loaded/ the kernel is empty?
 function EphemerisProvider(files::Vector{<:AbstractString})
 
     # Initial parsing of each DAF file 
