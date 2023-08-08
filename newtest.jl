@@ -60,3 +60,7 @@ minimum(abs.(y7-y8))
 # link = eph.spklinks[399][3][1]
 
 # @code_warntype ephem_vector3(daf1, link, 0.0)
+
+ephem = CalcephProvider("res/example1spk_seg1.bsp")
+ephem_compute!(y8, ephem, DJ2000, 0, 0, 2000001, 1)
+
