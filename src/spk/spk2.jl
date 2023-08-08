@@ -205,7 +205,7 @@ function get_coefficients!(
     # (skipping mid and radius because they are all equal for SPK type 2)
     k = 8*(initial_address(desc)-1) + seg.head.recsize*index + 16
 
-    # TODO: can the speed of this part be improved?
+    # TODO: can we speed-up this part by casting the byte content into the array at once?
     @inbounds for j = 1:seg.head.order 
         for i = 1:seg.head.ncomp
             cache(seg).A[i, j] = get_float(
