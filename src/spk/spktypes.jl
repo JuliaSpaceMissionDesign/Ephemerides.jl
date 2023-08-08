@@ -38,6 +38,7 @@ function cache(::T) where {T <: AbstractSPKSegment}
     throw(ErrorException("`cache` must be implemented for SPK segment type $T"))
 end
 
+# TODO: add spk_vector3 etc 
 
 """
     AbstractSPKHeader 
@@ -132,12 +133,18 @@ Header instance for SPK segments of type 2.
 - `tlen` -- `Float64` interval length covered by each record, in seconds
 - `order` -- `Int` polynomial order 
 - `n` -- `Int` number of records in the segment
+- `recsize` -- `Int` byte size of each logical record
+- `ncomp` -- `Int` number of vector components
+- `scale` -- `Float64` scale factor for the Chebyshev derivatives
 """
 struct SPKSegmentHeader2 <: AbstractSPKHeader
     tstart::Float64     
     tlen::Float64       
     order::Int
     n::Int              
+    recsize::Int
+    ncomp::Int
+    scale::Float64
 end
 
 """ 
@@ -147,11 +154,15 @@ Cache instance for SPK segments of type 2.
 
 ### Fields 
 - `A` -- Chebyshev's polynomial coefficients, with size (ncomp, order)
-- `x` -- Values of the Chebyshev's polynomials
+- `x1` -- Values of the Chebyshev's polynomials
+- `x2` -- Derivatives of the Chebyshev's polynomials
+- `id` -- Index of the currently loaded logical record
 """
 struct SPKSegmentCache2 <: AbstractSPKCache
     A::Matrix{Float64}
-    x::Vector{Float64}
+    x1::Vector{Float64}
+    x2::Vector{Float64}
+    id::MVector{1, Int}
 end
 
 """ 
