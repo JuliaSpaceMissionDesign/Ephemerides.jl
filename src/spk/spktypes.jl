@@ -121,7 +121,6 @@ end
 # ----------------------------------
 # SPK TYPE 2
 # ----------------------------------
-# TODO: add number of components to be able to handle TYPE 3 aswell with same header! 
 
 """
     SPKSegmentHeader2 <: AbstractSPKHeader
@@ -188,6 +187,23 @@ end
 @inline header(spk::SPKSegmentType2) = spk.head 
 @inline cache(spk::SPKSegmentType2) = spk.cache
 
+
+# ----------------------------------
+# SPK TYPE 3
+# ----------------------------------
+
+"""
+    SPKSegmentType3 <: AbstractSPKSegment
+"""
+struct SPKSegmentType3 <: AbstractSPKSegment
+    head::SPKSegmentHeader2 
+    cache::SPKSegmentCache2
+end
+
+@inline header(spk::SPKSegmentType3) = spk.head 
+@inline cache(spk::SPKSegmentType3) = spk.cache
+
+
 """
     SPK_SEGMENT_MAPPING
 
@@ -196,6 +212,7 @@ A dictionary mapping SPK segment types to the field index of the [`SPKSegmentLis
 const SPK_SEGMENTLIST_MAPPING = Dict(
     1 => 1,
     2 => 2,
+    3 => 3
 )
 
 # ----------------------------------
@@ -222,11 +239,13 @@ struct SPKSegmentList
     
     spk1::Vector{SPKSegmentType1}
     spk2::Vector{SPKSegmentType2}
+    spk3::Vector{SPKSegmentType3}
 
     function SPKSegmentList()
         new(
             SPKSegmentType1[], 
-            SPKSegmentType2[]
+            SPKSegmentType2[], 
+            SPKSegmentType3[]
         )
     end
 end
