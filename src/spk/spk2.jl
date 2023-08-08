@@ -1,6 +1,8 @@
 
 """ 
     SPKSegmentHeader2(daf::DAF, desc::DAFSegmentDescriptor)
+
+Create the segment header for an SPK segment of type 2.
 """
 function SPKSegmentHeader2(daf::DAF, desc::DAFSegmentDescriptor)
 
@@ -24,6 +26,8 @@ end
 
 """ 
     SPKSegmentCache2(spkhead::SPKSegmentHeader2)
+
+Initialise the cache for an SPK segment of type 2.
 """
 function SPKSegmentCache2(spkhead::SPKSegmentHeader2) 
     SPKSegmentCache2(zeros(3, spkhead.order), zeros(spkhead.order))
@@ -31,6 +35,8 @@ end
 
 """ 
     SPKSegmentType2(daf::DAF, desc::DAFSegmentDescriptor)
+
+Create the object representing an SPK segment of type 2.
 """
 function SPKSegmentType2(daf::DAF, desc::DAFSegmentDescriptor)
 
