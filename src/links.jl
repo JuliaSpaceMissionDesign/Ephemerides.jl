@@ -2,7 +2,8 @@
 """
     SPKLink
 
-# TODO: fill description 
+A link object to create a mapping between [`DAFSegmentDescriptor`](@ref) and its actual 
+location within an [`EphemerisProvider`](@ref) object. 
 
 ### Fields 
 - `desc` -- `DAFSegmentDescriptor` for the segment associated to this link
@@ -95,6 +96,8 @@ SPKLinkTable = Dict{Int, Dict{Int, Vector{SPKLink}}}
 
 """
     create_linktables(dafs::Vector{DAF})
+
+Create the SPK and PCK [`SPKLinkTable`](@ref) for all the segments stores in the input DAFs.
 """
 function create_linktables(dafs::Vector{DAF})
 
@@ -109,6 +112,9 @@ end
 
 """
     add_spklinks!(table::SPKLinkTable, daf::DAF, fid::Int)
+
+Insert in the input [`SPKLinkTable`](@ref) all the SPK or PCK links associated to 
+the segment descriptors of the input DAF.
 """
 function add_spklinks!(table::SPKLinkTable, daf::DAF, fid::Int)
 
