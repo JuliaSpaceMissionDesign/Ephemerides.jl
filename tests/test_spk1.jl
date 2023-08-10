@@ -1,5 +1,5 @@
 
-using Ephemeris
+using Ephemerides
 using Test 
 
 using BenchmarkTools

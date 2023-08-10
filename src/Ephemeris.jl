@@ -1,5 +1,5 @@
 
-module Ephemeris 
+module Ephemerides 
 
 using ForwardDiff: Dual, partials, value
 using Mmap
