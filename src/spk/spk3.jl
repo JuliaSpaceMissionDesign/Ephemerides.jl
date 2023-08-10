@@ -7,10 +7,10 @@ Create the object representing an SPK segment of type 3.
 function SPKSegmentType3(daf::DAF, desc::DAFSegmentDescriptor)
 
     # Initialise the segment header and cache
-    head = SPKSegmentHeader2(daf, desc)
-    cache = SPKSegmentCache2(head)
+    header = SPKSegmentHeader2(daf, desc)
+    caches = [SPKSegmentCache2(header) for _ in 1:Threads.nthreads()]
 
-    SPKSegmentType3(head, cache)
+    SPKSegmentType3(header, caches)
 
 end
 

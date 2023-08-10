@@ -32,5 +32,3 @@ include("transform.jl")
 include("interfaces.jl")
 
 end
-
-# TODO: thread-safe version (i.e., tante cache quanti threads)

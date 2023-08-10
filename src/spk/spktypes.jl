@@ -116,11 +116,11 @@ principal trajectory integrator DPTRAJ.
 """
 struct SPKSegmentType1 <: AbstractSPKSegment
     head::SPKSegmentHeader1
-    cache::SPKSegmentCache1
+    cache::Vector{SPKSegmentCache1}
 end
 
 @inline header(spk::SPKSegmentType1) = spk.head 
-@inline cache(spk::SPKSegmentType1) = spk.cache
+@inline @inbounds cache(spk::SPKSegmentType1) = spk.cache[Threads.threadid()]
 
 
 # ----------------------------------
@@ -188,12 +188,11 @@ used for planet barycenters, and for satellites whose ephemerides are integrated
 """
 struct SPKSegmentType2 <: AbstractSPKSegment
     head::SPKSegmentHeader2
-    cache::SPKSegmentCache2
+    cache::Vector{SPKSegmentCache2}
 end
 
 @inline header(spk::SPKSegmentType2) = spk.head 
-@inline cache(spk::SPKSegmentType2) = spk.cache
-
+@inline @inbounds cache(spk::SPKSegmentType2) = spk.cache[Threads.threadid()]
 
 # ----------------------------------
 # SPK TYPE 3
@@ -204,11 +203,11 @@ end
 """
 struct SPKSegmentType3 <: AbstractSPKSegment
     head::SPKSegmentHeader2 
-    cache::SPKSegmentCache2
+    cache::Vector{SPKSegmentCache2}
 end
 
 @inline header(spk::SPKSegmentType3) = spk.head 
-@inline cache(spk::SPKSegmentType3) = spk.cache
+@inline @inbounds cache(spk::SPKSegmentType3) = spk.cache[Threads.threadid()]
 
 
 """
