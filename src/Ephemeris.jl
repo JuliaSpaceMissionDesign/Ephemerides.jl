@@ -1,6 +1,7 @@
 
 using ForwardDiff: Dual, partials, value
 using Mmap
+using PreallocationTools
 using StaticArrays
 
 import JSMDInterfaces.Ephemeris as jEph

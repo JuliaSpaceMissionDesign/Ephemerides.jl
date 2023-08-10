@@ -158,9 +158,9 @@ Cache instance for SPK segments of type 2.
 - `id` -- Index of the currently loaded logical record
 """
 struct SPKSegmentCache2 <: AbstractSPKCache
-    A::Matrix{Float64}
-    x1::Vector{Float64}
-    x2::Vector{Float64}
+    A::Matrix{Float64} 
+    x1::DiffCache{Vector{Float64}, Vector{Float64}}
+    x2::DiffCache{Vector{Float64}, Vector{Float64}}
     id::MVector{1, Int}
 end
 

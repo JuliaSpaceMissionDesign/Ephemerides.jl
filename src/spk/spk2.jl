@@ -41,8 +41,8 @@ Initialise the cache for an SPK segment of type 2 and 3.
 function SPKSegmentCache2(spkhead::SPKSegmentHeader2) 
     SPKSegmentCache2(
         zeros(spkhead.ncomp, spkhead.order), 
-        zeros(spkhead.order), 
-        zeros(spkhead.order), 
+        DiffCache(zeros(spkhead.order)), 
+        DiffCache(zeros(spkhead.order)),
         MVector(-1)
     )
 end
@@ -77,7 +77,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor,
     chebyshev!(cache(seg), t, seg.head.order)
 
     # Interpolate the body position
-    return interpol(cache(seg), cache(seg).x1, 0, 1, 0)
+    return interpol(cache(seg), get_tmp(cache(seg).x1, time), 0, 1, 0)
 end
 
 
@@ -91,11 +91,11 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor,
 
     # Compute the Chebyshev polynomials
     chebyshev!(cache(seg), t, seg.head.order)
-    pos = interpol(cache(seg), cache(seg).x1, 0, 1, 0)
+    pos = interpol(cache(seg), get_tmp(cache(seg).x1, time), 0, 1, 0)
 
     # Compute 1st derivatives of Chebyshev polynomials 
     ∂chebyshev!(cache(seg), t, seg.head.order)
-    vel = interpol(cache(seg), cache(seg).x2, 1, seg.head.scale, 0)
+    vel = interpol(cache(seg), get_tmp(cache(seg).x2, time), 1, seg.head.scale, 0)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
@@ -114,17 +114,17 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor,
 
     # Compute the Chebyshev polynomials
     chebyshev!(cache(seg), t, seg.head.order)
-    pos = interpol(cache(seg), cache(seg).x1, 0, 1, 0)
+    pos = interpol(cache(seg), get_tmp(cache(seg).x1, time), 0, 1, 0)
 
     # Compute 1st derivatives of Chebyshev polynomials 
     scale = seg.head.scale 
     ∂chebyshev!(cache(seg), t, seg.head.order)
-    vel = interpol(cache(seg), cache(seg).x2, 1, scale, 0)
+    vel = interpol(cache(seg), get_tmp(cache(seg).x2, time), 1, scale, 0)
 
     # Compute 2nd derivative of Chebyshev polynomials 
     scale *= scale
     ∂²chebyshev!(cache(seg), t, seg.head.order)
-    acc = interpol(cache(seg), cache(seg).x1, 2, scale, 0)
+    acc = interpol(cache(seg), get_tmp(cache(seg).x1, time), 2, scale, 0)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
@@ -144,22 +144,22 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor
     
     # Compute the Chebyshev polynomials
     chebyshev!(cache(seg), t, seg.head.order)
-    pos = interpol(cache(seg), cache(seg).x1, 0, 1, 0)
+    pos = interpol(cache(seg), get_tmp(cache(seg).x1, time), 0, 1, 0)
 
     # Compute 1st derivatives of Chebyshev polynomials
     scale = seg.head.scale 
     ∂chebyshev!(cache(seg), t, seg.head.order)
-    vel = interpol(cache(seg), cache(seg).x2, 1, scale, 0)
+    vel = interpol(cache(seg), get_tmp(cache(seg).x2, time), 1, scale, 0)
 
     # Compute 2nd derivative of Chebyshev polynomials 
     scale *= scale
     ∂²chebyshev!(cache(seg), t, seg.head.order)
-    acc = interpol(cache(seg), cache(seg).x1, 2, scale, 0)
+    acc = interpol(cache(seg), get_tmp(cache(seg).x1, time), 2, scale, 0)
 
     # Compute 3rd derivative of Chebyshev polynomials 
     scale *= scale
     ∂³chebyshev!(cache(seg), t, seg.head.order)
-    jer = interpol(cache(seg), cache(seg).x2, 3, scale, 0)
+    jer = interpol(cache(seg), get_tmp(cache(seg).x2, time), 3, scale, 0)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
@@ -221,7 +221,8 @@ end
 """
     interpol(cache::SPKSegmentCache2, cheb, order::Int, scale::Number, offset::Int)
 """
-function interpol(cache::SPKSegmentCache2, cheb, order::Int, scale::Number, offset::Int)
+function interpol(cache::SPKSegmentCache2, cheb::Vector{T}, order::Int, 
+            scale::Number, offset::Int) where T
 
     len = length(cheb)
 
@@ -229,7 +230,7 @@ function interpol(cache::SPKSegmentCache2, cheb, order::Int, scale::Number, offs
     ay = 2 + offset
     az = 3 + offset
 
-    x, y, z = 0.0, 0.0, 0.0
+    x, y, z = T(0), T(0), T(0)
     @inbounds @simd for i in order+1:len
         x += cheb[i]*cache.A[ax, i]
         y += cheb[i]*cache.A[ay, i]
@@ -245,16 +246,16 @@ end
 """
 function chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
 
+    x1 = get_tmp(cache.x1, t)
+
     @inbounds begin 
-
-        cache.x1[1] = 1
-        cache.x1[2] = t 
-        cache.x1[3] = 2t*t - 1
-
+        x1[1] = 1
+        x1[2] = t 
+        x1[3] = 2t*t - 1
+        
         for i = 4:order 
-            cache.x1[i] = 2*t*cache.x1[i-1] - cache.x1[i-2]
+            x1[i] = 2*t*x1[i-1] - x1[i-2]
         end
-
     end
 
     nothing
@@ -265,14 +266,17 @@ end
 """
 function ∂chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
 
+    x1 = get_tmp(cache.x1, t)
+    x2 = get_tmp(cache.x2, t)
+
     @inbounds begin 
 
-        cache.x2[1] = 0
-        cache.x2[2] = 1
-        cache.x2[3] = 4*t 
+        x2[1] = 0
+        x2[2] = 1
+        x2[3] = 4*t 
 
         for i = 4:order 
-            cache.x2[i] = 2*t*cache.x2[i-1] + 2*cache.x1[i-1] - cache.x2[i-2]
+            x2[i] = 2*t*x2[i-1] + 2*x1[i-1] - x2[i-2]
         end
     end 
 
@@ -284,14 +288,17 @@ end
 """
 function ∂²chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
 
+    x1 = get_tmp(cache.x1, t)
+    x2 = get_tmp(cache.x2, t)
+
     @inbounds begin 
 
-        cache.x1[1] = 0
-        cache.x1[2] = 0
-        cache.x1[3] = 4 
+        x1[1] = 0
+        x1[2] = 0
+        x1[3] = 4 
 
         for i = 4:order 
-            cache.x1[i] = 4*cache.x2[i-1] + 2*t*cache.x1[i-1] - cache.x2[i-2]
+            x1[i] = 4*x2[i-1] + 2*t*x1[i-1] - x2[i-2]
         end
 
     end
@@ -304,14 +311,17 @@ end
 """
 function ∂³chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
 
+    x1 = get_tmp(cache.x1, t)
+    x2 = get_tmp(cache.x2, t)
+
     @inbounds begin 
 
-        cache.x2[1] = 0
-        cache.x2[2] = 0
-        cache.x2[3] = 0 
+        x2[1] = 0
+        x2[2] = 0
+        x2[3] = 0 
 
         for i = 4:order 
-            cache.x2[i] = 6*cache.x1[i-1] + 2*t*cache.x2[i-1] - cache.x2[i-2]
+            x2[i] = 6*x1[i-1] + 2*t*x2[i-1] - x2[i-2]
         end
 
     end
