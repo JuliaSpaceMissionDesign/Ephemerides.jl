@@ -351,7 +351,7 @@ function DAF(filename::String)
         ftype = 2
     else 
         throw(
-            EphemerisError(
+            jEph.EphemerisError(
                 "Invalid ephemeris file format. Only DAF/SPK and DAF/PCK files are accepted."
             )
         )

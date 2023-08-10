@@ -46,7 +46,7 @@ function ephem_timescale(eph::EphemerisProvider)
                     timescale_id = 1
                 else 
                     throw(
-                        EphemerisError(
+                        jEph.EphemerisError(
                             "Both TCB and TDB timescales are present in the same provider."
                         )
                     )
@@ -56,7 +56,7 @@ function ephem_timescale(eph::EphemerisProvider)
                     timescale_id = 2
                 else 
                     throw(
-                        EphemerisError(
+                        jEph.EphemerisError(
                             "Both TCB and TDB timescales are present in the same provider."
                         )
                     )
@@ -158,7 +158,7 @@ function ephem_spk_records(eph::EphemerisProvider)
 
                 if length(unique(axes.(desclist))) != 1 
                     throw(
-                        EphemerisError(
+                        jEph.EphemerisError(
                             "The ephemeris data from $center to $target is defined on "*
                             "different axes."
                         )
