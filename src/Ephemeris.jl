@@ -1,4 +1,6 @@
 
+module Ephemeris 
+
 using ForwardDiff: Dual, partials, value
 using Mmap
 using PreallocationTools
@@ -24,10 +26,11 @@ include("links.jl")
 include("provider.jl")
 
 include("properties.jl")
-include("compute.jl")
-include("orient.jl")
+include("transform.jl")
 
 # Provide compatibility with JSMDInterfaces
-# include("interfaces.jl")
+include("interfaces.jl")
+
+end
 
 # TODO: thread-safe version (i.e., tante cache quanti threads)

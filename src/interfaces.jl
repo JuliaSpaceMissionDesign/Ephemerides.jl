@@ -6,6 +6,13 @@ function jEph.load(::Type{EphemerisProvider}, files::Vector{<:AbstractString})
     return EphemerisProvider(files)
 end
 
+function Base.convert(::Type{jEph.EphemPointRecord}, r::EphemRecordSPK)
+    return jEph.EphemPointRecord(r.target, r.center, r.t_start[1], r.t_end[end], r.axes)
+end
+
+function Base.convert(::Type{jEph.EphemAxesRecord}, r::EphemRecordPCK)
+    return jEph.EphemAxesRecord(r.target, r.t_start[1], r.t_end[end], r.center)
+end 
 
 """
     ephem_position_records(eph::EphemerisProvider)
@@ -14,8 +21,7 @@ Get an array of [`jEph.EphemPointRecord`](@ref), providing detailed informations
 position content of the ephemeris file.
 """
 function jEph.ephem_position_records(eph::EphemerisProvider)
-    # TODO: implement
-    throw(ErrorException("NotImplementedError"))
+    convert.(jEph.EphemPointRecord, ephem_spk_records(eph))
 end
 
 """
@@ -23,13 +29,7 @@ end
 
 Return a list of NAIFIds representing bodies with available ephemeris data. 
 """
-function jEph.ephem_available_points(eph::EphemerisProvider)
-    rec = jEph.ephem_position_records(eph)
-    tids = map(x -> x.target, rec)
-    cids = map(x -> x.center, rec)
-
-    return unique(Int64[tids..., cids...])
-end
+jEph.ephem_available_points(eph::EphemerisProvider) = ephem_available_points(eph)
 
 """
     ephem_orient_records(eph::EphemerisProvider)
@@ -38,8 +38,7 @@ Get an array of [`jEph.EphemAxesRecord`](@ref), providing detailed
 informations on the orientation content of the ephemeris file.
 """
 function jEph.ephem_orient_records(eph::EphemerisProvider)
-    # TODO: implement
-    throw(ErrorException("NotImplementedError"))
+    convert.(jEph.EphemAxesRecord, ephem_pck_records(eph))
 end
 
 """
@@ -47,14 +46,8 @@ end
 
 Return a list of Frame IDs representing axes with available orientation data. 
 """
-function jEph.ephem_available_axes(eph::EphemerisProvider)
-    rec = jEph.ephem_orient_records(eph)
+jEph.ephem_available_axes(eph::EphemerisProvider) = ephem_available_axes(eph)
 
-    tids = map(x -> x.target, rec)
-    cids = map(x -> x.axes, rec)
-
-    return unique(Int64[tids..., cids...])
-end
 
 """
     ephem_timespan(eph::EphemerisProvider)
@@ -77,8 +70,7 @@ an ephemeris file. It returns a tuple containing:
 
 """
 function jEph.ephem_timespan(eph::EphemerisProvider)
-    # TODO: implement
-    throw(ErrorException("NotImplemetedError"))
+    return analyse_timespan([ephem_spk_records(eph)..., ephem_pck_records(eph)...])
 end
 
 """
@@ -90,15 +82,7 @@ It returns 1 for Barycentric Dynamical Time (TDB) and 2 for Barycentric Coordina
 !!! warning 
     An error is thrown if the timescale is neither TDB nor TCB.
 """
-function jEph.ephem_timescale(eph::EphemerisProvider)
-    # TODO: implement
-
-    if tsid == 1 || tsid == 2
-        return tsid
-    else
-        throw(jEph.EphemerisError("unknown time scale identifier: $tsid"))
-    end
-end
+jEph.ephem_timescale(eph::EphemerisProvider) = ephem_timescale(eph)
 
 """
     ephem_compute!(res, eph, jd0, time, target, center, order)
@@ -130,17 +114,20 @@ function jEph.ephem_compute!(
     order::Int,
 )
 
+    # Transform time in seconds since J2000.0
+    tsec = 86400*((jd0 + time) - 2451545)
+
     if order < 2 
         if order == 0
-            res[1:3] .= ephem_vector3(eph, center, target, jd0+time)
+            res[1:3] .= ephem_vector3(eph, center, target, tsec)
         elseif order == 1
-            res[1:6] .= ephem_vector6(eph, center, target, jd0+time)
+            res[1:6] .= ephem_vector6(eph, center, target, tsec)
         end
     else 
         if order == 2 
-            res[1:9] .= ephem_vector9(eph, center, target, jd0+time)
+            res[1:9] .= ephem_vector9(eph, center, target, tsec)
         elseif order == 3 
-            res[1:12] .= ephem_vector12(eph, center, target, jd0+time)
+            res[1:12] .= ephem_vector12(eph, center, target, tsec)
         else
             throw(
                 jEph.EphemerisError(
@@ -151,4 +138,55 @@ function jEph.ephem_compute!(
     end
 
     return nothing
+end
+
+
+"""
+    ephem_orient!(res, eph, jd0, time, target, order)
+
+Interpolate the orientation and its derivatives up to `order` for the `target` body at the 
+time `jd0` + `time`, expressed as a Julian Date. This function reads the ephemeris files 
+associated to `eph` and stores the results to `res`.
+
+The returned array `res` must be large enough to store the results. The size of this array 
+must be equal to 3*order: 
+
+- res[1:3] contain the angles 
+- res[4:6] contain the 1st derivative  for order ≥ 1 
+- res[7:9] contain the 2nd derivative for order ≥ 2
+- res[10:12] contain the 3rd derivative for order ≥ 3
+
+The values stores in `res` are always returned in rad, rad/s, rad/s², rad/s³
+
+### See also 
+See also [`ephem_compute!`](@ref)
+"""
+function jEph.ephem_orient!(
+    res, eph::EphemerisProvider, jd0::Number, time::Number, target::Int, order::Int
+)
+    # Transform time in seconds since J2000.0
+    tsec = 86400*((jd0 + time) - 2451545)
+
+    if order < 2 
+        if order == 0
+            res[1:3] .= ephem_rotation3(eph, center, target, tsec)
+        elseif order == 1
+            res[1:6] .= ephem_rotation6(eph, center, target, tsec)
+        end
+    else 
+        if order == 2 
+            res[1:9] .= ephem_rotation9(eph, center, target, tsec)
+        elseif order == 3 
+            res[1:12] .= ephem_rotation12(eph, center, target, tsec)
+        else
+            throw(
+                jEph.EphemerisError(
+                    "the maximum accepted order is 3."
+                )
+            )
+        end
+    end
+
+    return nothing
+
 end

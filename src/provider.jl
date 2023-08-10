@@ -1,4 +1,6 @@
 
+export EphemerisProvider
+
 """
     EphemerisProvider(file::String)
     EphemerisProvider(files::Vector{String})
