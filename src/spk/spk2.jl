@@ -221,7 +221,7 @@ end
 """
     interpol(cache::SPKSegmentCache2, cheb, order::Int, scale::Number, offset::Int)
 """
-function interpol(cache::SPKSegmentCache2, cheb::Vector{T}, order::Int, 
+function interpol(cache::SPKSegmentCache2, cheb::AbstractVector{T}, order::Int, 
             scale::Number, offset::Int) where T
 
     len = length(cheb)
