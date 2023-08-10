@@ -1,7 +1,4 @@
 
-# TODO: discuss coherence between position\velocity and their forward diff derivatives. 
-# Should the AD position derivative leverage the velocity coefficients or use the position ones?
-
 """ 
     SPKSegmentType3(daf::DAF, desc::DAFSegmentDescriptor)
 
