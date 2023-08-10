@@ -38,8 +38,6 @@ function cache(::T) where {T <: AbstractSPKSegment}
     throw(ErrorException("`cache` must be implemented for SPK segment type $T"))
 end
 
-# TODO: add spk_vector3 etc 
-
 """
     AbstractSPKHeader 
 
@@ -62,7 +60,7 @@ abstract type AbstractSPKCache end
 """
     SPKSegmentHeader1 <: AbstractSPKHeader
 
-Header instance for SPK segments of type 1. 
+Header instance for SPK segments of type 1 and 21.
 
 ### Fields 
 - `n` -- `Int` number of records in the segment 
@@ -75,12 +73,13 @@ struct SPKSegmentHeader1 <: AbstractSPKHeader
     iaa::Int                # Initial segment address
     etid::Int               # Initial address for the epoch table (after all the records)
     recsize::Int            # Number of double numbers stored in each MDA record
+    maxdim::Int             # Dimensions 
 end
 
 """ 
     SPKSegmentCache1 <: AbstractSPKCache 
 
-Cache instance for SPK segments of type 1. The fields contained within this cache 
+Cache instance for SPK segments of type 1 and 21. The fields contained within this cache 
 are taken from the FORTRAN NAIF's SPICE implementation for type 1 SPK segments. 
 """
 struct SPKSegmentCache1 <: AbstractSPKCache
@@ -92,19 +91,19 @@ struct SPKSegmentCache1 <: AbstractSPKCache
     dt::Matrix{Float64}
     kqmax::Vector{Int}
     kq::Vector{Int}
-    id::MVector{1, Int}         # Index of the loaded record
-    fc::Vector{Float64}         # TODO: diff cache 
-    wc::Vector{Float64}         # TODO: diff cache 
-    w::Vector{Float64}          # TODO: diff cache
-    vct::MVector{3, Float64}    # TODO: diff cache
+    id::MVector{1, Int}
+    fc::DiffCache{Vector{Float64}, Vector{Float64}} 
+    wc::DiffCache{Vector{Float64}, Vector{Float64}}     
+    w::DiffCache{Vector{Float64},  Vector{Float64}}     
+    vct::DiffCache{Vector{Float64}, Vector{Float64}}    
 
 end
 
 """ 
     SPKSegmentType1 <: AbstractSPKSegment
 
-Segment instance for SPK segments of type 1, which contain Modified Difference Arrays (MDA). 
-This data type is normally used for spacecraft whose ephemerides are produced by JPL's 
+Segment instance for SPK segments of type 1 and 21, which contain Modified Difference Arrays 
+(MDA). This data type is normally used for spacecraft whose ephemerides are produced by JPL's 
 principal trajectory integrator DPTRAJ. 
 
 ### Fields 
@@ -220,7 +219,8 @@ A dictionary mapping SPK segment types to the field index of the [`SPKSegmentLis
 const SPK_SEGMENTLIST_MAPPING = Dict(
     1 => 1,
     2 => 2,
-    3 => 3
+    3 => 3,
+    21 => 1
 )
 
 # ----------------------------------

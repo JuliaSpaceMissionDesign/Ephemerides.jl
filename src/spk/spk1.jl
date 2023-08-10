@@ -1,4 +1,7 @@
 
+# TODO: there are some allocations when using Forward Diff but they are not shown with 
+# the non AD-call. This segment is quite slower with respect to Calceph 
+
 """ 
     SPKSegmentHeader1(daf::DAF, desc::DAFSegmentDescriptor)
 
@@ -6,17 +9,27 @@ Create the segment header for an SPK segment of type 1.
 """
 function SPKSegmentHeader1(daf::DAF, desc::DAFSegmentDescriptor)
 
+    # Initial/final segment address
+    iaa = initial_address(desc)
+    faa = final_address(desc)
+
     # Number of records in segment
-    n = Int(get_float(array(daf), 8*(final_address(desc)-1), endian(daf)))
+    n = Int(get_float(array(daf), 8*(faa-1), endian(daf)))
 
     # Number of directory epochs 
     ndir = n ÷ 100
 
+    # Maximum dimension depending on segment type
+    if segment_type(desc) == 1 
+        maxdim = 15 
+    elseif segment_type(desc) == 21
+        maxdim = Int(get_float(array(daf), 8*(faa-2), endian(daf)))
+    else 
+        throw(EphemerisError("Invalid segment type."))
+    end
+    
     # Double precision numbers stored in each MDA record 
-    recsize = 71 
-
-    # Initial segment address
-    iaa = initial_address(desc)
+    recsize = 4*maxdim + 11 
 
     # Initial address for the epoch table (after all the segment records)
     etid = 8*(iaa - 1) + 8*recsize*n
@@ -31,14 +44,14 @@ function SPKSegmentHeader1(daf::DAF, desc::DAFSegmentDescriptor)
     else 
         # Load directory epochs
         epochs = zeros(ndir)
-        i₀ = 8*(final_address(desc) - 1)
+        i₀ = 8*(faa - 1)
         @inbounds for j = 1:ndir
             epochs[j] = get_float(array(daf), i₀ - 8*(ndir - j + 1), endian(daf)) 
         end
 
     end
 
-    SPKSegmentHeader1(n, ndir, epochs, iaa, etid, recsize)
+    SPKSegmentHeader1(n, ndir, epochs, iaa, etid, recsize, maxdim)
 
 end
 
@@ -47,11 +60,12 @@ end
 
 Initialise the cache for an SPK segment of type 1.
 """
-function SPKSegmentCache1()
+function SPKSegmentCache1(head::SPKSegmentHeader1)
     SPKSegmentCache1(
-        Int[0.0], zeros(15), zeros(3), zeros(3), zeros(15, 3), 
-        Int[0.0], zeros(Int, 3), MVector(-1), zeros(14), zeros(13), zeros(17), 
-        @MVector zeros(3)
+        Int[0.0], zeros(head.maxdim), zeros(3), zeros(3), zeros(head.maxdim, 3), 
+        Int[0.0], zeros(Int, 3), MVector(-1), 
+        DiffCache(zeros(14)), DiffCache(zeros(13)), 
+        DiffCache(zeros(17)), DiffCache(zeros(3))
     )
 end
 
@@ -62,10 +76,8 @@ Create the object representing an SPK segment of type 1.
 """
 function SPKSegmentType1(daf::DAF, desc::DAFSegmentDescriptor)
 
-    SPKSegmentType1(
-        SPKSegmentHeader1(daf, desc), 
-        SPKSegmentCache1()
-    )
+    header = SPKSegmentHeader1(daf, desc)
+    SPKSegmentType1(header, SPKSegmentCache1(header))
 
 end
 
@@ -102,7 +114,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType1, time::Number)
     pos = compute_mda_position(cache(seg), Δ)
 
     # Compute MDA velocity coefficients
-    compute_mda_vel_coefficients!(cache(seg))
+    compute_mda_vel_coefficients!(cache(seg), Δ)
     vel = compute_mda_velocity(cache(seg), Δ)
 
     return @inbounds SA[
@@ -176,11 +188,11 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader1, cache::SPKSegmentC
     i0 = 8*(head.iaa - 1) + 8*head.recsize*index
     cache.tl[1] = get_float(array(daf), i0, endian(daf))
 
-    @inbounds for k = 1:15 
+    @inbounds for k = 1:head.maxdim 
         cache.g[k] = get_float(array(daf), i0 + 8k, endian(daf))    
     end
     
-    i2 = i0 + 8*16
+    i2 = i0 + 8*(head.maxdim+1)
     @inbounds  for k = 1:3 
         cache.refpos[k] = get_float(array(daf), i2 + 16*(k-1), endian(daf))
         cache.refvel[k] = get_float(array(daf), i2 + 16k - 8, endian(daf))
@@ -189,12 +201,14 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader1, cache::SPKSegmentC
     i3 = i2 + 48
 
     @inbounds for k = 1:3 
-        for p = 1:15 
-            cache.dt[p, k] = get_float(array(daf), i3 + 8*(p-1) + 8*15*(k-1), endian(daf))
+        for p = 1:head.maxdim 
+            cache.dt[p, k] = get_float(
+                array(daf), i3 + 8*(p-1) + 8*head.maxdim*(k-1), endian(daf)
+            )
         end
     end
     
-    i4 = i3 + 45*8
+    i4 = i3 + 3*head.maxdim*8
     cache.kqmax[1] = Int(get_float(array(daf), i4, endian(daf)))
     
     @inbounds for j = 1:3 
@@ -209,17 +223,17 @@ end
 function compute_mda_position(cache::SPKSegmentCache1, Δ::Number)
     
     @inbounds for k = 1:3 
-        cache.vct[k] = 0.0 
+        get_tmp(cache.vct, Δ)[k] = 0.0 
         @simd for j = cache.kq[k]:-1:1 
-            cache.vct[k] += cache.dt[j, k]*cache.w[j+1]
+            get_tmp(cache.vct, Δ)[k] += cache.dt[j, k]*get_tmp(cache.w, Δ)[j+1]
         end
     end
 
     # At this point by definition of the above while loop, ks will always be = 1
     return SA[
-        cache.refpos[1] + Δ*(cache.refvel[1] + Δ*cache.vct[1]),
-        cache.refpos[2] + Δ*(cache.refvel[2] + Δ*cache.vct[2]),
-        cache.refpos[3] + Δ*(cache.refvel[3] + Δ*cache.vct[3])
+        cache.refpos[1] + Δ*(cache.refvel[1] + Δ*get_tmp(cache.vct, Δ)[1]),
+        cache.refpos[2] + Δ*(cache.refvel[2] + Δ*get_tmp(cache.vct, Δ)[2]),
+        cache.refpos[3] + Δ*(cache.refvel[3] + Δ*get_tmp(cache.vct, Δ)[3])
     ]
 
 end
@@ -230,17 +244,17 @@ end
 function compute_mda_velocity(cache::SPKSegmentCache1, Δ::Number)
 
     @inbounds for k = 1:3 
-        cache.vct[k] = 0.0 
+        get_tmp(cache.vct, Δ)[k] = 0.0 
         @simd for j = cache.kq[k]:-1:1 
-            cache.vct[k] += cache.dt[j, k]*cache.w[j]
+            get_tmp(cache.vct, Δ)[k] += cache.dt[j, k]*get_tmp(cache.w, Δ)[j]
         end
     end
 
     # At this point by definition of the above while loop, ks will always be = 0
     return SA[
-        cache.refvel[1] + Δ*cache.vct[1],
-        cache.refvel[2] + Δ*cache.vct[2],
-        cache.refvel[3] + Δ*cache.vct[3]
+        cache.refvel[1] + Δ*get_tmp(cache.vct, Δ)[1],
+        cache.refvel[2] + Δ*get_tmp(cache.vct, Δ)[2],
+        cache.refvel[3] + Δ*get_tmp(cache.vct, Δ)[3]
     ]
 
 end
@@ -253,16 +267,16 @@ end
     mq2 = cache.kqmax[1] - 2
     ks = cache.kqmax[1] - 1
     
-    cache.fc[1] = 1.0
+    get_tmp(cache.fc, Δ)[1] = 1.0
     for j = 1:mq2
-        cache.fc[j+1] = tp / cache.g[j] 
-        cache.wc[j] = Δ / cache.g[j]
+        get_tmp(cache.fc, Δ)[j+1] = tp / cache.g[j] 
+        get_tmp(cache.wc, Δ)[j] = Δ / cache.g[j]
         tp = Δ + cache.g[j]
     end
     
     # compute inverse coefficients 
     for j = 1:cache.kqmax[1]
-        cache.w[j] = 1.0 / j
+        get_tmp(cache.w, Δ)[j] = 1.0 / j
     end
     
     jx = 0
@@ -272,7 +286,7 @@ end
         jx += 1 
     
         for j = 1:jx 
-            cache.w[j+ks] = cache.fc[j+1]*cache.w[j+ks1] - cache.wc[j] * cache.w[j+ks] 
+            get_tmp(cache.w, Δ)[j+ks] = get_tmp(cache.fc, Δ)[j+1]*get_tmp(cache.w, Δ)[j+ks1] - get_tmp(cache.wc, Δ)[j] * get_tmp(cache.w, Δ)[j+ks] 
         end
     
         ks = ks1 
@@ -283,10 +297,10 @@ end
 end
 
 # This function is such that the output ks = 0
-@inbounds function compute_mda_vel_coefficients!(cache::SPKSegmentCache1)
+@inbounds function compute_mda_vel_coefficients!(cache::SPKSegmentCache1, Δ::Number)
 
     for j = 1:cache.kqmax[1]
-        cache.w[j+1] = cache.fc[j+1]*cache.w[j] - cache.wc[j]*cache.w[j+1]
+        get_tmp(cache.w, Δ)[j+1] = get_tmp(cache.fc, Δ)[j+1]*get_tmp(cache.w, Δ)[j] - get_tmp(cache.wc, Δ)[j]*get_tmp(cache.w, Δ)[j+1]
     end
     
     nothing
