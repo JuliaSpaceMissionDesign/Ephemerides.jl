@@ -1,7 +1,4 @@
 
-# TODO: there are some allocations when using Forward Diff but they are not shown with 
-# the non AD-call. This segment is quite slower with respect to Calceph 
-
 """ 
     SPKSegmentHeader1(daf::DAF, desc::DAFSegmentDescriptor)
 
@@ -25,7 +22,7 @@ function SPKSegmentHeader1(daf::DAF, desc::DAFSegmentDescriptor)
     elseif segment_type(desc) == 21
         maxdim = Int(get_float(array(daf), 8*(faa-2), endian(daf)))
     else 
-        throw(EphemerisError("Invalid segment type."))
+        throw(jEph.EphemerisError("Invalid segment type."))
     end
     
     # Double precision numbers stored in each MDA record 
@@ -124,11 +121,11 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType1, time::Number)
 end
 
 function spk_vector9(::DAF, ::SPKSegmentType1, ::Number)
-    throw(EphemerisError("Order ≥ 2 cannot be computed on segments of type 1 and 21."))
+    throw(jEph.EphemerisError("Order ≥ 2 cannot be computed on segments of type 1 and 21."))
 end
 
 function spk_vector12(::DAF, ::SPKSegmentType1, ::Number)
-    throw(EphemerisError("Order ≥ 2 on segments of type 1 and 21."))
+    throw(jEph.EphemerisError("Order ≥ 2 on segments of type 1 and 21."))
 end
 
 
