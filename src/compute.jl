@@ -49,15 +49,15 @@ for (order, fun1, fun2) in zip(
             
             if lid == 1 
                 return $(fun2)(
-                    daf, get_segment(segment_list(daf), 1, eid), descriptor(link), time
+                    daf, get_segment(segment_list(daf), 1, eid), time
                 )
             elseif lid == 2
                 return $(fun2)(
-                    daf, get_segment(segment_list(daf), 2, eid), descriptor(link), time
+                    daf, get_segment(segment_list(daf), 2, eid), time
                 )
             else
                 return $(fun2)(
-                    daf, get_segment(segment_list(daf), 3, eid), descriptor(link), time
+                    daf, get_segment(segment_list(daf), 3, eid), time
                 )
             end
                 

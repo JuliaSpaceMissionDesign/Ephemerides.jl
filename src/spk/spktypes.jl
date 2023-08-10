@@ -69,8 +69,12 @@ Header instance for SPK segments of type 1.
 - `ndirs` -- `Int` number of directory epochs
 """
 struct SPKSegmentHeader1 <: AbstractSPKHeader 
-    n::Int      # number of records in the segment
-    ndirs::Int 
+    n::Int                  # number of records in the segment
+    ndirs::Int              # Number of directory epochs
+    epochs::Vector{Float64} # Vector storing directory epochs or epochs themselves (when ndirs = 0)
+    iaa::Int                # Initial segment address
+    etid::Int               # Initial address for the epoch table (after all the records)
+    recsize::Int            # Number of double numbers stored in each MDA record
 end
 
 """ 
@@ -88,9 +92,9 @@ struct SPKSegmentCache1 <: AbstractSPKCache
     dt::Matrix{Float64}
     kqmax::Vector{Int}
     kq::Vector{Int}
-    fc::Vector{Float64}
-    wc::Vector{Float64}
-    w::Vector{Float64}
+    fc::Vector{Float64} # TODO: diff cache 
+    wc::Vector{Float64} # TODO: diff cache 
+    w::Vector{Float64}  # TODO: diff cache
 
 end
 
@@ -135,6 +139,7 @@ Header instance for SPK segments of type 2.
 - `recsize` -- `Int` byte size of each logical record
 - `ncomp` -- `Int` number of vector components
 - `scale` -- `Float64` scale factor for the Chebyshev derivatives
+- `iaa` -- `Int` initial segment file address
 """
 struct SPKSegmentHeader2 <: AbstractSPKHeader
     tstart::Float64     
@@ -144,6 +149,7 @@ struct SPKSegmentHeader2 <: AbstractSPKHeader
     recsize::Int
     ncomp::Int
     scale::Float64
+    iaa::Int    
 end
 
 """ 

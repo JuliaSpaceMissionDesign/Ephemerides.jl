@@ -29,7 +29,10 @@ function SPKSegmentHeader2(daf::DAF, desc::DAFSegmentDescriptor)
     # Chebyshev scale factor 
     scale = 2/tlen;
 
-    SPKSegmentHeader2(tstart, tlen, order, n, recsize, ncomp, scale)
+    # Initial segemtn address 
+    iaa = initial_address(desc)
+
+    SPKSegmentHeader2(tstart, tlen, order, n, recsize, ncomp, scale, iaa)
 
 end
 
@@ -65,13 +68,13 @@ end
 @inline spk_field(::SPKSegmentType2) = SPK_SEGMENTLIST_MAPPING[2]
 
 
-function spk_vector3(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor, time::Number) 
+function spk_vector3(daf::DAF, seg::SPKSegmentType2, time::Number) 
 
     # Find the logical record containing the Chebyshev coefficients at `time`
     index, t = find_logical_record(header(seg), time)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), desc, index)
+    get_coefficients!(daf, header(seg), cache(seg), index)
     
     # Compute the Chebyshev polynomials
     chebyshev!(cache(seg), t, seg.head.order)
@@ -81,13 +84,13 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor,
 end
 
 
-function spk_vector6(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor, time::Number)
+function spk_vector6(daf::DAF, seg::SPKSegmentType2, time::Number)
 
     # Find the logical record containing the Chebyshev coefficients at `time`
     index, t = find_logical_record(header(seg), time)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), desc, index)
+    get_coefficients!(daf, header(seg), cache(seg), index)
 
     # Compute the Chebyshev polynomials
     chebyshev!(cache(seg), t, seg.head.order)
@@ -104,13 +107,13 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor,
 
 end
 
-function spk_vector9(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor, time::Number)
+function spk_vector9(daf::DAF, seg::SPKSegmentType2, time::Number)
 
     # Find the logical record containing the Chebyshev coefficients at `time`
     index, t = find_logical_record(header(seg), time)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), desc, index)
+    get_coefficients!(daf, header(seg), cache(seg), index)
 
     # Compute the Chebyshev polynomials
     chebyshev!(cache(seg), t, seg.head.order)
@@ -134,13 +137,13 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor,
 
 end
 
-function spk_vector12(daf::DAF, seg::SPKSegmentType2, desc::DAFSegmentDescriptor, time::Number)
+function spk_vector12(daf::DAF, seg::SPKSegmentType2, time::Number)
 
     # Find the logical record containing the Chebyshev coefficients at `time`
     index, t = find_logical_record(header(seg), time)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), desc, index)
+    get_coefficients!(daf, header(seg), cache(seg), index)
     
     # Compute the Chebyshev polynomials
     chebyshev!(cache(seg), t, seg.head.order)
@@ -192,10 +195,10 @@ function find_logical_record(head::SPKSegmentHeader2, time::Number)
 end
 
 """
-    get_coefficients!(daf::DAF, head, cache, desc::DAFSegmentDescriptor, index::Int)
+    get_coefficients!(daf::DAF, head, cache, index::Int)
 """
 function get_coefficients!(daf::DAF, head::SPKSegmentHeader2, cache::SPKSegmentCache2, 
-            desc::DAFSegmentDescriptor, index::Int)
+            index::Int)
         
     # Check whether the coefficients for this record are already loaded
     index == cache.id[1] && return nothing
@@ -203,7 +206,7 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader2, cache::SPKSegmentC
 
     # Address of desired logical record 
     # (skipping mid and radius because they are all equal for SPK type 2)
-    k = 8*(initial_address(desc)-1) + head.recsize*index + 16
+    k = 8*(head.iaa-1) + head.recsize*index + 16
 
     # TODO: can we speed-up this part by casting the byte content into the array at once?
     @inbounds for j = 1:head.order 

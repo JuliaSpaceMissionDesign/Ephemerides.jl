@@ -20,13 +20,13 @@ end
 @inline spk_field(::SPKSegmentType3) = SPK_SEGMENTLIST_MAPPING[3]
 
 
-function spk_vector3(daf::DAF, seg::SPKSegmentType3, desc::DAFSegmentDescriptor, time::Number) 
+function spk_vector3(daf::DAF, seg::SPKSegmentType3, time::Number) 
 
     # Find the logical record containing the Chebyshev coefficients at `time`
     index, t = find_logical_record(header(seg), time)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), desc, index)
+    get_coefficients!(daf, header(seg), cache(seg), index)
 
     # Compute the Chebyshev polynomials
     chebyshev!(cache(seg), t, seg.head.order)
@@ -35,13 +35,13 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType3, desc::DAFSegmentDescriptor,
 end
 
 
-function spk_vector6(daf::DAF, seg::SPKSegmentType3, desc::DAFSegmentDescriptor, time::Number)
+function spk_vector6(daf::DAF, seg::SPKSegmentType3, time::Number)
 
     # Find the logical record containing the Chebyshev coefficients at `time`
     index, t = find_logical_record(header(seg), time)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), desc, index)
+    get_coefficients!(daf, header(seg), cache(seg), index)
 
     # Compute the Chebyshev polynomials
     chebyshev!(cache(seg), t, seg.head.order)
@@ -56,13 +56,13 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType3, desc::DAFSegmentDescriptor,
 end
 
 
-function spk_vector9(daf::DAF, seg::SPKSegmentType3, desc::DAFSegmentDescriptor, time::Number)
+function spk_vector9(daf::DAF, seg::SPKSegmentType3, time::Number)
 
     # Find the logical record containing the Chebyshev coefficients at `time`
     index, t = find_logical_record(header(seg), time)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), desc, index)
+    get_coefficients!(daf, header(seg), cache(seg), index)
 
     # Compute the Chebyshev polynomials
     chebyshev!(cache(seg), t, seg.head.order)
@@ -83,13 +83,13 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType3, desc::DAFSegmentDescriptor,
 end
 
 
-function spk_vector12(daf::DAF, seg::SPKSegmentType3, desc::DAFSegmentDescriptor, time::Number)
+function spk_vector12(daf::DAF, seg::SPKSegmentType3, time::Number)
 
     # Find the logical record containing the Chebyshev coefficients at `time`
     index, t = find_logical_record(header(seg), time)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), desc, index)
+    get_coefficients!(daf, header(seg), cache(seg), index)
     
     # Compute the Chebyshev polynomials
     chebyshev!(cache(seg), t, seg.head.order)
