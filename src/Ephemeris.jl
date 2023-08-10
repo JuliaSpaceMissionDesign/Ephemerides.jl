@@ -15,7 +15,7 @@ include("spk/spktypes.jl")
 include("daf.jl")
 
 # SPK segments implementations
-# include("spk/spk1.jl")
+include("spk/spk1.jl")
 include("spk/spk2.jl")
 include("spk/spk3.jl")
 

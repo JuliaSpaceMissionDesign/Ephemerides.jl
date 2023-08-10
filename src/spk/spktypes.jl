@@ -92,9 +92,11 @@ struct SPKSegmentCache1 <: AbstractSPKCache
     dt::Matrix{Float64}
     kqmax::Vector{Int}
     kq::Vector{Int}
-    fc::Vector{Float64} # TODO: diff cache 
-    wc::Vector{Float64} # TODO: diff cache 
-    w::Vector{Float64}  # TODO: diff cache
+    id::MVector{1, Int}         # Index of the loaded record
+    fc::Vector{Float64}         # TODO: diff cache 
+    wc::Vector{Float64}         # TODO: diff cache 
+    w::Vector{Float64}          # TODO: diff cache
+    vct::MVector{3, Float64}    # TODO: diff cache
 
 end
 
