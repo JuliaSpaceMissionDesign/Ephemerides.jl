@@ -1,11 +1,11 @@
 
-export  ephem_timescale,
+export  ephem_timescale_id,
         ephem_spk_timespan,         
         ephem_pck_timespan, 
         ephem_spk_records, 
         ephem_pck_records,
-        ephem_available_points,
-        ephem_available_axes
+        ephem_get_points,
+        ephem_get_axes
 
 """
     TDB_SEGMENTS
