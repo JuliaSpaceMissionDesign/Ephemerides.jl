@@ -148,7 +148,7 @@ function ephem_spk_records(eph::EphemerisProvider)
     parsed = Tuple{Int, Int}[]
 
     links = spk_links(eph)
-    for center in sort(ephem_available_points(eph), rev=true)
+    for center in sort(ephem_get_points(eph), rev=true)
         for target in sort(Int.(keys(links[center])), rev=true)
 
             if !((center, target) in parsed || (target, center) in parsed)
@@ -212,7 +212,7 @@ function ephem_pck_records(eph::EphemerisProvider)
     parsed = Tuple{Int, Int}[]
 
     links = pck_links(eph)
-    for center in sort(ephem_available_axes(eph), rev=true)
+    for center in sort(ephem_get_axes(eph), rev=true)
         for target in sort(Int.(keys(links[center])), rev=true)
 
             if !((center, target) in parsed || (target, center) in parsed)
