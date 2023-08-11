@@ -23,7 +23,7 @@ const TCB_SEGMENTS = (102, 103, 120)
 
 
 """
-    eph_timescale(eph::EphemerisProvider)
+    ephem_timescale_id(eph::EphemerisProvider)
 
 Retrieve a timescale ID associated with the ephemeris handler `eph`. 
 It returns 1 for Barycentric Dynamical Time (TDB) and 2 for Barycentric Coordinate Time (TCB).
@@ -32,7 +32,7 @@ It returns 1 for Barycentric Dynamical Time (TDB) and 2 for Barycentric Coordina
     Ephemeris providers with mixed timescales are not supported. An error is thrown if in 
     the ephemeris handler some segments are defined in TDB and some other segments in TCB.
 """
-function ephem_timescale(eph::EphemerisProvider)
+function ephem_timescale_id(eph::EphemerisProvider)
 
     timescale_id = -1 
 
@@ -71,18 +71,18 @@ function ephem_timescale(eph::EphemerisProvider)
 end
 
 """
-    ephem_available_points(eph::EphemerisProvider)
+    ephem_get_points(eph::EphemerisProvider)
 
 Return a list of NAIFIds representing bodies with available ephemeris data. 
 """
-ephem_available_points(eph::EphemerisProvider) = Int.(keys(spk_links(eph)))
+ephem_get_points(eph::EphemerisProvider) = Int.(keys(spk_links(eph)))
 
 """
-    ephem_available_axes(eph::EphemerisProvider)
+    ephem_get_axes(eph::EphemerisProvider)
 
 Return a list of Frame IDs representing axes with available orientation data. 
 """
-ephem_available_axes(eph::EphemerisProvider) = Int.(keys(pck_links(eph)))
+ephem_get_axes(eph::EphemerisProvider) = Int.(keys(pck_links(eph)))
 
 """
     AbstractEphemRecord

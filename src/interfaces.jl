@@ -29,7 +29,7 @@ end
 
 Return a list of NAIFIds representing bodies with available ephemeris data. 
 """
-jEph.ephem_available_points(eph::EphemerisProvider) = ephem_available_points(eph)
+jEph.ephem_available_points(eph::EphemerisProvider) = ephem_get_points(eph)
 
 """
     ephem_orient_records(eph::EphemerisProvider)
@@ -46,7 +46,7 @@ end
 
 Return a list of Frame IDs representing axes with available orientation data. 
 """
-jEph.ephem_available_axes(eph::EphemerisProvider) = ephem_available_axes(eph)
+jEph.ephem_available_axes(eph::EphemerisProvider) = ephem_get_axes(eph)
 
 
 """
@@ -82,7 +82,7 @@ It returns 1 for Barycentric Dynamical Time (TDB) and 2 for Barycentric Coordina
 !!! warning 
     An error is thrown if the timescale is neither TDB nor TCB.
 """
-jEph.ephem_timescale(eph::EphemerisProvider) = ephem_timescale(eph)
+jEph.ephem_timescale(eph::EphemerisProvider) = ephem_timescale_id(eph)
 
 """
     ephem_compute!(res, eph, jd0, time, target, center, order)
