@@ -93,9 +93,13 @@ for (order, pfun1, afun1, fun1) in zip(
                 return $(fun1)(
                     daf, get_segment(segment_list(daf), 2, eid), time
                 )
-            else
+            elseif lid == 3
                 return $(fun1)(
                     daf, get_segment(segment_list(daf), 3, eid), time
+                )
+            else 
+                return $(fun1)(
+                    daf, get_segment(segment_list(daf), 4, eid), time
                 )
             end
                 
