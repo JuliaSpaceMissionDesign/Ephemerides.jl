@@ -16,8 +16,15 @@ function SPKSegmentHeader8(daf::DAF, desc::DAFSegmentDescriptor)
     tlen = get_float(array(daf), i0+8, endian(daf))
 
     # Retrieve polynomial order 
-    order = Int(get_float(array(daf), i0 + 16, endian(daf)))
-    N = order + 1
+    if segment_type(desc) == 8
+        # Lagrange polynomials
+        order = Int(get_float(array(daf), i0 + 16, endian(daf)))
+        N = order + 1
+    else
+        # Hermite polynomials
+        N = Int(get_float(array(daf), i0 + 16, endian(daf))) + 1
+        order = 2N - 1
+    end 
 
     # Number of states stores in the record 
     n = Int(get_float(array(daf), i0 + 24, endian(daf)))
