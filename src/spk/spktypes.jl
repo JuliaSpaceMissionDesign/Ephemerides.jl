@@ -245,7 +245,9 @@ Cache instance for SPK segments of type 8.
 """
 struct SPKSegmentCache8 <: AbstractSPKCache
     states::Matrix{Float64}
-    work::Vector{Float64}
+    work::DiffCache{Vector{Float64}, Vector{Float64}}
+    dwork::DiffCache{Vector{Float64}, Vector{Float64}}
+    ddwork::DiffCache{Vector{Float64}, Vector{Float64}}
     id::MVector{1, Int}
 end 
 

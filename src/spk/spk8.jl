@@ -36,7 +36,9 @@ Initialise the cache for an SPK segment of type 8.
 function SPKSegmentCache8(header::SPKSegmentHeader8) 
     SPKSegmentCache8(
         zeros(header.N, 6), 
-        zeros(header.N),
+        DiffCache(zeros(header.N)),
+        DiffCache(zeros(header.N)),
+        DiffCache(zeros(header.N)),
         MVector(-1)
     )
 end
@@ -64,34 +66,74 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType8, time::Number)
     index = find_logical_record(header(seg), time)
     get_coefficients!(daf, header(seg), cache(seg), index)
 
-    # TODO: finish me
-    return SA[time, time, time]
+    tbegin = header(seg).tstart + (index-1)*header(seg).tlen 
+    Δt = (time - tbegin)/header(seg).tlen + 1
+
+    x = lagrange(cache(seg), Δt, 1, header(seg).N)
+    y = lagrange(cache(seg), Δt, 2, header(seg).N)
+    z = lagrange(cache(seg), Δt, 3, header(seg).N)
+
+    return SA[x, y, z]
 
 end
 
-
 function spk_vector6(daf::DAF, seg::SPKSegmentType8, time::Number)
 
-    # TODO: finish me
-    return SA[time, time, time, 
-              time, time, time]
+    index = find_logical_record(header(seg), time)
+    get_coefficients!(daf, header(seg), cache(seg), index)
+
+    tbegin = header(seg).tstart + (index-1)*header(seg).tlen 
+    Δt = (time - tbegin)/header(seg).tlen + 1
+
+    x = lagrange(cache(seg), Δt, 1, header(seg).N)
+    y = lagrange(cache(seg), Δt, 2, header(seg).N)
+    z = lagrange(cache(seg), Δt, 3, header(seg).N)
+
+    vx = lagrange(cache(seg), Δt, 4, header(seg).N)
+    vy = lagrange(cache(seg), Δt, 5, header(seg).N)
+    vz = lagrange(cache(seg), Δt, 6, header(seg).N)
+
+    return SA[x, y, z, vx, vy, vz]
+
 end
 
 function spk_vector9(daf::DAF, seg::SPKSegmentType8, time::Number)
 
-    # TODO: finish me
-    return SA[time, time, time, 
-              time, time, time, 
-              time, time, time]
+    index = find_logical_record(header(seg), time)
+    get_coefficients!(daf, header(seg), cache(seg), index)
+
+    tbegin = header(seg).tstart + (index-1)*header(seg).tlen 
+    Δt = (time - tbegin)/header(seg).tlen + 1
+
+    x = lagrange(cache(seg), Δt, 1, header(seg).N)
+    y = lagrange(cache(seg), Δt, 2, header(seg).N)
+    z = lagrange(cache(seg), Δt, 3, header(seg).N)
+    
+    vx, ax = ∂lagrange(cache(seg), Δt, 4, header(seg).N, header(seg).tlen)
+    vy, ay = ∂lagrange(cache(seg), Δt, 5, header(seg).N, header(seg).tlen)
+    vz, az = ∂lagrange(cache(seg), Δt, 6, header(seg).N, header(seg).tlen)
+
+    return SA[x, y, z, vx, vy, vz, ax, ay, az]
+
 end
 
 function spk_vector12(daf::DAF, seg::SPKSegmentType8, time::Number)
 
-    # TODO: finish me
-    return SA[time, time, time, 
-              time, time, time, 
-              time, time, time, 
-              time, time, time]
+    index = find_logical_record(header(seg), time)
+    get_coefficients!(daf, header(seg), cache(seg), index)
+
+    tbegin = header(seg).tstart + (index-1)*header(seg).tlen 
+    Δt = (time - tbegin)/header(seg).tlen + 1
+
+    x = lagrange(cache(seg), Δt, 1, header(seg).N)
+    y = lagrange(cache(seg), Δt, 2, header(seg).N)
+    z = lagrange(cache(seg), Δt, 3, header(seg).N)
+    
+    vx, ax, jx = ∂²lagrange(cache(seg), Δt, 4, header(seg).N, header(seg).tlen)
+    vy, ay, jy = ∂²lagrange(cache(seg), Δt, 5, header(seg).N, header(seg).tlen)
+    vz, az, jz = ∂²lagrange(cache(seg), Δt, 6, header(seg).N, header(seg).tlen)
+
+    return SA[x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz]
 end
 
 
@@ -100,7 +142,7 @@ end
 """
 function find_logical_record(head::SPKSegmentHeader8, time::Number)
 
-    Δt = time - seg.tstart 
+    Δt = time - head.tstart 
 
     if head.iseven # even group size 
         low = Int(Δt ÷ head.tlen) + 1
@@ -138,3 +180,103 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader8, cache::SPKSegmentC
     end
 
 end
+
+# This function leverages Neville's algorithm to recursively evaluate the 
+# Lagrange polynomial's at the desired time.
+function lagrange(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int)
+
+    # This function is valid only for equally-spaced polynomials!
+    work = get_tmp(cache.work, x)
+
+    # x is a re-work of the ascissa that starts at 1
+    # istate is the index of the desired state
+    
+    @inbounds for i = 1:N 
+        work[i] = cache.states[i, istate]
+    end
+
+    # compute the lagrange polynomials using a recursive relationship
+    @inbounds for j = 1:N-1 
+        for i = 1:N-j 
+            c1 = i + j - x
+            c2 = x - i 
+
+            work[i] = (c1*work[i] + c2*work[i+1])/j
+        end
+    end
+
+    return work[1]
+
+end 
+
+
+function ∂lagrange(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int, Δt::Number)
+
+    # This function is valid only for equally-spaced polynomials!
+    work = get_tmp(cache.work, x)
+    dwork = get_tmp(cache.dwork, x)
+
+    @inbounds for i = 1:N 
+        work[i] = cache.states[i, istate]
+        dwork[i] = 0.0
+    end
+
+    # Precompute abscissa derivatives
+    dc2 = 1/Δt
+    dc1 = -dc2
+
+    # compute the lagrange polynomials using a recursive relationship
+    @inbounds for j = 1:N-1 
+        for i = 1:N-j 
+            c1 = i + j - x
+            c2 = x - i 
+
+            dwork[i] = (dc1*work[i]   + c1*dwork[i] + 
+                        dc2*work[i+1] + c2*dwork[i+1])/j
+
+            work[i] = (c1*work[i] + c2*work[i+1])/j
+
+        end
+    end
+
+    return work[1], dwork[1]
+
+end 
+
+function ∂²lagrange(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int, Δt::Number)
+
+    # This function is valid only for equally-spaced polynomials!
+    work = get_tmp(cache.work, x)
+    dwork = get_tmp(cache.dwork, x)
+    ddwork = get_tmp(cache.ddwork, x)
+
+    @inbounds for i = 1:N 
+        work[i] = cache.states[i, istate]
+        dwork[i] = 0.0
+        ddwork[i] = 0.0
+    end
+
+    # Precompute abscissa derivatives
+    dc2 = 1/Δt
+    dc1 = -dc2
+
+    # compute the lagrange polynomials using a recursive relationship
+    @inbounds for j = 1:N-1 
+        for i = 1:N-j 
+            c1 = i + j - x
+            c2 = x - i 
+
+            ddwork[i] = (2*dc1*dwork[i]   + c1*ddwork[i] + 
+                         2*dc2*dwork[i+1] + c2*ddwork[i+1])/j
+
+            dwork[i] = (dc1*work[i]   + c1*dwork[i] + 
+                        dc2*work[i+1] + c2*dwork[i+1])/j
+
+            work[i] = (c1*work[i] + c2*work[i+1])/j
+
+        end
+    end
+
+    return work[1], dwork[1], ddwork[1]
+
+end 
