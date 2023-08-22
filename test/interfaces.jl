@@ -73,11 +73,11 @@ DJ2000 = 2451545.0
     jEphem.ephem_compute!(yc, ephc, DJ2000, 0.0, 301, 3, 1)
     @test yc ≈ y atol=1e-11 rtol=1e-11
 
-    # # Axes ephemeris tests 
-    # @test_throws jEphem.EphemerisError jEphem.ephem_orient!(y, pa421, 0.0, 0.0, 301, 1)
-    # jEphem.ephem_orient!(y, pa421, DJ2000, 0.0, 31006, 1)
+    # Axes ephemeris tests 
+    @test_throws jEphem.EphemerisError jEphem.ephem_orient!(y, pa421, 0.0, 0.0, 301, 1, 1)
+    jEphem.ephem_orient!(y, pa421, DJ2000, 0.0, 31006, 1, 1)
 
-    # jEphem.ephem_orient!(yc, epho, DJ2000, 0.0, 31006, 1)
-    # @test yc ≈ y atol=1e-11 rtol=1e-11
+    jEphem.ephem_orient!(yc, epho, DJ2000, 0.0, 31006, 1, 1)
+    @test yc ≈ y atol=1e-11 rtol=1e-11
 
 end;

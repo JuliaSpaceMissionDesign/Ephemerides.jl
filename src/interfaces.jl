@@ -153,7 +153,7 @@ end
 
 
 """
-    ephem_orient!(res, eph, jd0, time, target, order)
+    ephem_orient!(res, eph, jd0, time, target, center, order)
 
 Interpolate the orientation and its derivatives up to `order` for the `target` body at the 
 time `jd0` + `time`, expressed as a Julian Date. This function reads the ephemeris files 
@@ -173,24 +173,9 @@ The values stores in `res` are always returned in rad, rad/s, rad/s², rad/s³
 See also [`ephem_compute!`](@ref)
 """
 function jEph.ephem_orient!(
-    res, eph::EphemerisProvider, jd0::Number, time::Number, target::Int, order::Int
+    res, eph::EphemerisProvider, jd0::Number, time::Number, 
+    target::Int, center::Int, order::Int
 )
-
-    # FIXME: need work-around for not having a center defined in the JSMDInterface! 
-    
-    # TODO: this is a work-around because in the JSMDInterface the orientation function 
-    # does not accept any center axes. 
-    # links = pck_links(eph)
-    # if haskey(links, target)
-    #     centers = keys(links[target])
-    #     if length(centers) > 1
-    #         throw(jEph.EphemerisError("The same set of axes has multiple parents."))
-    #     end
-
-    #     center = centers[1]
-    # else 
-    #     throw(jEph.EphemerisError("ephemeris data for axes with NAIFId $target is unavailable."))
-    # end
 
     # Transform time in seconds since J2000.0
     tsec = 86400*((jd0 + time) - 2451545)
