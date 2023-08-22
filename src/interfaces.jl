@@ -7,11 +7,17 @@ function jEph.load(::Type{EphemerisProvider}, files::Vector{<:AbstractString})
 end
 
 function Base.convert(::Type{jEph.EphemPointRecord}, r::EphemRecordSPK)
-    return jEph.EphemPointRecord(r.target, r.center, r.t_start[1], r.t_end[end], r.axes)
+    DJ2000 = 2451545
+    return jEph.EphemPointRecord(
+        r.target, r.center, r.t_start[1]/86400 + DJ2000, r.t_end[end]/86400 + DJ2000, r.axes
+    )
 end
 
 function Base.convert(::Type{jEph.EphemAxesRecord}, r::EphemRecordPCK)
-    return jEph.EphemAxesRecord(r.target, r.t_start[1], r.t_end[end], r.center)
+    DJ2000 = 2451545
+    return jEph.EphemAxesRecord(
+        r.target, r.t_start[1]/86400 + DJ2000, r.t_end[end]/86400 + DJ2000, r.center
+    )
 end 
 
 """
@@ -70,7 +76,12 @@ an ephemeris file. It returns a tuple containing:
 
 """
 function jEph.ephem_timespan(eph::EphemerisProvider)
-    return analyse_timespan([ephem_spk_records(eph)..., ephem_pck_records(eph)...])
+
+    ft, lt, ct = analyse_timespan([ephem_spk_records(eph)..., ephem_pck_records(eph)...])
+    
+    DJ2000 = 2451544.5 # TODO: why do i have to put .5? 
+    return ft/86400 + DJ2000, lt/86400 + DJ2000, ct
+
 end
 
 """
@@ -164,6 +175,23 @@ See also [`ephem_compute!`](@ref)
 function jEph.ephem_orient!(
     res, eph::EphemerisProvider, jd0::Number, time::Number, target::Int, order::Int
 )
+
+    # FIXME: need work-around for not having a center defined in the JSMDInterface! 
+    
+    # TODO: this is a work-around because in the JSMDInterface the orientation function 
+    # does not accept any center axes. 
+    # links = pck_links(eph)
+    # if haskey(links, target)
+    #     centers = keys(links[target])
+    #     if length(centers) > 1
+    #         throw(jEph.EphemerisError("The same set of axes has multiple parents."))
+    #     end
+
+    #     center = centers[1]
+    # else 
+    #     throw(jEph.EphemerisError("ephemeris data for axes with NAIFId $target is unavailable."))
+    # end
+
     # Transform time in seconds since J2000.0
     tsec = 86400*((jd0 + time) - 2451545)
 
