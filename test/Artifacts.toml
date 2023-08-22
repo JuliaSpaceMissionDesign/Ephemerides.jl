@@ -1,5 +1,6 @@
 [testdata]
 git-tree-sha1 = "45707bd5020672d4b8cb62b4fda647d0616df910"
+lazy = true 
 
     [[testdata.download]]
     sha256 = "eb0f57cd549bf4c505bc41a8e6fa5b3aa35ae14af62b77c09f5db56b96c254a8"
