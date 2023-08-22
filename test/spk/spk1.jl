@@ -26,7 +26,7 @@ DJ2000 = 2451545
     yc1 = zeros(3)
     yc2 = zeros(6)
 
-    ep = tj1:1:t2j
+    ep = t1j:1:t2j
     for _ in 1:1000
 
         tj = rand(ep)
