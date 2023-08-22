@@ -53,7 +53,7 @@ D¹(t->ephem_vector6(ephj, cid, tid, t), tj)
 D²(t->ephem_vector6(ephj, cid, tid, t), tj)
 D³(t->ephem_vector6(ephj, cid, tid, t), tj)
 
-# Test allocations with AD 
+# Test allocations with AD  
 @benchmark D¹(t->ephem_vector3($ephj, $cid, $tid, t), $tj)
 @benchmark D²(t->ephem_vector3($ephj, $cid, $tid, t), $tj)
 @benchmark D³(t->ephem_vector3($ephj, $cid, $tid, t), $tj)
