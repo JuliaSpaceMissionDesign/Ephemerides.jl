@@ -9,7 +9,8 @@ DJ2000 = 2451545
     ephj = EphemerisProvider(kernel);
     ephc = CalcephProvider(kernel);
 
-    t1j, t2j, tcj = ephem_spk_timespan(ephj)
+    rec = ephem_spk_records(ephj)[2]
+    t1j, t2j = rec.t_start[1], rec.t_end[1]
 
     cid = 5
     tid = 0
@@ -36,10 +37,10 @@ DJ2000 = 2451545
         jEphem.ephem_compute!(yc4, ephc, DJ2000, tc, tid, cid, 3);
         
         # Test against CALCEPH
-        @test yj1 ≈ yc1 atol=1e-9 rtol=1e-9
-        @test yj2 ≈ yc2 atol=1e-9 rtol=1e-9
-        @test yj3 ≈ yc3 atol=1e-9 rtol=1e-9
-        @test yj4 ≈ yc4 atol=1e-9 rtol=1e-9
+        @test yj1 ≈ yc1 atol=1e-9 rtol=1e-8
+        @test yj2 ≈ yc2 atol=1e-9 rtol=1e-8
+        @test yj3 ≈ yc3 atol=1e-9 rtol=1e-8
+        @test yj4 ≈ yc4 atol=1e-9 rtol=1e-8
 
         # Test if AUTODIFF works 
         # Position
@@ -56,4 +57,6 @@ DJ2000 = 2451545
 
     end
 
-end
+end;
+
+

@@ -15,4 +15,6 @@ end;
 
 @testset "Ephemerides" verbose=true begin 
     include("spk/spk.jl")
-end
+    include("properties.jl")
+    include("interfaces.jl")
+end;

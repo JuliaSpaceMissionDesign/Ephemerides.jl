@@ -9,8 +9,9 @@ DJ2000 = 2451545
     ephj = EphemerisProvider(kernel);
     ephc = CalcephProvider(kernel);
 
-    t1j, t2j, tcj = ephem_spk_timespan(ephj)
-
+    rec = ephem_spk_records(ephj)[2]
+    t1j, t2j = rec.t_start[1], rec.t_end[1]
+    
     # Test values 
     yc1 = zeros(3);
     yc2 = zeros(6);

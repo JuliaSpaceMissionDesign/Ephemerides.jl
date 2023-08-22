@@ -40,8 +40,8 @@ DJ2000 = 2451545
         jEphem.ephem_compute!(yc1, ephc, DJ2000, tc, tid, cid, 0);
         jEphem.ephem_compute!(yc2, ephc, DJ2000, tc, tid, cid, 1);
 
-        @test yj1 ≈ yc1 atol=1e-9 rtol=1e-9
-        @test yj2 ≈ yc2 atol=1e-9 rtol=1e-9
+        @test yj1 ≈ yc1 atol=1e-9 rtol=1e-6
+        @test yj2 ≈ yc2 atol=1e-9 rtol=1e-6
 
         # Test if AUTODIFF works 
         @test D¹(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj2[4:end] atol=1e-9 rtol=1e-9

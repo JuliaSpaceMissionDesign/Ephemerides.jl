@@ -61,8 +61,8 @@ function SPKSegmentCache1(head::SPKSegmentHeader1)
     SPKSegmentCache1(
         Int[0.0], zeros(head.maxdim), zeros(3), zeros(3), zeros(head.maxdim, 3), 
         Int[0.0], zeros(Int, 3), MVector(-1), 
-        DiffCache(zeros(14)), DiffCache(zeros(13)), 
-        DiffCache(zeros(17)), DiffCache(zeros(3))
+        DiffCache(zeros(head.maxdim-1)), DiffCache(zeros(head.maxdim-2)), 
+        DiffCache(zeros(head.maxdim+2)), DiffCache(zeros(3))
     )
 end
 
