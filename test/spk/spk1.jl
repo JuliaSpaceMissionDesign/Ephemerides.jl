@@ -1,65 +1,56 @@
 
-using Ephemerides
-using Test 
+@testset "SPK Type 1" verbose=true begin 
 
-using BenchmarkTools
-using CalcephEphemeris
-using Tempo
-using StaticArrays
+    kernel = joinpath(test_dir, "example1spk_seg1.bsp")
 
-using JSMDInterfaces.Ephemeris
-using JSMDUtils.Math: D¹, D², D³
+    ephj = EphemerisProvider(kernel);
+    ephc = CalcephProvider(kernel);
 
-kernel = "res/example1spk_seg1.bsp"
+    # Center and target bodies 
+    cid = 0 
+    tid = 2000001
 
-ephj = EphemerisProvider(kernel);
-ephc = CalcephProvider(kernel);
+    t1j, t2j, tcj = ephem_spk_timespan(ephj)
 
-# Center and target bodies 
-cid = 0 
-tid = 2000001
+    # Check that the timespan is correct 
+    t1c, t2c, tcc = jEphem.ephem_timespan(ephc)
 
-t1, t2 = ephem_spk_timespan(ephj)[1:2]
-tj = (t1+t2)/2
-tc = tj/86400
+    @test t1c == t1j 
+    @test t2c == t2j
+    @test tcc = tcj
 
-# Test values 
-yc1 = @MVector zeros(3);
-yc2 = @MVector zeros(6);
+    # Test values 
+    yc1 = zeros(3)
+    yc2 = zeros(6)
 
-yj1 = ephem_vector3(ephj, cid, tid, tj);
-yj2 = ephem_vector6(ephj, cid, tid, tj);
+    ep = tj1:1:t2j
+    for _ in 1:1000
 
-ephem_compute!(yc1, ephc, DJ2000, tc, tid, cid, 0);
-ephem_compute!(yc2, ephc, DJ2000, tc, tid, cid, 1);
+        tj = rand(ep)
+        tc = tj/86400
 
-@test yj1 ≈ yc1 atol=1e-9 rtol=1e-9
-@test yj2 ≈ yc2 atol=1e-9 rtol=1e-9
+        # Test with Julia
+        yj1 = ephem_vector3(ephj, cid, tid, tj);
+        yj2 = ephem_vector6(ephj, cid, tid, tj);
 
-# Test performance 
-@benchmark ephem_vector3($ephj, $cid, $tid, $tj)
-@benchmark ephem_compute!($yc1, $ephc, $DJ2000, $tc, $tid, $cid, 0)
+        # Test with Calceph
+        jEphem.ephem_compute!(yc1, ephc, DJ2000, tc, tid, cid, 0);
+        jEphem.ephem_compute!(yc2, ephc, DJ2000, tc, tid, cid, 1);
 
-@benchmark ephem_vector6($ephj, $cid, $tid, $tj)
-@benchmark ephem_compute!($yc2, $ephc, $DJ2000, $tc, $tid, $cid, 1)
+        @test yj1 ≈ yc1 atol=1e-9 rtol=1e-9
+        @test yj2 ≈ yc2 atol=1e-9 rtol=1e-9
 
+        # Test if AUTODIFF works 
+        @test D¹(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj2[4:end] atol=1e-9 rtol=1e-9
 
-# Test if AUTODIFF works 
-D¹(t->ephem_vector3(ephj, cid, tid, t), tj)
-D²(t->ephem_vector3(ephj, cid, tid, t), tj)
-D³(t->ephem_vector3(ephj, cid, tid, t), tj)
+        # TODO: implement the acceleration and jerk. This functions below cannot be tested!
+        # D²(t->ephem_vector3(ephj, cid, tid, t), tj)
+        # D³(t->ephem_vector3(ephj, cid, tid, t), tj)
 
-D¹(t->ephem_vector6(ephj, cid, tid, t), tj)
-D²(t->ephem_vector6(ephj, cid, tid, t), tj)
-D³(t->ephem_vector6(ephj, cid, tid, t), tj)
+        # D¹(t->ephem_vector6(ephj, cid, tid, t), tj)
+        # D²(t->ephem_vector6(ephj, cid, tid, t), tj)
+        # D³(t->ephem_vector6(ephj, cid, tid, t), tj)
 
-# Test allocations with AD  
-@benchmark D¹(t->ephem_vector3($ephj, $cid, $tid, t), $tj)
-@benchmark D²(t->ephem_vector3($ephj, $cid, $tid, t), $tj)
-@benchmark D³(t->ephem_vector3($ephj, $cid, $tid, t), $tj)
+    end
 
-@benchmark D¹(t->ephem_vector6($ephj, $cid, $tid, t), $tj)
-@benchmark D²(t->ephem_vector6($ephj, $cid, $tid, t), $tj)
-@benchmark D³(t->ephem_vector6($ephj, $cid, $tid, t), $tj)
-
-
+end
