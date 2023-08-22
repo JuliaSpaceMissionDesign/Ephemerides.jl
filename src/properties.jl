@@ -385,7 +385,7 @@ function analyse_timespan(records::Vector{<:AbstractEphemRecord})
         firsttime = min(firsttime, t_start[1])
         lasttime = max(lasttime, t_end[end])
 
-        continuity = length(t_start) > 1 ? 2 : continuity
+        continuity = length(t_start) > 1 ? 2 : max(continuity, 1)
 
     end
 
