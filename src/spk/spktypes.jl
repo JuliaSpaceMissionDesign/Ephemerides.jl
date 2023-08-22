@@ -227,6 +227,7 @@ Header instance for SPK segments of type 8.
 - `n` -- `Int` number of states in the segment
 - `iaa` - `Int` initial segment file address 
 - `iseven` -- `Bool` true for even group size
+- `type` -- `Int` SPK type
 """
 struct SPKSegmentHeader8 <: AbstractSPKHeader
     tstart::Float64     
@@ -236,6 +237,7 @@ struct SPKSegmentHeader8 <: AbstractSPKHeader
     n::Int
     iaa::Int      
     iseven::Bool
+    type::Int
 end
 
 """
@@ -248,6 +250,7 @@ struct SPKSegmentCache8 <: AbstractSPKCache
     work::DiffCache{Vector{Float64}, Vector{Float64}}
     dwork::DiffCache{Vector{Float64}, Vector{Float64}}
     ddwork::DiffCache{Vector{Float64}, Vector{Float64}}
+    dddwork::DiffCache{Vector{Float64}, Vector{Float64}}
     id::MVector{1, Int}
 end 
 
@@ -272,6 +275,10 @@ end
 @inline header(spk::SPKSegmentType8) = spk.header 
 @inline @inbounds cache(spk::SPKSegmentType8) = spk.cache[Threads.threadid()]
 
+
+# ----------------------------------
+# SPK TYPE 12
+# ----------------------------------
 
 """ 
     SPKSegmentType12 <: AbstractSPKSegment

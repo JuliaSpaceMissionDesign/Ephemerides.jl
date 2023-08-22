@@ -26,7 +26,7 @@ yc4 = @MVector zeros(12);
 
 yj1 = ephem_vector3(ephj, 5, 0, tj);
 yj2 = ephem_vector6(ephj, 5, 0, tj);
-yj3 = ephem_vector9(ephj, 5, 0, tj);
+yj3 = ephem_vector9(ephj, 5, 0, tj)
 yj4 = ephem_vector12(ephj, 5, 0, tj);
 
 ephem_compute!(yc1, ephc, DJ2000, tj/86400, 0, 5, 0);
@@ -96,3 +96,8 @@ x2 = Ephemerides.spk_vector3(daf, seg, 0.0)
 
 @benchmark Ephemerides.spk_vector4($daf, $seg, 0.0)
 @benchmark Ephemerides.spk_vector3($daf, $seg, 0.0)
+
+using SPICE 
+furnsh("res/example1spk_seg12.bsp")
+
+ys1 = spkpos("0", tj, "J2000", "NONE", "5")[1]

@@ -26,13 +26,13 @@ function SPKSegmentHeader8(daf::DAF, desc::DAFSegmentDescriptor)
         order = 2N - 1
     end 
 
-    # Number of states stores in the record 
+    # Number of states stored in the record 
     n = Int(get_float(array(daf), i0 + 24, endian(daf)))
 
     # Check even group size 
     iseven = N % 2 == 0
 
-    SPKSegmentHeader8(tstart, tlen, order, N, n, iaa, iseven)
+    SPKSegmentHeader8(tstart, tlen, order, N, n, iaa, iseven, segment_type(desc))
 end
 
 """ 
@@ -41,11 +41,21 @@ end
 Initialise the cache for an SPK segment of type 8.
 """
 function SPKSegmentCache8(header::SPKSegmentHeader8) 
+
+    if header.type == 8 
+        wsize = header.N 
+        d³size = 0 # Only for SPK 12 we need an array to store the the third derivatives
+    else 
+        wsize = 2*header.N
+        d³size = wsize 
+    end 
+
     SPKSegmentCache8(
         zeros(header.N, 6), 
-        DiffCache(zeros(header.N)),
-        DiffCache(zeros(header.N)),
-        DiffCache(zeros(header.N)),
+        DiffCache(zeros(wsize)),
+        DiffCache(zeros(wsize)),
+        DiffCache(zeros(wsize)),
+        DiffCache(zeros(d³size)),
         MVector(-1)
     )
 end
