@@ -27,10 +27,10 @@ DJ2000 = 2451545
         yj3 = ephem_vector9(ephj, 399, 3, tj);
         yj4 = ephem_vector12(ephj, 399, 3, tj);
     
-        ephem_compute!(yc1, ephc, DJ2000, tc, 3, 399, 0);
-        ephem_compute!(yc2, ephc, DJ2000, tc, 3, 399, 1);
-        ephem_compute!(yc3, ephc, DJ2000, tc, 3, 399, 2);
-        ephem_compute!(yc4, ephc, DJ2000, tc, 3, 399, 3);
+        jEphem.ephem_compute!(yc1, ephc, DJ2000, tc, 3, 399, 0);
+        jEphem.ephem_compute!(yc2, ephc, DJ2000, tc, 3, 399, 1);
+        jEphem.ephem_compute!(yc3, ephc, DJ2000, tc, 3, 399, 2);
+        jEphem.ephem_compute!(yc4, ephc, DJ2000, tc, 3, 399, 3);
         
         # Test against CALCEPH
         @test yj1 ≈ yc1 atol=1e-9 rtol=1e-9
