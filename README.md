@@ -47,7 +47,6 @@ axes = ephem_available_axes(eph)
 
 Retrieve state and orientation data:
 ```julia
-
 # TDB seconds at 2000-01-01T12:00:00 (J2000)
 time = 0.0
 
