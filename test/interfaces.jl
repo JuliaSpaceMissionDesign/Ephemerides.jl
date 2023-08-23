@@ -89,19 +89,19 @@ DJ2000 = 2451545.0
     @test yc4 ≈ yj4 atol=1e-11 rtol=1e-11
 
     # Axes ephemeris tests 
-    @test_throws jEphem.EphemerisError jEphem.ephem_orient!(y, pa421, 0.0, 0.0, 301, 1, 1)
+    @test_throws jEphem.EphemerisError jEphem.ephem_orient!(yj1, pa421, 0.0, 0.0, 301, 1, 0)
 
-    jEphem.ephem_orient!(yj1, de421, DJ2000, 0.0, 31006, 1, 0)
-    jEphem.ephem_orient!(yc1, ephc, DJ2000, 0.0, 31006, 1, 0)
+    jEphem.ephem_orient!(yj1, pa421, DJ2000, 0.0, 31006, 1, 0)
+    jEphem.ephem_orient!(yc1, epho, DJ2000, 0.0, 31006, 1, 0)
 
-    jEphem.ephem_orient!(yj2, de421, DJ2000, 0.0, 31006, 1, 1)
-    jEphem.ephem_orient!(yc2, ephc, DJ2000, 0.0, 31006, 1, 1)
+    jEphem.ephem_orient!(yj2, pa421, DJ2000, 0.0, 31006, 1, 1)
+    jEphem.ephem_orient!(yc2, epho, DJ2000, 0.0, 31006, 1, 1)
 
-    jEphem.ephem_orient!(yj3, de421, DJ2000, 0.0, 31006, 1, 2)
-    jEphem.ephem_orient!(yc3, ephc, DJ2000, 0.0, 31006, 1, 2)
+    jEphem.ephem_orient!(yj3, pa421, DJ2000, 0.0, 31006, 1, 2)
+    jEphem.ephem_orient!(yc3, epho, DJ2000, 0.0, 31006, 1, 2)
 
-    jEphem.ephem_orient!(yj4, de421, DJ2000, 0.0, 31006, 1, 3)
-    jEphem.ephem_orient!(yc4, ephc, DJ2000, 0.0, 31006, 1, 3)
+    jEphem.ephem_orient!(yj4, pa421, DJ2000, 0.0, 31006, 1, 3)
+    jEphem.ephem_orient!(yc4, epho, DJ2000, 0.0, 31006, 1, 3)
 
     @test yc1 ≈ yj1 atol=1e-11 rtol=1e-11
     @test yc2 ≈ yj2 atol=1e-11 rtol=1e-11
