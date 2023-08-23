@@ -87,15 +87,15 @@ DJ2000 = 2451545
         tj = rand(ep)
         tc = tj/86400
 
-        yj1 = ephem_rotation3(ephj, 31006, 3, tj);
-        yj2 = ephem_rotation6(ephj, 31006, 3, tj);
-        yj3 = ephem_rotation9(ephj, 31006, 3, tj);
-        yj4 = ephem_rotation12(ephj, 31006, 3, tj);
+        yj1 = ephem_rotation3(ephj, 31006, 1, tj);
+        yj2 = ephem_rotation6(ephj, 31006, 1, tj);
+        yj3 = ephem_rotation9(ephj, 31006, 1, tj);
+        yj4 = ephem_rotation12(ephj, 31006, 1, tj);
     
-        jEphem.ephem_orient!(yc1, ephc, DJ2000, tc, 31006, 1, 0);
-        jEphem.ephem_orient!(yc2, ephc, DJ2000, tc, 31006, 1, 1);
-        jEphem.ephem_orient!(yc3, ephc, DJ2000, tc, 31006, 1, 2);
-        jEphem.ephem_orient!(yc4, ephc, DJ2000, tc, 31006, 1, 3);
+        jEphem.ephem_orient!(yc1, ephc, DJ2000, tc, 1, 31006, 0);
+        jEphem.ephem_orient!(yc2, ephc, DJ2000, tc, 1, 31006, 1);
+        jEphem.ephem_orient!(yc3, ephc, DJ2000, tc, 1, 31006, 2);
+        jEphem.ephem_orient!(yc4, ephc, DJ2000, tc, 1, 31006, 3);
         
         # Test against CALCEPH
         @test yj1 ≈ yc1 atol=1e-9 rtol=1e-9
