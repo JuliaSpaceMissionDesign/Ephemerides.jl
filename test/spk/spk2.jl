@@ -65,7 +65,7 @@ DJ2000 = 2451545
     #           PCK files 
     # --------------------------------------
 
-    kernel = joinpath(test_dir, "pa421.bsp")
+    kernel = joinpath(test_dir, "pa421.bpc")
 
     ephj = EphemerisProvider(kernel);
     ephc = CalcephProvider(kernel);
@@ -87,15 +87,15 @@ DJ2000 = 2451545
         tj = rand(ep)
         tc = tj/86400
 
-        yj1 = ephem_rotation3(ephj, 31006, 1, tj);
-        yj2 = ephem_rotation6(ephj, 31006, 1, tj);
-        yj3 = ephem_rotation9(ephj, 31006, 1, tj);
-        yj4 = ephem_rotation12(ephj, 31006, 1, tj);
+        yj1 = ephem_rotation3(ephj, 1, 31006, tj);
+        yj2 = ephem_rotation6(ephj, 1, 31006, tj);
+        yj3 = ephem_rotation9(ephj, 1, 31006, tj);
+        yj4 = ephem_rotation12(ephj, 1, 31006, tj);
     
-        jEphem.ephem_orient!(yc1, ephc, DJ2000, tc, 1, 31006, 0);
-        jEphem.ephem_orient!(yc2, ephc, DJ2000, tc, 1, 31006, 1);
-        jEphem.ephem_orient!(yc3, ephc, DJ2000, tc, 1, 31006, 2);
-        jEphem.ephem_orient!(yc4, ephc, DJ2000, tc, 1, 31006, 3);
+        jEphem.ephem_orient!(yc1, ephc, DJ2000, tc, 31006, 1, 0);
+        jEphem.ephem_orient!(yc2, ephc, DJ2000, tc, 31006, 1, 1);
+        jEphem.ephem_orient!(yc3, ephc, DJ2000, tc, 31006, 1, 2);
+        jEphem.ephem_orient!(yc4, ephc, DJ2000, tc, 31006, 1, 3);
         
         # Test against CALCEPH
         @test yj1 ≈ yc1 atol=1e-9 rtol=1e-9
@@ -105,16 +105,16 @@ DJ2000 = 2451545
 
         # Test if AUTODIFF works 
         # Position
-        @test D¹(t->ephem_rotation3(ephj, 31006, 1, t), tj) ≈ yj4[4:6] atol=1e-9 rtol=1e-9
-        @test D²(t->ephem_rotation3(ephj, 31006, 1, t), tj) ≈ yj4[7:9] atol=1e-9 rtol=1e-9
-        @test D³(t->ephem_rotation3(ephj, 31006, 1, t), tj) ≈ yj4[10:12] atol=1e-9 rtol=1e-9
+        @test D¹(t->ephem_rotation3(ephj, 1, 31006, t), tj) ≈ yj4[4:6] atol=1e-9 rtol=1e-9
+        @test D²(t->ephem_rotation3(ephj, 1, 31006, t), tj) ≈ yj4[7:9] atol=1e-9 rtol=1e-9
+        @test D³(t->ephem_rotation3(ephj, 1, 31006, t), tj) ≈ yj4[10:12] atol=1e-9 rtol=1e-9
 
         # Velocity 
-        @test D¹(t->ephem_rotation6(ephj, 31006, 1, t), tj) ≈ yj4[4:9] atol=1e-9 rtol=1e-9
-        @test D²(t->ephem_rotation6(ephj, 31006, 1, t), tj) ≈ yj4[7:12] atol=1e-9 rtol=1e-9
+        @test D¹(t->ephem_rotation6(ephj, 1, 31006, t), tj) ≈ yj4[4:9] atol=1e-9 rtol=1e-9
+        @test D²(t->ephem_rotation6(ephj, 1, 31006, t), tj) ≈ yj4[7:12] atol=1e-9 rtol=1e-9
 
         # Acceleration 
-        @test D¹(t->ephem_rotation9(ephj, 31006, 1, t), tj) ≈ yj4[4:12] atol=1e-9 rtol=1e-9
+        @test D¹(t->ephem_rotation9(ephj, 1, 31006, t), tj) ≈ yj4[4:12] atol=1e-9 rtol=1e-9
 
     end
 end
