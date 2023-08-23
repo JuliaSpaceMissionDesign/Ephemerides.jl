@@ -63,21 +63,49 @@ DJ2000 = 2451545.0
         @test rec.jd_stop == recc.jd_stop
     end
 
-    y = zeros(6)
-    yc = zeros(6);
+    yj1, yc1 = zeros(3), zeros(3)
+    yj2, yc2 = zeros(6), zeros(6)
+    yj3, yc3 = zeros(9), zeros(9)
+    yj4, yc4 = zeros(12), zeros(12)
 
     # Point ephemeris tests
     @test_throws jEphem.EphemerisError jEphem.ephem_compute!(y, de421, 0.0, 0.0, 301, 399, 1)
-    jEphem.ephem_compute!(y, de421, DJ2000, 0.0, 301, 3, 1)
-    
-    jEphem.ephem_compute!(yc, ephc, DJ2000, 0.0, 301, 3, 1)
-    @test yc ≈ y atol=1e-11 rtol=1e-11
+
+    jEphem.ephem_compute!(yj1, de421, DJ2000, 0.0, 301, 3, 0)
+    jEphem.ephem_compute!(yc1, ephc, DJ2000, 0.0, 301, 3, 0)
+
+    jEphem.ephem_compute!(yj2, de421, DJ2000, 0.0, 301, 3, 1)
+    jEphem.ephem_compute!(yc2, ephc, DJ2000, 0.0, 301, 3, 1)
+
+    jEphem.ephem_compute!(yj3, de421, DJ2000, 0.0, 301, 3, 2)
+    jEphem.ephem_compute!(yc3, ephc, DJ2000, 0.0, 301, 3, 2)
+
+    jEphem.ephem_compute!(yj4, de421, DJ2000, 0.0, 301, 3, 3)
+    jEphem.ephem_compute!(yc4, ephc, DJ2000, 0.0, 301, 3, 3)
+
+    @test yc1 ≈ yj1 atol=1e-11 rtol=1e-11
+    @test yc2 ≈ yj2 atol=1e-11 rtol=1e-11
+    @test yc3 ≈ yj3 atol=1e-11 rtol=1e-11
+    @test yc4 ≈ yj4 atol=1e-11 rtol=1e-11
 
     # Axes ephemeris tests 
     @test_throws jEphem.EphemerisError jEphem.ephem_orient!(y, pa421, 0.0, 0.0, 301, 1, 1)
-    jEphem.ephem_orient!(y, pa421, DJ2000, 0.0, 31006, 1, 1)
 
-    jEphem.ephem_orient!(yc, epho, DJ2000, 0.0, 31006, 1, 1)
-    @test yc ≈ y atol=1e-11 rtol=1e-11
+    jEphem.ephem_orient!(yj1, de421, DJ2000, 0.0, 31006, 1, 0)
+    jEphem.ephem_orient!(yc1, ephc, DJ2000, 0.0, 31006, 1, 0)
+
+    jEphem.ephem_orient!(yj2, de421, DJ2000, 0.0, 31006, 1, 1)
+    jEphem.ephem_orient!(yc2, ephc, DJ2000, 0.0, 31006, 1, 1)
+
+    jEphem.ephem_orient!(yj3, de421, DJ2000, 0.0, 31006, 1, 2)
+    jEphem.ephem_orient!(yc3, ephc, DJ2000, 0.0, 31006, 1, 2)
+
+    jEphem.ephem_orient!(yj4, de421, DJ2000, 0.0, 31006, 1, 3)
+    jEphem.ephem_orient!(yc4, ephc, DJ2000, 0.0, 31006, 1, 3)
+
+    @test yc1 ≈ yj1 atol=1e-11 rtol=1e-11
+    @test yc2 ≈ yj2 atol=1e-11 rtol=1e-11
+    @test yc3 ≈ yj3 atol=1e-11 rtol=1e-11
+    @test yc4 ≈ yj4 atol=1e-11 rtol=1e-11
 
 end;
