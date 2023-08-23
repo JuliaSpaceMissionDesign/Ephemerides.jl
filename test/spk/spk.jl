@@ -3,9 +3,9 @@
 
     struct TestSPK <: Ephemerides.AbstractSPKSegment end
 
-    @test_throws Ephemerides.spk_field(TestSPK()) ErrorException
-    @test_throws Ephemerides.header(TestSPK()) ErrorException
-    @test_throws Ephemerides.cache(TestSPK()) ErrorException
+    @test_throws ErrorException Ephemerides.spk_field(TestSPK()) 
+    @test_throws ErrorException Ephemerides.header(TestSPK())
+    @test_throws ErrorException Ephemerides.cache(TestSPK())
 
     include("spk1.jl")
     include("spk2.jl")
