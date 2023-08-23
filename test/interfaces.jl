@@ -69,7 +69,7 @@ DJ2000 = 2451545.0
     yj4, yc4 = zeros(12), zeros(12)
 
     # Point ephemeris tests
-    @test_throws jEphem.EphemerisError jEphem.ephem_compute!(yj1, de421, 0.0, 0.0, 301, 399, 1)
+    @test_throws jEphem.EphemerisError jEphem.ephem_compute!(yj1, de421, 0.0, 0.0, 301, 399, 0)
 
     jEphem.ephem_compute!(yj1, de421, DJ2000, 0.0, 301, 3, 0)
     jEphem.ephem_compute!(yc1, ephc, DJ2000, 0.0, 301, 3, 0)

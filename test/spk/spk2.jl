@@ -17,7 +17,7 @@ DJ2000 = 2451545
     t1j, t2j = rec.t_start[1], rec.t_end[1]
 
     # Test outside the time domain 
-    @test_throws ephem_vector3(ephj, 399, 3,  t1j-1000) jEphem.EphemerisError 
+    @test_throws jEphem.EphemerisError ephem_vector3(ephj, 399, 3,  t1j-1000) 
     
     # Test values 
     yc1 = zeros(3);
@@ -74,7 +74,7 @@ DJ2000 = 2451545
     t1j, t2j = rec.t_start[1], rec.t_end[1]
 
     # Test outside the time domain 
-    @test_throws jEphem.EphemerisError  ephem_rotation3(ephj, 31006, 1, t1j-1000) 
+    @test_throws jEphem.EphemerisError ephem_rotation3(ephj, 31006, 1, t1j-1000) 
     
     # Test values 
     yc1 = zeros(3);
