@@ -17,7 +17,7 @@ DJ2000 = 2451545
     t1j, t2j = rec.t_start[1], rec.t_end[1]
 
     # Test outside the time domain 
-    @test_throws ephem_vector3(ephj, 399, 1,  t1j-1000) jEphem.EphemerisError 
+    @test_throws ephem_vector3(ephj, 399, 3,  t1j-1000) jEphem.EphemerisError 
     
     # Test values 
     yc1 = zeros(3);
@@ -30,15 +30,15 @@ DJ2000 = 2451545
         tj = rand(ep)
         tc = tj/86400
 
-        yj1 = ephem_vector3(ephj, 399, 1,  tj);
-        yj2 = ephem_vector6(ephj, 399, 1,  tj);
-        yj3 = ephem_vector9(ephj, 399, 1,  tj);
-        yj4 = ephem_vector12(ephj, 399, 1,  tj);
+        yj1 = ephem_vector3(ephj, 399, 3,  tj);
+        yj2 = ephem_vector6(ephj, 399, 3,  tj);
+        yj3 = ephem_vector9(ephj, 399, 3,  tj);
+        yj4 = ephem_vector12(ephj, 399, 3,  tj);
     
-        jEphem.ephem_compute!(yc1, ephc, DJ2000, tc, 1,  399, 0);
-        jEphem.ephem_compute!(yc2, ephc, DJ2000, tc, 1,  399, 1);
-        jEphem.ephem_compute!(yc3, ephc, DJ2000, tc, 1,  399, 2);
-        jEphem.ephem_compute!(yc4, ephc, DJ2000, tc, 1,  399, 3);
+        jEphem.ephem_compute!(yc1, ephc, DJ2000, tc, 3,  399, 0);
+        jEphem.ephem_compute!(yc2, ephc, DJ2000, tc, 3,  399, 1);
+        jEphem.ephem_compute!(yc3, ephc, DJ2000, tc, 3,  399, 2);
+        jEphem.ephem_compute!(yc4, ephc, DJ2000, tc, 3,  399, 3);
         
         # Test against CALCEPH
         @test yj1 ≈ yc1 atol=1e-9 rtol=1e-9
@@ -48,16 +48,16 @@ DJ2000 = 2451545
 
         # Test if AUTODIFF works 
         # Position
-        @test D¹(t->ephem_vector3(ephj, 399, 1,  t), tj) ≈ yj4[4:6] atol=1e-9 rtol=1e-9
-        @test D²(t->ephem_vector3(ephj, 399, 1,  t), tj) ≈ yj4[7:9] atol=1e-9 rtol=1e-9
-        @test D³(t->ephem_vector3(ephj, 399, 1,  t), tj) ≈ yj4[10:12] atol=1e-9 rtol=1e-9
+        @test D¹(t->ephem_vector3(ephj, 399, 3,  t), tj) ≈ yj4[4:6] atol=1e-9 rtol=1e-9
+        @test D²(t->ephem_vector3(ephj, 399, 3,  t), tj) ≈ yj4[7:9] atol=1e-9 rtol=1e-9
+        @test D³(t->ephem_vector3(ephj, 399, 3,  t), tj) ≈ yj4[10:12] atol=1e-9 rtol=1e-9
 
         # Velocity 
-        @test D¹(t->ephem_vector6(ephj, 399, 1,  t), tj) ≈ yj4[4:9] atol=1e-9 rtol=1e-9
-        @test D²(t->ephem_vector6(ephj, 399, 1,  t), tj) ≈ yj4[7:12] atol=1e-9 rtol=1e-9
+        @test D¹(t->ephem_vector6(ephj, 399, 3,  t), tj) ≈ yj4[4:9] atol=1e-9 rtol=1e-9
+        @test D²(t->ephem_vector6(ephj, 399, 3,  t), tj) ≈ yj4[7:12] atol=1e-9 rtol=1e-9
 
         # Acceleration 
-        @test D¹(t->ephem_vector9(ephj, 399, 1,  t), tj) ≈ yj4[4:12] atol=1e-9 rtol=1e-9
+        @test D¹(t->ephem_vector9(ephj, 399, 3,  t), tj) ≈ yj4[4:12] atol=1e-9 rtol=1e-9
 
     end
 
