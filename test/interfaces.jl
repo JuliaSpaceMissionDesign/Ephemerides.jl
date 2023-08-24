@@ -39,7 +39,7 @@ DJ2000 = 2451545.0
     @test jEphem.ephem_position_records(pa421) == jEphem.EphemPointRecord[]
     @test jEphem.ephem_orient_records(de421) == jEphem.EphemAxesRecord[]
 
-    prec = jEphem.ephem_position_records(de421)
+    prec = sort(jEphem.ephem_position_records(de421), by x -> x.target, rev = true)
     crec = sort(jEphem.ephem_position_records(ephc), by = x -> x.target, rev = true)
 
     for (rec, recc) in zip(prec, crec) 
@@ -52,8 +52,8 @@ DJ2000 = 2451545.0
         @test rec.jd_stop == recc.jd_stop
     end
 
-    orec = jEphem.ephem_orient_records(pa421)
-    corec = sort(jEphem.ephem_orient_records(epho), rev = true)
+    orec = sort(jEphem.ephem_orient_records(pa421), by = x -> x.target, rev = true)
+    corec = sort(jEphem.ephem_orient_records(epho), by = x -> x.target, rev = true)
 
     for (rec, recc) in zip(orec, corec) 
         @test ((rec.target == recc.target && rec.axes == recc.axes) || 
