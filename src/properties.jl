@@ -144,32 +144,49 @@ object pairs in the loaded SPK kernels.
 """
 function ephem_spk_records(eph::EphemerisProvider)
     
+    # Retrieve the list of all the SPK segment descriptors
+    spk_desc = DAFSegmentDescriptor[]
+    for file in get_daf(eph)
+        if is_spk(file)
+            push!(spk_desc, descriptors(file)...)   
+        end 
+    end
+
+    # SPK records vector
     records = EphemRecordSPK[]
-    parsed = Tuple{Int, Int}[]
 
-    links = spk_links(eph)
-    for center in sort(ephem_get_points(eph), rev=true)
-        for target in sort(Int.(keys(links[center])), rev=true)
+    body_parsed = Tuple{Int, Int}[]
+    axes_parsed = Int[]
 
-            if !((center, target) in parsed || (target, center) in parsed)
+    for desc in spk_desc 
+        tid = target(desc)
+        cid = center(desc)
+        aid = axes(desc)
 
-                # Retrieve all the segment descriptors for this (target, center) pair
-                desclist = descriptor.(links[center][target])
-
-                if length(unique(axes.(desclist))) != 1 
-                    throw(
-                        jEph.EphemerisError(
-                            "The ephemeris data from $center to $target is defined on "*
-                            "different axes."
-                        )
-                    )
-                end
-
-                t_start, t_end = get_segment_boundaries(desclist)
+        # Retrieve all the descriptors associated to the same pair of points
+        if !((tid, cid) in body_parsed || (cid, tid) in body_parsed)
             
-                push!(records, EphemRecordSPK(target, center, axes(desclist[1]), t_start, t_end))
-                push!(parsed, (center, target))
+            # Update the list of parsed points and the first axes they are defined on
+            push!(body_parsed, (tid, cid))
+            push!(axes_parsed, aid)
+
+            desclist = DAFSegmentDescriptor[]
+            for desc_k in spk_desc 
+                if ((target(desc_k) == tid && center(desc_k) == cid) || 
+                    (center(desc_k) == tid && target(desc_k) == cid))
+
+                    push!(desclist, desc_k)
+                
+                end
             end
+
+            if length(unique(axes.(desclist))) != 1
+                @warn "The ephemeris data from $cid to $tid is defined on different axes."*
+                      "Only axes with ID $aid are shown in the records."
+            end
+    
+            t_start, t_end = get_segment_boundaries(desclist)
+            push!(records, EphemRecordSPK(tid, cid, axes(desclist[1]), t_start, t_end))
 
         end
     end
@@ -208,22 +225,40 @@ axes pairs in the loaded PCK kernels.
 """
 function ephem_pck_records(eph::EphemerisProvider)
 
+    # Retrieve the list of all the SPK segment descriptors
+    pck_desc = DAFSegmentDescriptor[]
+    for file in get_daf(eph)
+        if is_pck(file)
+            push!(pck_desc, descriptors(file)...)   
+        end 
+    end
+
+    # SPK records vector
     records = EphemRecordPCK[]
-    parsed = Tuple{Int, Int}[]
+    axes_parsed = Tuple{Int, Int}[]
 
-    links = pck_links(eph)
-    for center in sort(ephem_get_axes(eph), rev=true)
-        for target in sort(Int.(keys(links[center])), rev=true)
+    for desc in pck_desc 
+        tid = target(desc)
+        cid = center(desc)
 
-            if !((center, target) in parsed || (target, center) in parsed)
-
-                # Retrieve all the segment descriptors for this (target, center) pair
-                desclist = descriptor.(links[center][target])
-                t_start, t_end = get_segment_boundaries(desclist)
+        # Retrieve all the descriptors associated to the same pair of points
+        if !((tid, cid) in axes_parsed || (cid, tid) in axes_parsed)
             
-                push!(records, EphemRecordPCK(target, center, t_start, t_end))
-                push!(parsed, (center, target))
+            # Update the list of parsed points and the first axes they are defined on
+            push!(axes_parsed, (tid, cid))
+
+            desclist = DAFSegmentDescriptor[]
+            for desc_k in pck_desc 
+                if ((target(desc_k) == tid && center(desc_k) == cid) || 
+                    (center(desc_k) == tid && target(desc_k) == cid))
+
+                    push!(desclist, desc_k)
+                
+                end
             end
+    
+            t_start, t_end = get_segment_boundaries(desclist)
+            push!(records, EphemRecordPCK(tid, cid, t_start, t_end))
 
         end
     end
