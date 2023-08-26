@@ -12,6 +12,14 @@ This package is meant to be used in combination with [FrameTransformations.jl](h
 
 ## Installation
 
+This package can be installed using Julia's package manager:
+
+```julia
+julia> import Pkg
+
+julia> Pkg.add("Ephemerides.jl");
+```
+
 ## Quickstart
 
 Load SPK and PCK ephemeris kernels: 
