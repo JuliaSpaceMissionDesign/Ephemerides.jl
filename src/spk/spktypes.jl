@@ -217,7 +217,7 @@ end
 """
     SPKSegmentHeader8 <: AbstractSPKHeader
 
-Header instance for SPK segments of type 8.
+Header instance for SPK segments of type 8 and 12.
 
 ### Fields 
 - `tstart` -- `Float64` segment starting epoch, in TDB seconds since J2000 
@@ -243,7 +243,7 @@ end
 """
     SPKSegmentCache8 <: AbstractSPKCache
 
-Cache instance for SPK segments of type 8.
+Cache instance for SPK segments of type 8 and 12.
 """
 struct SPKSegmentCache8 <: AbstractSPKCache
     states::Matrix{Float64}
@@ -277,6 +277,67 @@ end
 
 
 # ----------------------------------
+# SPK TYPE 9
+# ----------------------------------
+
+"""
+    SPKSegmentHeader9 <: AbstractSPKHeader
+
+Header instance for SPK segments of type 9 and 13.
+
+### Fields 
+
+"""
+struct SPKSegmentHeader9 <: AbstractSPKHeader
+    n::Int
+    ndirs::Int 
+    epochs::Vector{Float64}
+    iaa::Int
+    etid::Int 
+    order::Int 
+    N::Int 
+    iseven::Bool 
+    type::Int
+end
+
+"""
+    SPKSegmentCache9 <: AbstractSPKCache
+
+Cache instance for SPK segments of type 9 and 13.
+"""
+struct SPKSegmentCache9 <: AbstractSPKCache
+    epochs::Vector{Float64}
+    states::Matrix{Float64}
+    work::DiffCache{Vector{Float64}, Vector{Float64}}
+    dwork::DiffCache{Vector{Float64}, Vector{Float64}}
+    ddwork::DiffCache{Vector{Float64}, Vector{Float64}}
+    dddwork::DiffCache{Vector{Float64}, Vector{Float64}}
+    id::MVector{1, Int}
+end 
+
+""" 
+    SPKSegmentType9 <: AbstractSPKSegment
+
+Segment instance for SPK segments of type 9.
+
+### Fields 
+- `head` -- Segment header 
+- `cache` -- Segment cache 
+
+### References 
+- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
+- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
+"""
+struct SPKSegmentType9 <: AbstractSPKSegment
+    header::SPKSegmentHeader9
+    cache::Vector{SPKSegmentCache9}
+end
+
+@inline header(spk::SPKSegmentType9) = spk.header 
+@inline @inbounds cache(spk::SPKSegmentType9) = spk.cache[Threads.threadid()]
+
+
+# ----------------------------------
 # SPK TYPE 12
 # ----------------------------------
 
@@ -302,6 +363,33 @@ end
 @inline @inbounds cache(spk::SPKSegmentType12) = spk.cache[Threads.threadid()]
 
 
+# ----------------------------------
+# SPK TYPE 13
+# ----------------------------------
+
+""" 
+    SPKSegmentType13 <: AbstractSPKSegment
+
+Segment instance for SPK segments of type 13.
+
+### Fields 
+- `head` -- Segment header 
+- `cache` -- Segment cache 
+
+### References 
+- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
+- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
+"""
+struct SPKSegmentType13 <: AbstractSPKSegment
+    header::SPKSegmentHeader9
+    cache::Vector{SPKSegmentCache9}
+end
+
+@inline header(spk::SPKSegmentType13) = spk.header 
+@inline @inbounds cache(spk::SPKSegmentType13) = spk.cache[Threads.threadid()]
+
+
+
 """
     SPK_SEGMENT_MAPPING
 
@@ -311,9 +399,11 @@ const SPK_SEGMENTLIST_MAPPING = Dict(
     1 => 1,
     2 => 2,
     3 => 3,
-    21 => 1,
     8 => 4,
-    12 => 5
+    9 => 5,
+    12 => 6,
+    13 => 7,
+    21 => 1,
 )
 
 # ----------------------------------
@@ -342,7 +432,9 @@ struct SPKSegmentList
     spk2::Vector{SPKSegmentType2}
     spk3::Vector{SPKSegmentType3}
     spk8::Vector{SPKSegmentType8}
+    spk9::Vector{SPKSegmentType9}
     spk12::Vector{SPKSegmentType12}
+    spk13::Vector{SPKSegmentType13}
 
     function SPKSegmentList()
         new(
@@ -350,7 +442,9 @@ struct SPKSegmentList
             SPKSegmentType2[], 
             SPKSegmentType3[], 
             SPKSegmentType8[],
-            SPKSegmentType12[]
+            SPKSegmentType9[],
+            SPKSegmentType12[],
+            SPKSegmentType13[],
         )
     end
 end

@@ -20,7 +20,9 @@ include("spk/spk1.jl")
 include("spk/spk2.jl")
 include("spk/spk3.jl")
 include("spk/spk8.jl")
+include("spk/spk9.jl")
 include("spk/spk12.jl")
+include("spk/spk13.jl")
 
 # Descriptors linking and provider 
 include("links.jl")
