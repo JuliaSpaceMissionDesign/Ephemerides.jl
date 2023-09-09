@@ -84,15 +84,14 @@ end
 function hermite(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int, Δt::Number)
 
     # This function is valid only for equally-spaced polynomials!
-    work = get_tmp(cache.work, x)
-
     # n is the number of points defining the polynomial! 
     # x is a re-work of the ascissa that starts at 1
     # istate is the index of the desired state
 
+    work = get_tmp(cache.work, x)
+
     # work is filled in this way [f(x1), df(x1), f(x2), df(x2), ....]
     # We already normalise the derivatives (df/ds = df/dx*dx/ds and dx/ds = h)
-
     @inbounds for i = 1:N
         work[2i-1] = cache.states[i, istate]
         work[2i]   = cache.states[i, istate+3]*Δt
@@ -108,7 +107,7 @@ function hermite(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int, Δ
         this = prev + 1 
         next = this + 1
 
-        temp = work[prev] + (x - i)*work[this]
+        temp = work[prev] + c2*work[this]
         work[this] = c1*work[prev] + c2*work[next]
         work[prev] = temp
         
@@ -140,16 +139,15 @@ end
 function ∂hermite(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int, Δt::Number)
 
     # This function is valid only for equally-spaced polynomials
-    work  = get_tmp(cache.work, x) 
-    dwork = get_tmp(cache.dwork, x)
-
     # n is the number of points defining the polynomial! 
     # x is a re-work of the ascissa that starts at 1
     # istate is the index of the desired state
 
+    work  = get_tmp(cache.work, x) 
+    dwork = get_tmp(cache.dwork, x)
+
     # work is filled in this way [f(x1), df(x1), f(x2), df(x2), ....]
     # We already normalise the derivatives (df/ds = df/dx*dx/ds and dx/ds = h)
-
     @inbounds for i = 1:N
         work[2i-1] = cache.states[i, istate]
         work[2i]   = cache.states[i, istate+3]*Δt
@@ -169,7 +167,7 @@ function ∂hermite(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int,
         dwork[prev] = work[this]
         dwork[this] = work[next] - work[prev]
 
-        temp = work[prev] + (x - i)*work[this]
+        temp = work[prev] + c2*work[this]
         work[this] = c1*work[prev] + c2*work[next]
         work[prev] = temp
         
@@ -204,17 +202,16 @@ end
 function ∂²hermite(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int, Δt::Number)
 
     # This function is valid only for equally-spaced polynomials
-    work  = get_tmp(cache.work, x) 
-    dwork = get_tmp(cache.dwork, x)
-    d²work = get_tmp(cache.ddwork, x)
-        
     # n is the number of points defining the polynomial! 
     # x is a re-work of the ascissa that starts at 1
     # istate is the index of the desired state
 
+    work  = get_tmp(cache.work, x) 
+    dwork = get_tmp(cache.dwork, x)
+    d²work = get_tmp(cache.ddwork, x)
+        
     # work is filled in this way [f(x1), df(x1), f(x2), df(x2), ....]
     # We already normalise the derivatives (df/ds = df/dx*dx/ds and dx/ds = h)
-
     @inbounds for i = 1:N
         work[2i-1] = cache.states[i, istate]
         work[2i]   = cache.states[i, istate+3]*Δt
@@ -237,7 +234,7 @@ function ∂²hermite(cache::SPKSegmentCache8, x::Number, istate::Integer, N::In
         dwork[prev] = work[this]
         dwork[this] = work[next] - work[prev]
 
-        temp = work[prev] + (x - i)*work[this]
+        temp = work[prev] + c2*work[this]
         work[this] = c1*work[prev] + c2*work[next]
         work[prev] = temp
         
@@ -273,18 +270,17 @@ end
 function ∂³hermite(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int, Δt::Number)
 
     # This function is valid only for equally-spaced polynomials
+    # n is the number of points defining the polynomial! 
+    # x is a re-work of the ascissa that starts at 1
+    # istate is the index of the desired state
+
     work  = get_tmp(cache.work, x) 
     dwork = get_tmp(cache.dwork, x)
     d²work = get_tmp(cache.ddwork, x)
     d³work = get_tmp(cache.dddwork, x)
         
-    # n is the number of points defining the polynomial! 
-    # x is a re-work of the ascissa that starts at 1
-    # istate is the index of the desired state
-
     # work is filled in this way [f(x1), df(x1), f(x2), df(x2), ....]
     # We already normalise the derivatives (df/ds = df/dx*dx/ds and dx/ds = h)
-
     @inbounds for i = 1:N
         work[2i-1] = cache.states[i, istate]
         work[2i]   = cache.states[i, istate+3]*Δt
@@ -310,7 +306,7 @@ function ∂³hermite(cache::SPKSegmentCache8, x::Number, istate::Integer, N::In
         dwork[prev] = work[this]
         dwork[this] = work[next] - work[prev]
 
-        temp = work[prev] + (x - i)*work[this]
+        temp = work[prev] + c2*work[this]
         work[this] = c1*work[prev] + c2*work[next]
         work[prev] = temp
         

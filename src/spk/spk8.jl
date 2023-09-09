@@ -166,10 +166,10 @@ function find_logical_record(head::SPKSegmentHeader8, time::Number)
         first = low - (head.N ÷ 2) + 1
     else # odd group size  
         near = round(Int, Δt/head.tlen) + 1
-        first = near - head.order ÷ 2
+        first = near - (head.N - 1) ÷ 2
     end
 
-    index = min(max(1, first), head.n - head.order)
+    index = min(max(1, first), head.n - head.N + 1)
     return index 
 
 end
@@ -203,11 +203,11 @@ end
 function lagrange(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int)
 
     # This function is valid only for equally-spaced polynomials!
-    work = get_tmp(cache.work, x)
-
     # x is a re-work of the ascissa that starts at 1
     # istate is the index of the desired state
-    
+
+    work = get_tmp(cache.work, x)
+
     @inbounds for i = 1:N 
         work[i] = cache.states[i, istate]
     end
@@ -230,6 +230,7 @@ end
 function ∂lagrange(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int, Δt::Number)
 
     # This function is valid only for equally-spaced polynomials!
+
     work = get_tmp(cache.work, x)
     dwork = get_tmp(cache.dwork, x)
 
@@ -263,6 +264,7 @@ end
 function ∂²lagrange(cache::SPKSegmentCache8, x::Number, istate::Integer, N::Int, Δt::Number)
 
     # This function is valid only for equally-spaced polynomials!
+    
     work = get_tmp(cache.work, x)
     dwork = get_tmp(cache.dwork, x)
     ddwork = get_tmp(cache.ddwork, x)
