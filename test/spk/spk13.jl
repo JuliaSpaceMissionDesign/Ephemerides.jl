@@ -24,6 +24,7 @@ DJ2000 = 2451545
     ep = t1j:1:t2j
     for _ in 1:1000
         tj = rand(ep)
+        tj = 0.0
         tc = tj/86400
 
         yj1 = ephem_vector3(ephj, cid, tid, tj);
