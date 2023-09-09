@@ -213,8 +213,8 @@ function find_logical_record(daf::DAF, head::SPKSegmentHeader9, time::Number)
         if head.ndirs == 0 
             e1, e2 = head.epochs[index], head.epochs[index + 1]
         else 
-            e1 = get_float(array(daf), head.etid + 8*index, endian(daf))
-            e2 = get_float(array(daf), head.etid + 8*(index+1), endian(daf))
+            e1 = get_float(array(daf), head.etid + 8*(index-1), endian(daf))
+            e2 = get_float(array(daf), head.etid + 8*index, endian(daf))
         end
             
         @inbounds if time - e1 < e2 - time
