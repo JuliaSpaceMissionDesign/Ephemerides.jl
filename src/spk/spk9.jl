@@ -211,17 +211,16 @@ function find_logical_record(daf::DAF, head::SPKSegmentHeader9, time::Number)
     else
         # Need to check which one of the two epochs is closer 
         if head.ndirs == 0 
-            e1, e2 = head.epochs[index], head.epochs[index + 1]
+            @inbounds e1, e2 = head.epochs[index], head.epochs[index + 1]
         else 
             e1 = get_float(array(daf), head.etid + 8*(index-1), endian(daf))
             e2 = get_float(array(daf), head.etid + 8*index, endian(daf))
         end
             
-        @inbounds if time - e1 < e2 - time
+        if time - e1 < e2 - time
             index = index - 1              
-        else 
-            index = index
         end
+
         first = index - (head.N - 1) ÷ 2
     end
 
