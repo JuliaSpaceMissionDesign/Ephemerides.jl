@@ -2,7 +2,7 @@
 """ 
     SPKSegmentHeader9(daf::DAF, desc::DAFSegmentDescriptor)
 
-Create the segment header for an SPK segment of type 9.
+Create the segment header for an SPK segment of type 9 and 13.
 """
 function SPKSegmentHeader9(daf::DAF, desc::DAFSegmentDescriptor)
 
@@ -56,7 +56,7 @@ end
 """ 
     SPKSegmentCache9(spkhead::SPKSegmentHeader2)
 
-Initialise the cache for an SPK segment of type 9.
+Initialise the cache for an SPK segment of type 9 and 13
 """
 function SPKSegmentCache9(header::SPKSegmentHeader9) 
 
@@ -81,9 +81,9 @@ function SPKSegmentCache9(header::SPKSegmentHeader9)
 end
 
 """ 
-    SPKSegmentType8(daf::DAF, desc::DAFSegmentDescriptor)
+    SPKSegmentType9(daf::DAF, desc::DAFSegmentDescriptor)
 
-Create the object representing an SPK segment of type 8.
+Create the object representing an SPK segment of type 9.
 """
 function SPKSegmentType9(daf::DAF, desc::DAFSegmentDescriptor)
 
