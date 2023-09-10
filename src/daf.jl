@@ -341,6 +341,10 @@ See also [`initialise_segments!`](@ref).
 function DAF(filename::String)
 
     # Retrieve file content using a memory map
+    if !isfile(filename)
+        systemerror("opening file: $(repr(filename))", Int32(2))
+    end
+
     array = mmap(filename, Vector{UInt8});
 
     # Retrieve DAF identification word
@@ -592,6 +596,8 @@ function create_spk_segment(daf::DAF, desc::DAFSegmentDescriptor)
         SPKSegmentType12(daf, desc)
     elseif mapped_spktype == 7 
         SPKSegmentType13(daf, desc)
+    elseif mapped_spktype == 8 
+        SPKSegmentType18(daf, desc)
     end
     
 end
