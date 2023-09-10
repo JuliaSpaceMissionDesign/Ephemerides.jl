@@ -7,24 +7,14 @@ DJ2000 = 2451545
     kernel = joinpath(test_dir, "example1spk_seg1.bsp")
 
     ephj = EphemerisProvider(kernel);
-    ephc = CalcephProvider(kernel);
+    furnsh(kernel)
 
+    desc = rand(ephj.files[1].desc)
+    t1j, t2j = desc.tstart, desc.tend
+    
     # Center and target bodies 
-    cid = 0 
-    tid = 2000001
-
-    t1j, t2j, tcj = ephem_spk_timespan(ephj)
-
-    # Check that the timespan is correct 
-    t1c, t2c, tcc = jEphem.ephem_timespan(ephc)
-
-    # @test t1c ≈ t1j/86400 + DJ2000 
-    # @test t2c ≈ t2j/86400 + DJ2000
-    # @test tcc ≈ tcj
-
-    # Test values 
-    yc1 = zeros(3)
-    yc2 = zeros(6)
+    cid = Int(desc.cid) 
+    tid = Int(desc.tid)
 
     ep = t1j:1:t2j
     for _ in 1:1000
@@ -36,12 +26,12 @@ DJ2000 = 2451545
         yj1 = ephem_vector3(ephj, cid, tid, tj);
         yj2 = ephem_vector6(ephj, cid, tid, tj);
 
-        # Test with Calceph
-        jEphem.ephem_compute!(yc1, ephc, DJ2000, tc, tid, cid, 0);
-        jEphem.ephem_compute!(yc2, ephc, DJ2000, tc, tid, cid, 1);
+        # Test with SPICE
+        ys1 = spkpos("$tid", tj, "J2000", "NONE", "$cid")[1]
+        ys2 = spkezr("$tid", tj, "J2000", "NONE", "$cid")[1]
 
-        @test yj1 ≈ yc1 atol=1e-9 rtol=1e-9
-        @test yj2 ≈ yc2 atol=1e-9 rtol=1e-9
+        @test yj1 ≈ ys1 atol=1e-9 rtol=1e-13
+        @test yj2 ≈ ys2 atol=1e-9 rtol=1e-13
 
         # Test if AUTODIFF works 
         @test D¹(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj2[4:end] atol=1e-9 rtol=1e-9
@@ -55,5 +45,7 @@ DJ2000 = 2451545
         # D³(t->ephem_vector6(ephj, cid, tid, t), tj)
 
     end
+
+    kclear()
 
 end
