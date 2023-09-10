@@ -11,28 +11,28 @@ function SPKSegmentHeader2(daf::DAF, desc::DAFSegmentDescriptor)
     tstart = get_float(array(daf), i0, endian(daf))
     tlen = get_float(array(daf), i0+8, endian(daf))
 
-    # polynomial order 
+    # Number of elements in each record
     rsize = Int(get_float(array(daf), i0+16, endian(daf)))
+
+    # Byte size of each logical record
+    recsize = 8*rsize
 
     # Number of components 
     ncomp = desc.segtype == 2 ? 3 : 6
 
-    # The order of the polynomial is actually = (order-1)
-    order = (rsize - 2) ÷ ncomp
+    # Polynomial groupsize (number of coefficients required for the interpolation)
+    N = (rsize - 2) ÷ ncomp
 
-    # number of records
+    # Polynomial order
+    order = N - 1
+
+    # Number of records
     n = Int(get_float(array(daf), i0+24, endian(daf)))
-
-    # Byte size of each logical record
-    recsize = 8*(order*ncomp + 2)
-
-    # Chebyshev scale factor 
-    scale = 2/tlen;
 
     # Initial segemtn address 
     iaa = initial_address(desc)
 
-    SPKSegmentHeader2(tstart, tlen, order, n, recsize, ncomp, scale, iaa)
+    SPKSegmentHeader2(tstart, tlen, order, N, n, recsize, ncomp, iaa)
 
 end
 
@@ -43,9 +43,10 @@ Initialise the cache for an SPK segment of type 2 and 3.
 """
 function SPKSegmentCache2(spkhead::SPKSegmentHeader2) 
     SPKSegmentCache2(
-        zeros(spkhead.ncomp, spkhead.order), 
-        DiffCache(zeros(spkhead.order)), 
-        DiffCache(zeros(spkhead.order)),
+        zeros(spkhead.ncomp, spkhead.N), 
+        MVector(0.0, 0.0, 0.0),
+        DiffCache(zeros(spkhead.N)), 
+        DiffCache(zeros(spkhead.N)),
         MVector(-1)
     )
 end
@@ -67,38 +68,45 @@ end
 
 @inline spk_field(::SPKSegmentType2) = SPK_SEGMENTLIST_MAPPING[2]
 
+function spk_vector3(daf::DAF, seg::Union{SPKSegmentType2, SPKSegmentType3}, time::Number) 
 
-function spk_vector3(daf::DAF, seg::SPKSegmentType2, time::Number) 
-
-    # Find the logical record containing the Chebyshev coefficients at `time`
-    index, t = find_logical_record(header(seg), time)
+    head = header(seg)
+    data = cache(seg)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), index)
+    get_coefficients!(daf, head, data, time)
+
+    # Normalise the time argument between [-1, 1]
+    t = chebyshev_time(data, time)
     
     # Compute the Chebyshev polynomials
-    chebyshev!(cache(seg), t, seg.head.order)
+    chebyshev!(data, t, head.N)
 
     # Interpolate the body position
-    return interpol(cache(seg), get_tmp(cache(seg).x1, time), 0, 1, 0)
+    return interpol(data, get_tmp(data.x1, t), 0, 1, 0)
+
 end
 
 
 function spk_vector6(daf::DAF, seg::SPKSegmentType2, time::Number)
 
-    # Find the logical record containing the Chebyshev coefficients at `time`
-    index, t = find_logical_record(header(seg), time)
+    head = header(seg)
+    data = cache(seg)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), index)
-
+    get_coefficients!(daf, head, data, time)
+    
+    # Normalise the time argument between [-1, 1]
+    t = chebyshev_time(data, time)
+    
     # Compute the Chebyshev polynomials
-    chebyshev!(cache(seg), t, seg.head.order)
-    pos = interpol(cache(seg), get_tmp(cache(seg).x1, time), 0, 1, 0)
+    chebyshev!(data, t, head.N)
+    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0)
 
     # Compute 1st derivatives of Chebyshev polynomials 
-    ∂chebyshev!(cache(seg), t, seg.head.order)
-    vel = interpol(cache(seg), get_tmp(cache(seg).x2, time), 1, seg.head.scale, 0)
+    @inbounds scale = data.p[3]
+    ∂chebyshev!(data, t, head.N)
+    vel = interpol(data, get_tmp(data.x2, t), 1, scale, 0)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
@@ -109,25 +117,27 @@ end
 
 function spk_vector9(daf::DAF, seg::SPKSegmentType2, time::Number)
 
-    # Find the logical record containing the Chebyshev coefficients at `time`
-    index, t = find_logical_record(header(seg), time)
+    head = header(seg)
+    data = cache(seg)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), index)
+    get_coefficients!(daf, head, data, time)
+
+    # Normalise the time argument between [-1, 1]
+    t = chebyshev_time(data, time)
 
     # Compute the Chebyshev polynomials
-    chebyshev!(cache(seg), t, seg.head.order)
-    pos = interpol(cache(seg), get_tmp(cache(seg).x1, time), 0, 1, 0)
+    chebyshev!(data, t, head.N)
+    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0)
 
     # Compute 1st derivatives of Chebyshev polynomials 
-    scale = seg.head.scale 
-    ∂chebyshev!(cache(seg), t, seg.head.order)
-    vel = interpol(cache(seg), get_tmp(cache(seg).x2, time), 1, scale, 0)
+    @inbounds scale = data.p[3]
+    ∂chebyshev!(data, t, head.N)
+    vel = interpol(data, get_tmp(data.x2, t), 1, scale, 0)
 
     # Compute 2nd derivative of Chebyshev polynomials 
-    scale *= scale
-    ∂²chebyshev!(cache(seg), t, seg.head.order)
-    acc = interpol(cache(seg), get_tmp(cache(seg).x1, time), 2, scale, 0)
+    ∂²chebyshev!(data, t, head.N)
+    acc = interpol(data, get_tmp(data.x1, t), 2, scale*scale, 0)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
@@ -139,30 +149,31 @@ end
 
 function spk_vector12(daf::DAF, seg::SPKSegmentType2, time::Number)
 
-    # Find the logical record containing the Chebyshev coefficients at `time`
-    index, t = find_logical_record(header(seg), time)
+    head = header(seg)
+    data = cache(seg)
 
     # Retrieve Chebyshev coefficients 
-    get_coefficients!(daf, header(seg), cache(seg), index)
+    get_coefficients!(daf, head, data, time)
+
+    # Normalise the time argument between [-1, 1]
+    t = chebyshev_time(data, time)
     
     # Compute the Chebyshev polynomials
-    chebyshev!(cache(seg), t, seg.head.order)
-    pos = interpol(cache(seg), get_tmp(cache(seg).x1, time), 0, 1, 0)
+    chebyshev!(data, t, head.N)
+    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0)
 
-    # Compute 1st derivatives of Chebyshev polynomials
-    scale = seg.head.scale 
-    ∂chebyshev!(cache(seg), t, seg.head.order)
-    vel = interpol(cache(seg), get_tmp(cache(seg).x2, time), 1, scale, 0)
+    # Compute 1st derivatives of Chebyshev polynomials 
+    @inbounds scale = data.p[3]
+    ∂chebyshev!(data, t, head.N)
+    vel = interpol(data, get_tmp(data.x2, t), 1, scale, 0)
 
     # Compute 2nd derivative of Chebyshev polynomials 
-    scale *= scale
-    ∂²chebyshev!(cache(seg), t, seg.head.order)
-    acc = interpol(cache(seg), get_tmp(cache(seg).x1, time), 2, scale, 0)
+    ∂²chebyshev!(data, t, head.N)
+    acc = interpol(data, get_tmp(data.x1, t), 2, scale*scale, 0)
 
     # Compute 3rd derivative of Chebyshev polynomials 
-    scale *= scale
-    ∂³chebyshev!(cache(seg), t, seg.head.order)
-    jer = interpol(cache(seg), get_tmp(cache(seg).x2, time), 3, scale, 0)
+    ∂³chebyshev!(data, t, head.N)
+    jer = interpol(data, get_tmp(data.x2, t), 3, scale*scale*scale, 0)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
@@ -178,47 +189,56 @@ end
     find_logical_record(head::SPKSegmentHeader2, time::Number)
 """
 function find_logical_record(head::SPKSegmentHeader2, time::Number)
-
-    idx, Δt = divrem(time - head.tstart, head.tlen) 
-    index = round(Int, idx)
+    
+    # The index is returned in 0-based notation (i.e., the first record has index 0)
+    index = floor(Int, (time - head.tstart)/head.tlen)
 
     if index == head.n 
-        # This should only happen when time equals the final segment time
+        # This happens only when the time equals the final segment time
         index -= 1 
-        Δt = head.tlen 
     end 
 
-    # Time argument for the Chebyshev polynomials
-    t = Δt*head.scale - 1 
-
-    return index, t
+    return index
 end
 
 """
     get_coefficients!(daf::DAF, head, cache, index::Int)
 """
 function get_coefficients!(daf::DAF, head::SPKSegmentHeader2, cache::SPKSegmentCache2, 
-            index::Int)
-        
+            time::Number)
+
+    # Find the logical record containing the Chebyshev coefficients at `time`
+    index = find_logical_record(head, time)
+
     # Check whether the coefficients for this record are already loaded
     index == cache.id[1] && return nothing
     cache.id[1] = index 
 
     # Address of desired logical record 
-    # (skipping mid and radius because they are all equal for SPK type 2)
-    k = 8*(head.iaa-1) + head.recsize*index + 16
+    k = 8*(head.iaa-1) + head.recsize*index
+
+    # Retrieve record mid point and radius
+    cache.p[1] = get_float(array(daf), k, endian(daf))
+    cache.p[2] = get_float(array(daf), k + 8, endian(daf))
+    cache.p[3] = 1/cache.p[2]
+
+    k += 16
 
     # TODO: can we speed-up this part by casting the byte content into the array at once?
-    @inbounds for j = 1:head.order 
+    @inbounds for j = 1:head.N 
         for i = 1:head.ncomp
             cache.A[i, j] = get_float(
-                array(daf), k + 8*(j-1) + 8*(i-1)*head.order, endian(daf)
+                array(daf), k + 8*(j-1) + 8*(i-1)*head.N, endian(daf)
             )
         end
     end
 
     nothing
 
+end
+
+@inline function chebyshev_time(cache::SPKSegmentCache2, time::Number)
+    @inbounds return (time - cache.p[1])/cache.p[2]
 end
 
 """
@@ -245,9 +265,9 @@ function interpol(cache::SPKSegmentCache2, cheb::AbstractVector{T}, order::Int,
 end
 
 """
-    chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
+    chebyshev!(cache::SPKSegmentCache2, t::Number, N::Int)
 """
-function chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
+function chebyshev!(cache::SPKSegmentCache2, t::Number, N::Int)
 
     x1 = get_tmp(cache.x1, t)
 
@@ -256,8 +276,8 @@ function chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
         x1[2] = t 
         x1[3] = 2t*t - 1
         
-        for i = 4:order 
-            x1[i] = 2*t*x1[i-1] - x1[i-2]
+        for j = 4:N 
+            x1[j] = 2*t*x1[j-1] - x1[j-2]
         end
     end
 
@@ -265,9 +285,9 @@ function chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
 end 
 
 """
-    ∂chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
+    ∂chebyshev!(cache::SPKSegmentCache2, t::Number, N::Int)
 """
-function ∂chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
+function ∂chebyshev!(cache::SPKSegmentCache2, t::Number, N::Int)
 
     x1 = get_tmp(cache.x1, t)
     x2 = get_tmp(cache.x2, t)
@@ -278,7 +298,7 @@ function ∂chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
         x2[2] = 1
         x2[3] = 4*t 
 
-        for i = 4:order 
+        for i = 4:N
             x2[i] = 2*t*x2[i-1] + 2*x1[i-1] - x2[i-2]
         end
     end 
@@ -287,9 +307,9 @@ function ∂chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
 end 
 
 """
-    ∂²chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
+    ∂²chebyshev!(cache::SPKSegmentCache2, t::Number, N::Int)
 """
-function ∂²chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
+function ∂²chebyshev!(cache::SPKSegmentCache2, t::Number, N::Int)
 
     x1 = get_tmp(cache.x1, t)
     x2 = get_tmp(cache.x2, t)
@@ -300,8 +320,8 @@ function ∂²chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
         x1[2] = 0
         x1[3] = 4 
 
-        for i = 4:order 
-            x1[i] = 4*x2[i-1] + 2*t*x1[i-1] - x2[i-2]
+        for i = 4:N 
+            x1[i] = 4*x2[i-1] + 2*t*x1[i-1] - x1[i-2]
         end
 
     end
@@ -310,9 +330,9 @@ function ∂²chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
 end
 
 """
-    ∂³chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
+    ∂³chebyshev!(cache::SPKSegmentCache2, t::Number, N::Int)
 """
-function ∂³chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
+function ∂³chebyshev!(cache::SPKSegmentCache2, t::Number, N::Int)
 
     x1 = get_tmp(cache.x1, t)
     x2 = get_tmp(cache.x2, t)
@@ -323,7 +343,7 @@ function ∂³chebyshev!(cache::SPKSegmentCache2, t::Number, order::Int)
         x2[2] = 0
         x2[3] = 0 
 
-        for i = 4:order 
+        for i = 4:N 
             x2[i] = 6*x1[i-1] + 2*t*x2[i-1] - x2[i-2]
         end
 
