@@ -363,7 +363,7 @@ end
 Cache instance for SPK segments of type 18.
 """
 struct SPKSegmentCache18 <: AbstractSPKCache
-    p::MVector{2, Int}
+    p::MVector{3, Int}
     epochs::Vector{Float64}
     states::Matrix{Float64}
     buff::InterpCache{Float64}

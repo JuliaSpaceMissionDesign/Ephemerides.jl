@@ -85,7 +85,7 @@ function SPKSegmentCache18(header::SPKSegmentHeader18)
     nbuff = 3
     
     SPKSegmentCache18(
-        MVector(-1, header.N),
+        MVector(-1, -1, header.N),
         zeros(header.N), 
         zeros(header.N, header.packetsize),
         InterpCache{Float64}(nbuff, buffsize)
@@ -121,7 +121,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType18, time::Number)
     get_coefficients!(daf, head, data, first, last)
 
     # Retrieve the windowsize
-    @inbounds N = data.p[2]
+    @inbounds N = data.p[3]
 
     # Interpolate the position coefficients
     if head.subtype == 0
@@ -149,7 +149,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType18, time::Number)
     get_coefficients!(daf, head, data, first, last)
 
     # Retrieve the windowsize
-    @inbounds N = data.p[2]
+    @inbounds N = data.p[3]
 
     if head.subtype == 0
         # Interpolate the position
@@ -158,9 +158,9 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType18, time::Number)
         z = hermite(data.buff, data.states, data.epochs, time, 3, N)
 
         # Interpolate the velocity
-        vx = hermite(data.buff, data.states, data.epochs, time, 4, N)
-        vy = hermite(data.buff, data.states, data.epochs, time, 5, N)
-        vz = hermite(data.buff, data.states, data.epochs, time, 6, N)
+        vx = hermite(data.buff, data.states, data.epochs, time, 7, N)
+        vy = hermite(data.buff, data.states, data.epochs, time, 8, N)
+        vz = hermite(data.buff, data.states, data.epochs, time, 9, N)
 
     else 
         # Interpolate the position
@@ -189,7 +189,7 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType18, time::Number)
     get_coefficients!(daf, head, data, first, last)
 
     # Retrieve the windowsize
-    @inbounds N = data.p[2]
+    @inbounds N = data.p[3]
 
     if head.subtype == 0
         # Interpolate the position
@@ -198,9 +198,9 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType18, time::Number)
         z = hermite(data.buff, data.states, data.epochs, time, 3, N)
 
         # Interpolate the velocity and acceleration
-        vx, ax = ∂hermite(data.buff, data.states, data.epochs, time, 4, N)
-        vy, ay = ∂hermite(data.buff, data.states, data.epochs, time, 5, N)
-        vz, az = ∂hermite(data.buff, data.states, data.epochs, time, 6, N)
+        vx, ax = ∂hermite(data.buff, data.states, data.epochs, time, 7, N)
+        vy, ay = ∂hermite(data.buff, data.states, data.epochs, time, 8, N)
+        vz, az = ∂hermite(data.buff, data.states, data.epochs, time, 9, N)
 
     else 
         # Interpolate the position
@@ -228,7 +228,7 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType18, time::Number)
     get_coefficients!(daf, head, data, first, last)
 
     # Retrieve the windowsize
-    @inbounds N = data.p[2]
+    @inbounds N = data.p[3]
 
     if head.subtype == 0
         # Interpolate the position
@@ -237,9 +237,9 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType18, time::Number)
         z = hermite(data.buff, data.states, data.epochs, time, 3, N)
 
         # Interpolate the velocity, acceleration and jerk
-        vx, ax, jx = ∂²hermite(data.buff, data.states, data.epochs, time, 4, N)
-        vy, ay, jy = ∂²hermite(data.buff, data.states, data.epochs, time, 5, N)
-        vz, az, jz = ∂²hermite(data.buff, data.states, data.epochs, time, 6, N)
+        vx, ax, jx = ∂²hermite(data.buff, data.states, data.epochs, time, 7, N)
+        vy, ay, jy = ∂²hermite(data.buff, data.states, data.epochs, time, 8, N)
+        vz, az, jz = ∂²hermite(data.buff, data.states, data.epochs, time, 9, N)
 
     else 
         # Interpolate the position
@@ -317,23 +317,26 @@ end
 function get_coefficients!(daf::DAF, head::SPKSegmentHeader18, cache::SPKSegmentCache18, 
             first::Int, last::Int)
 
-    # Since the maximum window size is fixed, and the segment boundaries are fixed. To 
-    # check whether the record has already been loaded, we just need one index between 
-    # first and last
+    # Since the window might be truncated at one side, we need to check for both 
+    # boundaries to see whether the coefficients have already been loaded 
 
     # Check whether the packets for this polynomial are already loaded 
-    first == cache.p[1] && return nothing 
+    if first == cache.p[1] && last == cache.p[2]
+        return nothing 
+    end 
+
     @inbounds cache.p[1] = first 
+    @inbounds cache.p[2] = last 
 
     # Compute the actual window size
-    @inbounds cache.p[2] = last - first + 1
+    @inbounds cache.p[3] = last - first + 1
 
     # Address of the first desired logical record 
     i0 = 8*(head.iaa - 1) + 8*head.packetsize*first
 
     # Here we load-up the state coefficients 
     @inbounds for j = 1:head.packetsize
-        for i = 1:cache.p[2]
+        for i = 1:cache.p[3]
             cache.states[i, j] = get_float(
                 array(daf), i0 + 8*head.packetsize*(i-1) + 8*(j-1), endian(daf)
             )
@@ -344,13 +347,13 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader18, cache::SPKSegment
     if head.ndirs == 0 
         # Extract the epochs directly from the ones stored in the header since there 
         # is no directory epoch 
-        @inbounds for i = 1:cache.p[2]
+        @inbounds for i = 1:cache.p[3]
             cache.epochs[i] = head.epochs[first+i]
         end
     else 
         # Read the epochs from the binary file
         i0 = 8*(head.iaa - 1) + 8*head.packetsize*head.n + 8*first 
-        @inbounds for i = 1:cache.p[2]
+        @inbounds for i = 1:cache.p[3]
             cache.epochs[i] = get_float(array(daf), i0 + 8*(i-1), endian(daf))
         end
     end
