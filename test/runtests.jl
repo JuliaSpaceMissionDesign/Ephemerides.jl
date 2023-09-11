@@ -4,6 +4,7 @@ using Test
 using CalcephEphemeris
 using JSMDUtils.Math: D¹, D², D³
 using LazyArtifacts
+using SPICE
 
 import JSMDInterfaces.Ephemeris as jEphem
 

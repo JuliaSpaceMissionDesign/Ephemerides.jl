@@ -25,7 +25,6 @@ struct EphemerisProvider <: jEph.AbstractEphemerisProvider
 end
 
 EphemerisProvider(files::AbstractString) = EphemerisProvider([files])
-# TODO: warning if no file is loaded/ the kernel is empty?
 function EphemerisProvider(files::Vector{<:AbstractString})
 
     # Initial parsing of each DAF file 
@@ -40,6 +39,17 @@ function EphemerisProvider(files::Vector{<:AbstractString})
     spklinks, pcklinks = create_linktables(dafs)
     return EphemerisProvider(dafs, spklinks, pcklinks) 
 
+end
+
+function Base.show(io::IO, eph::EphemerisProvider)
+    print(io, "$(length(get_daf(eph)))-kernel EphemerisProvider")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", eph::EphemerisProvider)
+    println(io, eph, ":")
+    for daf in get_daf(eph)
+        println(io, " $(repr(filepath(daf)))")
+    end
 end
 
 """

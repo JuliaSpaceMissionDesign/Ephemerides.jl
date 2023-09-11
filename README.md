@@ -68,7 +68,7 @@ angles = ephem_rotation3(eph, 1, 31006, time)
 ```
 
 ## Current Limitations
-- The supported JPL binary SPK/PCK segments are limited to: type 1, 2, 3, 8, 12, 21. 
+- The supported JPL binary SPK/PCK segments types are: 1, 2, 3, 8, 9, 12, 13, 18, 21. 
 - Binary INPOP kernels are not supported. 
 - Acceleration and jerk computations are natively unavailable for SPK segments of type 1 and 21, but can be computed with Automatic Differentiation (AD) of the position and velocity components.
 

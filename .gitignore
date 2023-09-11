@@ -1,3 +1,4 @@
 .vscode/
-mkspk/
+temp/
+artifact/
 Manifest.toml

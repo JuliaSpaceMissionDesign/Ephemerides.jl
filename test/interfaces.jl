@@ -15,6 +15,14 @@ DJ2000 = 2451545.0
     points = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 199, 299, 301, 399, 499]
     axes = [1, 31006]
 
+    # Test EphemerisProvider printing
+    @test repr(de421) == "1-kernel EphemerisProvider"
+    @test repr(EphemerisProvider([path_de421, path_pa421])) == "2-kernel EphemerisProvider"
+
+    io = IOBuffer();
+    show(IOContext(io, :limit => false), "text/plain", de421)
+    @test String(take!(io)) == "1-kernel EphemerisProvider:\n \"$path_de421\"\n"
+
     # CALCEPH.jl files 
     ephc = CalcephProvider(path_de421)
     epho = CalcephProvider(path_pa421)
