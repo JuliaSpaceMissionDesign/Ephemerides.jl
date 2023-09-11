@@ -65,15 +65,20 @@ Header instance for SPK segments of type 1 and 21.
 ### Fields 
 - `n` -- `Int` number of records in the segment 
 - `ndirs` -- `Int` number of directory epochs
+- `epochs` -- Storage for directory epochs or epochs (when ndirs = 0)
+- `iaa` - `Int` initial segment file address 
+- `etid` -- `Int` initial address for the epoch table (after all the MDA records)
+- `recsize` - `Int` Number of double numbers stored in each MDA record
+- `maxdim` - `Int` MDA dimension (fixed to 15 for type 1)
 """
 struct SPKSegmentHeader1 <: AbstractSPKHeader 
-    n::Int                  # number of records in the segment
-    ndirs::Int              # Number of directory epochs
-    epochs::Vector{Float64} # Vector storing directory epochs or epochs themselves (when ndirs = 0)
-    iaa::Int                # Initial segment address
-    etid::Int               # Initial address for the epoch table (after all the records)
-    recsize::Int            # Number of double numbers stored in each MDA record
-    maxdim::Int             # Dimensions 
+    n::Int                  
+    ndirs::Int              
+    epochs::Vector{Float64} 
+    iaa::Int                
+    etid::Int               
+    recsize::Int            
+    maxdim::Int            
 end
 
 """ 
@@ -225,11 +230,11 @@ Header instance for SPK segments of type 8 and 12.
 - `tstart` -- `Float64` segment starting epoch, in TDB seconds since J2000 
 - `tlen` -- `Float64` interval length, in seconds
 - `order` -- `Int` interpolating polynomial degree
-- `N` -- `Int` group size (order + 1)
+- `N` -- `Int` group size
 - `n` -- `Int` number of states in the segment
 - `iaa` - `Int` initial segment file address 
 - `iseven` -- `Bool` true for even group size
-- `type` -- `Int` SPK type
+- `type` -- `Int` SPK type (either 8 or 12)
 """
 struct SPKSegmentHeader8 <: AbstractSPKHeader
     tstart::Float64     
@@ -285,7 +290,15 @@ end
 Header instance for SPK segments of type 9 and 13.
 
 ### Fields 
-
+- `n` -- `Int` number of states in the segment
+- `ndirs` -- `Int` number of epoch directories
+- `epochs` -- Storage for directory epochs or epochs (when ndirs = 0)
+- `iaa` - `Int` initial segment file address 
+- `etid` -- `Int` initial address for the epoch table (after all the state data)
+- `order` -- `Int` interpolating polynomial degree
+- `N` -- `Int` group size 
+- `iseven` -- `Bool` true for even group size
+- `type` -- `Int` SPK type (either 9 or 13)
 """
 struct SPKSegmentHeader9 <: AbstractSPKHeader
     n::Int
@@ -343,7 +356,15 @@ end
 Header instance for SPK segments of type 18.
 
 ### Fields 
-
+- `n` -- `Int` number of states in the segment
+- `ndirs` -- `Int` number of epoch directories
+- `epochs` -- Storage for directory epochs or epochs (when ndirs = 0)
+- `iaa` - `Int` initial segment file address 
+- `etid` -- `Int` initial address for the epoch table (after all the state data)
+- `order` -- `Int` interpolating polynomial degree
+- `N` -- `Int` group size 
+- `subtype` -- `Int` type 18 subtype, either 0 (Hermite) or 1 (Lagrange)
+- `packetsize` -- `Int` packet size for each point, either 12 (Hermite) or 6 (Lagrange)
 """
 struct SPKSegmentHeader18 <: AbstractSPKHeader
     n::Int
