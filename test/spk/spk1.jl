@@ -17,9 +17,9 @@ DJ2000 = 2451545
     tid = Int(desc.tid)
 
     ep = t1j:1:t2j
-    for _ in 1:1000
+    for j in 1:2000
 
-        tj = rand(ep)
+        tj = j == 1 ? t1j : (j == 2 ? t2j : rand(ep))
         tc = tj/86400
 
         # Test with Julia

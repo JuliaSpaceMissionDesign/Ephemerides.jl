@@ -27,9 +27,9 @@ DJ2000 = 2451545
         t1j, t2j = desc.tstart, desc.tend
 
         ep = t1j:1:t2j
-        for _ in 1:1000
+        for j in 1:2000
 
-            tj = rand(ep)
+            tj = j == 1 ? t1j : (j == 2 ? t2j : rand(ep))
             tc = tj/86400
 
             # Test with Julia
@@ -40,8 +40,8 @@ DJ2000 = 2451545
             ys1 = spkpos("$tid", tj, "J2000", "NONE", "$cid")[1]
             ys2 = spkezr("$tid", tj, "J2000", "NONE", "$cid")[1]
 
-            @test yj1 ≈ ys1 atol=1e-9 rtol=1e-13
-            @test yj2 ≈ ys2 atol=1e-9 rtol=1e-13
+            @test yj1 ≈ ys1 atol=1e-9 rtol=1e-14
+            @test yj2 ≈ ys2 atol=1e-9 rtol=1e-14
 
             # Test if AUTODIFF works 
             @test D¹(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj2[4:end] atol=1e-9 rtol=1e-13
