@@ -6,6 +6,8 @@ DJ2000 = 2451545
 
     kernel = joinpath(test_dir, "example1spk_seg1.bsp")
 
+    # TODO: missing segment with epoch directory
+
     ephj = EphemerisProvider(kernel);
     furnsh(kernel)
 
@@ -36,7 +38,6 @@ DJ2000 = 2451545
         # Test if AUTODIFF works 
         @test D¹(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj2[4:end] atol=1e-9 rtol=1e-9
 
-        # TODO: implement the acceleration and jerk. This functions below cannot be tested!
         # D²(t->ephem_vector3(ephj, cid, tid, t), tj)
         # D³(t->ephem_vector3(ephj, cid, tid, t), tj)
 

@@ -7,9 +7,10 @@ DJ2000 = 2451545
     axes = Dict(1 => "J2000", 17 => "ECLIPJ2000")
 
     # The first kernel has a directory epoch, the second does not
-    kernels = [joinpath(test_dir, "example1spk_seg9.bsp"),  # even window size
-               joinpath(test_dir, "example2spk_seg9.bsp"),  # even window size 
-               joinpath(test_dir, "example3spk_seg9.bsp"),]  # uneven window size 
+    kernels = [joinpath(test_dir, "example1spk_seg9.bsp"),  # even, epoch dir
+               joinpath(test_dir, "example2spk_seg9.bsp"),  # even, no epoch dir 
+               joinpath(test_dir, "example3spk_seg9.bsp"),  # uneven, epoch dir
+               joinpath(test_dir, "example4spk_seg9.bsp")]  # uneven no epoch dir 
 
     for kernel in kernels 
 
@@ -17,7 +18,7 @@ DJ2000 = 2451545
         ephc = CalcephProvider(kernel);
         furnsh(kernel)
         
-        desc = rand(ephj.files[1].desc)
+        desc = ephj.files[1].desc[1]
         t1j, t2j = desc.tstart, desc.tend
 
         cid = Int(desc.cid)
