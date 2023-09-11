@@ -59,7 +59,7 @@ function lagrange(cache::InterpCache, states, epochs, x::Number, idx::Int, N::In
 
             c1 = x - epochs[i+j]
             c2 = epochs[i] - x
-            d = c1 + c2
+            d = epochs[i] - epochs[i+j]
 
             work[i] = (c1*work[i] + c2*work[i+1])/d
         end
@@ -141,7 +141,7 @@ function ∂lagrange(cache::InterpCache, states, epochs, x::Number, idx::Int, N:
 
             c1 = x - epochs[i+j]
             c2 = epochs[i] - x            
-            d = c1 + c2
+            d = epochs[i] - epochs[i+j]
 
             dwork[i] = (work[i] + c1*dwork[i] - work[i+1] + c2*dwork[i+1])/d
             work[i] = (c1*work[i] + c2*work[i+1])/d
@@ -235,7 +235,7 @@ function ∂²lagrange(cache::InterpCache, states, epochs, x::Number, idx::Int, 
 
             c1 = x - epochs[i+j]
             c2 = epochs[i] - x            
-            d = c1 + c2
+            d = epochs[i] - epochs[i+j]
 
             ddwork[i] = (2*dwork[i] + c1*ddwork[i] - 2*dwork[i+1] + c2*ddwork[i+1])/d
             dwork[i] = (work[i] + c1*dwork[i] - work[i+1] + c2*dwork[i+1])/d

@@ -86,7 +86,7 @@ function hermite(cache::InterpCache, states, epochs, x::Number, idx::Int, N::Int
 
         c1 = epochs[i+1] - x 
         c2 = x - epochs[i]
-        d = c1 + c2
+        d = epochs[i+1] - epochs[i]
 
         prev = 2i - 1 
         this = prev + 1 
@@ -109,7 +109,7 @@ function hermite(cache::InterpCache, states, epochs, x::Number, idx::Int, N::Int
 
             c1 = epochs[xij] - x 
             c2 = x - epochs[xi]
-            d = c1 + c2
+            d = epochs[xij] - epochs[xi]
 
             work[i] = (c1*work[i] + c2*work[i+1])/d
         end
@@ -217,7 +217,7 @@ function ∂hermite(cache::InterpCache, states, epochs, x::Number, idx::Int, N::
 
         c1 = epochs[i+1] - x 
         c2 = x - epochs[i]
-        d = c1 + c2
+        d = epochs[i+1] - epochs[i]
 
         prev = 2i - 1 
         this = prev + 1 
@@ -247,7 +247,7 @@ function ∂hermite(cache::InterpCache, states, epochs, x::Number, idx::Int, N::
 
             c1 = epochs[xij] - x 
             c2 = x - epochs[xi] 
-            d = c1 + c2
+            d = epochs[xij] - epochs[xi]
 
             dwork[i] = (c1*dwork[i] + c2*dwork[i+1] + work[i+1] - work[i])/d
             work[i] = (c1*work[i] + c2*work[i+1])/d
@@ -365,7 +365,7 @@ function ∂²hermite(cache::InterpCache, states, epochs, x::Number, idx::Int, N
 
         c1 = epochs[i+1] - x 
         c2 = x - epochs[i]
-        d = c1 + c2
+        d = epochs[i+1] - epochs[i]
 
         prev = 2i - 1 
         this = prev + 1 
@@ -395,7 +395,7 @@ function ∂²hermite(cache::InterpCache, states, epochs, x::Number, idx::Int, N
 
             c1 = epochs[xij] - x 
             c2 = x - epochs[xi]
-            d = c1 + c2 
+            d = epochs[xij] - epochs[xi]
 
             d²work[i] = (c1*d²work[i] + c2*d²work[i+1] + 2*(dwork[i+1] - dwork[i]))/d
             dwork[i]  = (c1*dwork[i]  + c2*dwork[i+1] + work[i+1] - work[i])/d
@@ -526,7 +526,7 @@ function ∂³hermite(cache::InterpCache, states, epochs, x::Number, idx::Int, N
 
         c1 = epochs[i+1] - x 
         c2 = x - epochs[i]
-        d = c1 + c2
+        d = epochs[i+1] - epochs[i]
 
         prev = 2i - 1 
         this = prev + 1 
@@ -556,7 +556,7 @@ function ∂³hermite(cache::InterpCache, states, epochs, x::Number, idx::Int, N
 
             c1 = epochs[xij] - x 
             c2 = x - epochs[xi] 
-            d = c1 + c2
+            d = epochs[xij] - epochs[xi]
             
             d³work[i] = (c1*d³work[i] + c2*d³work[i+1] + 3*(d²work[i+1] - d²work[i]))/d
             d²work[i] = (c1*d²work[i] + c2*d²work[i+1] + 2*(dwork[i+1] - dwork[i]))/d
