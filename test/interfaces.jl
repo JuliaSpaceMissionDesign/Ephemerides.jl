@@ -16,7 +16,7 @@ DJ2000 = 2451545.0
     axes = [1, 31006]
 
     # Test EphemerisProvider printing
-    @test repr(ephj) == "1-kernel EphemerisProvider"
+    @test repr(de421) == "1-kernel EphemerisProvider"
     @test repr(EphemerisProvider([path_de421, path_pa421])) == "2-kernel EphemerisProvider"
 
     io = IOBuffer();
