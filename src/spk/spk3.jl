@@ -29,8 +29,8 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType3, time::Number)
 
     # Compute the Chebyshev polynomials
     chebyshev!(data, t, head.N)
-    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0)
-    vel = interpol(data, get_tmp(data.x1, t), 0, 1, 3)
+    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0, head.N)
+    vel = interpol(data, get_tmp(data.x1, t), 0, 1, 3, head.N)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
@@ -53,13 +53,13 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType3, time::Number)
 
     # Compute the Chebyshev polynomials
     chebyshev!(data, t, head.N)
-    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0)
-    vel = interpol(data, get_tmp(data.x1, t), 0, 1, 3)
+    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0, head.N)
+    vel = interpol(data, get_tmp(data.x1, t), 0, 1, 3, head.N)
 
     # Compute 1st derivatives of Chebyshev polynomials 
     @inbounds scale = data.p[3]
     ∂chebyshev!(data, t, head.N)
-    acc = interpol(data, get_tmp(data.x2, t), 1, scale, 3)
+    acc = interpol(data, get_tmp(data.x2, t), 1, scale, 3, head.N)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
@@ -83,17 +83,17 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType3, time::Number)
 
     # Compute the Chebyshev polynomials
     chebyshev!(data, t, head.N)
-    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0)
-    vel = interpol(data, get_tmp(data.x1, t), 0, 1, 3)
+    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0, head.N)
+    vel = interpol(data, get_tmp(data.x1, t), 0, 1, 3, head.N)
 
     # Compute 1st derivatives of Chebyshev polynomials 
     @inbounds scale = data.p[3]
     ∂chebyshev!(data, t, head.N)
-    acc = interpol(data, get_tmp(data.x2, t), 1, scale, 3)
+    acc = interpol(data, get_tmp(data.x2, t), 1, scale, 3, head.N)
 
     # Compute 2nd derivative of Chebyshev polynomials 
     ∂²chebyshev!(data, t, head.N)
-    jer = interpol(data, get_tmp(data.x1, t), 2, scale*scale, 3)
+    jer = interpol(data, get_tmp(data.x1, t), 2, scale*scale, 3, head.N)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
