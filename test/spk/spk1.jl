@@ -18,6 +18,10 @@ DJ2000 = 2451545
     cid = Int(desc.cid) 
     tid = Int(desc.tid)
 
+    # Check errors 
+    @test_throws jEphem.EphemerisError ephem_vector9(ephj, cid, tid, t1j)
+    @test_throws jEphem.EphemerisError ephem_vector12(ephj, cid, tid, t1j)
+
     ep = t1j:1:t2j
     for j in 1:2000
 
