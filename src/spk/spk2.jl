@@ -83,7 +83,7 @@ function spk_vector3(daf::DAF, seg::Union{SPKSegmentType2, SPKSegmentType3}, tim
     chebyshev!(data, t, head.N)
 
     # Interpolate the body position
-    return interpol(data, get_tmp(data.x1, t), 0, 1, 0)
+    return interpol(data, get_tmp(data.x1, t), 0, 1, 0, head.N)
 
 end
 
@@ -101,12 +101,12 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType2, time::Number)
     
     # Compute the Chebyshev polynomials
     chebyshev!(data, t, head.N)
-    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0)
+    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0, head.N)
 
     # Compute 1st derivatives of Chebyshev polynomials 
     @inbounds scale = data.p[3]
     ∂chebyshev!(data, t, head.N)
-    vel = interpol(data, get_tmp(data.x2, t), 1, scale, 0)
+    vel = interpol(data, get_tmp(data.x2, t), 1, scale, 0, head.N)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
@@ -128,16 +128,16 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType2, time::Number)
 
     # Compute the Chebyshev polynomials
     chebyshev!(data, t, head.N)
-    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0)
+    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0, head.N)
 
     # Compute 1st derivatives of Chebyshev polynomials 
     @inbounds scale = data.p[3]
     ∂chebyshev!(data, t, head.N)
-    vel = interpol(data, get_tmp(data.x2, t), 1, scale, 0)
+    vel = interpol(data, get_tmp(data.x2, t), 1, scale, 0, head.N)
 
     # Compute 2nd derivative of Chebyshev polynomials 
     ∂²chebyshev!(data, t, head.N)
-    acc = interpol(data, get_tmp(data.x1, t), 2, scale*scale, 0)
+    acc = interpol(data, get_tmp(data.x1, t), 2, scale*scale, 0, head.N)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
@@ -160,20 +160,20 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType2, time::Number)
     
     # Compute the Chebyshev polynomials
     chebyshev!(data, t, head.N)
-    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0)
+    pos = interpol(data, get_tmp(data.x1, t), 0, 1, 0, head.N)
 
     # Compute 1st derivatives of Chebyshev polynomials 
     @inbounds scale = data.p[3]
     ∂chebyshev!(data, t, head.N)
-    vel = interpol(data, get_tmp(data.x2, t), 1, scale, 0)
+    vel = interpol(data, get_tmp(data.x2, t), 1, scale, 0, head.N)
 
     # Compute 2nd derivative of Chebyshev polynomials 
     ∂²chebyshev!(data, t, head.N)
-    acc = interpol(data, get_tmp(data.x1, t), 2, scale*scale, 0)
+    acc = interpol(data, get_tmp(data.x1, t), 2, scale*scale, 0, head.N)
 
     # Compute 3rd derivative of Chebyshev polynomials 
     ∂³chebyshev!(data, t, head.N)
-    jer = interpol(data, get_tmp(data.x2, t), 3, scale*scale*scale, 0)
+    jer = interpol(data, get_tmp(data.x2, t), 3, scale*scale*scale, 0, head.N)
 
     return @inbounds SA[
         pos[1], pos[2], pos[3], 
@@ -242,19 +242,17 @@ end
 end
 
 """
-    interpol(cache::SPKSegmentCache2, cheb, order::Int, scale::Number, offset::Int)
+    interpol(cache::SPKSegmentCache2, cheb, order::Int, scale::Number, offset::Int, N::Int)
 """
 function interpol(cache::SPKSegmentCache2, cheb::AbstractVector{T}, order::Int, 
-            scale::Number, offset::Int) where T
-
-    len = length(cheb)
+            scale::Number, offset::Int, N::Int) where T
 
     ax = 1 + offset
     ay = 2 + offset
     az = 3 + offset
 
     x, y, z = T(0), T(0), T(0)
-    @inbounds @simd for i in order+1:len
+    @inbounds @simd for i in order+1:N
         x += cheb[i]*cache.A[ax, i]
         y += cheb[i]*cache.A[ay, i]
         z += cheb[i]*cache.A[az, i]
