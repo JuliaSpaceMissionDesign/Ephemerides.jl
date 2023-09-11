@@ -249,17 +249,14 @@ Cache instance for SPK segments of type 8 and 12.
 """
 struct SPKSegmentCache8 <: AbstractSPKCache
     states::Matrix{Float64}
-    work::DiffCache{Vector{Float64}, Vector{Float64}}
-    dwork::DiffCache{Vector{Float64}, Vector{Float64}}
-    ddwork::DiffCache{Vector{Float64}, Vector{Float64}}
-    dddwork::DiffCache{Vector{Float64}, Vector{Float64}}
+    buff::InterpCache{Float64}
     id::MVector{1, Int}
 end 
 
 """ 
     SPKSegmentType8 <: AbstractSPKSegment
 
-Segment instance for SPK segments of type 8.
+Segment instance for SPK segments of type 8 and 12.
 
 ### Fields 
 - `head` -- Segment header 
@@ -310,17 +307,14 @@ Cache instance for SPK segments of type 9 and 13.
 struct SPKSegmentCache9 <: AbstractSPKCache
     epochs::Vector{Float64}
     states::Matrix{Float64}
-    work::DiffCache{Vector{Float64}, Vector{Float64}}
-    dwork::DiffCache{Vector{Float64}, Vector{Float64}}
-    ddwork::DiffCache{Vector{Float64}, Vector{Float64}}
-    dddwork::DiffCache{Vector{Float64}, Vector{Float64}}
+    buff::InterpCache{Float64}
     id::MVector{1, Int}
 end 
 
 """ 
     SPKSegmentType9 <: AbstractSPKSegment
 
-Segment instance for SPK segments of type 9.
+Segment instance for SPK segments of type 9 and 13.
 
 ### Fields 
 - `head` -- Segment header 
@@ -340,58 +334,6 @@ end
 
 
 # ----------------------------------
-# SPK TYPE 12
-# ----------------------------------
-
-""" 
-    SPKSegmentType12 <: AbstractSPKSegment
-
-Segment instance for SPK segments of type 12.
-
-### Fields 
-- `head` -- Segment header 
-- `cache` -- Segment cache 
-
-### References 
-- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
-- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
-"""
-struct SPKSegmentType12 <: AbstractSPKSegment
-    head::SPKSegmentHeader8
-    cache::Vector{SPKSegmentCache8}
-end
-
-@inline header(spk::SPKSegmentType12) = spk.head 
-@inline @inbounds cache(spk::SPKSegmentType12) = spk.cache[Threads.threadid()]
-
-
-# ----------------------------------
-# SPK TYPE 13
-# ----------------------------------
-
-""" 
-    SPKSegmentType13 <: AbstractSPKSegment
-
-Segment instance for SPK segments of type 13.
-
-### Fields 
-- `head` -- Segment header 
-- `cache` -- Segment cache 
-
-### References 
-- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
-- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
-"""
-struct SPKSegmentType13 <: AbstractSPKSegment
-    head::SPKSegmentHeader9
-    cache::Vector{SPKSegmentCache9}
-end
-
-@inline header(spk::SPKSegmentType13) = spk.head 
-@inline @inbounds cache(spk::SPKSegmentType13) = spk.cache[Threads.threadid()]
-
-
-# ----------------------------------
 # SPK TYPE 18
 # ----------------------------------
 
@@ -404,6 +346,15 @@ Header instance for SPK segments of type 18.
 
 """
 struct SPKSegmentHeader18 <: AbstractSPKHeader
+    n::Int
+    ndirs::Int 
+    epochs::Vector{Float64}
+    iaa::Int
+    etid::Int 
+    order::Int 
+    N::Int 
+    subtype::Int
+    packetsize::Int
 end
 
 """
@@ -412,7 +363,10 @@ end
 Cache instance for SPK segments of type 18.
 """
 struct SPKSegmentCache18 <: AbstractSPKCache
-    id::MVector{1, Int}
+    p::MVector{2, Int}
+    epochs::Vector{Float64}
+    states::Matrix{Float64}
+    buff::InterpCache{Float64}
 end 
 
 """ 
@@ -448,9 +402,9 @@ const SPK_SEGMENTLIST_MAPPING = Dict(
     3 => 3,
     8 => 4,
     9 => 5,
-    12 => 6,
-    13 => 7,
-    18 => 8,
+    12 => 4,
+    13 => 5,
+    18 => 6,
     21 => 1,
 )
 
@@ -481,8 +435,6 @@ struct SPKSegmentList
     spk3::Vector{SPKSegmentType3}
     spk8::Vector{SPKSegmentType8}
     spk9::Vector{SPKSegmentType9}
-    spk12::Vector{SPKSegmentType12}
-    spk13::Vector{SPKSegmentType13}
     spk18::Vector{SPKSegmentType18}
 
     function SPKSegmentList()
@@ -492,8 +444,6 @@ struct SPKSegmentList
             SPKSegmentType3[], 
             SPKSegmentType8[],
             SPKSegmentType9[],
-            SPKSegmentType12[],
-            SPKSegmentType13[],
             SPKSegmentType18[]
         )
     end

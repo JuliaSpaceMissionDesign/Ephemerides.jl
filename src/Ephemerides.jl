@@ -7,7 +7,13 @@ using StaticArrays
 
 import JSMDInterfaces.Ephemeris as jEph
 
+# Utilities
 include("utils.jl")
+
+# Interpolation algorithms 
+include("interp/cache.jl")
+include("interp/hermite.jl")
+include("interp/lagrange.jl")
 
 # SPK segment types definitions
 include("spk/spktypes.jl")
@@ -21,8 +27,7 @@ include("spk/spk2.jl")
 include("spk/spk3.jl")
 include("spk/spk8.jl")
 include("spk/spk9.jl")
-include("spk/spk12.jl")
-include("spk/spk13.jl")
+include("spk/spk18.jl")
 
 # Descriptors linking and provider 
 include("links.jl")

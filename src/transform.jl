@@ -88,35 +88,19 @@ for (order, pfun1, afun1, fun1) in zip(
             # Use binary search to reduce the time spent within the if\cycle
             if lid < 4  
                 if lid == 1 
-                    return $(fun1)(
-                        daf, get_segment(segment_list(daf), 1, eid), time
-                    )
+                    return $(fun1)(daf, get_segment(segment_list(daf), 1, eid), time)
                 elseif lid == 2
-                    return $(fun1)(
-                        daf, get_segment(segment_list(daf), 2, eid), time
-                    )
+                    return $(fun1)(daf, get_segment(segment_list(daf), 2, eid), time)
                 else
-                    return $(fun1)(
-                        daf, get_segment(segment_list(daf), 3, eid), time
-                    )
+                    return $(fun1)(daf, get_segment(segment_list(daf), 3, eid), time)
                 end
             else
                 if lid == 4
-                    return $(fun1)(
-                        daf, get_segment(segment_list(daf), 4, eid), time
-                    )
+                    return $(fun1)(daf, get_segment(segment_list(daf), 4, eid), time)
                 elseif lid == 5
-                    return $(fun1)(
-                        daf, get_segment(segment_list(daf), 5, eid), time
-                    )
-                elseif lid == 6
-                    return $(fun1)(
-                    daf, get_segment(segment_list(daf), 6, eid), time
-                    )
-                else 
-                    return $(fun1)(
-                    daf, get_segment(segment_list(daf), 7, eid), time
-                    )
+                    return $(fun1)(daf, get_segment(segment_list(daf), 5, eid), time)
+                else
+                    return $(fun1)(daf, get_segment(segment_list(daf), 6, eid), time)
                 end
             end
         end
