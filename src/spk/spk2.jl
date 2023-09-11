@@ -45,8 +45,8 @@ function SPKSegmentCache2(spkhead::SPKSegmentHeader2)
     SPKSegmentCache2(
         zeros(spkhead.ncomp, spkhead.N), 
         MVector(0.0, 0.0, 0.0),
-        DiffCache(zeros(spkhead.N)), 
-        DiffCache(zeros(spkhead.N)),
+        DiffCache(zeros(max(3, spkhead.N))), 
+        DiffCache(zeros(max(3, spkhead.N))),
         MVector(-1)
     )
 end
