@@ -26,7 +26,7 @@ function SPKSegmentHeader1(daf::DAF, desc::DAFSegmentDescriptor)
     end
     
     # Double precision numbers stored in each MDA record 
-    recsize = 4*maxdim + 11 
+    recsize = max(71, 4*maxdim + 11)
 
     # Initial address for the epoch table (after all the segment records)
     etid = 8*(iaa - 1) + 8*recsize*n
@@ -41,9 +41,8 @@ function SPKSegmentHeader1(daf::DAF, desc::DAFSegmentDescriptor)
     else 
         # Load directory epochs
         epochs = zeros(ndir)
-        i₀ = 8*(faa - 1)
         @inbounds for j = 1:ndir
-            epochs[j] = get_float(array(daf), i₀ - 8*(ndir - j + 1), endian(daf)) 
+            epochs[j] = get_float(array(daf), etid + 8*(n+j-1), endian(daf)) 
         end
 
     end
@@ -154,7 +153,7 @@ function find_logical_record(daf::DAF, head::SPKSegmentHeader1, time::Number)
     end
 
     index = subdir*100
-    stop_idx = max(index + 100, head.n)
+    stop_idx = min(index + 100, head.n)
 
     # Find the actual epoch
     found = false
