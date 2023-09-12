@@ -15,6 +15,7 @@
     include("spk12.jl")
     include("spk13.jl")
     include("spk18.jl")
+    include("spk19.jl")
     include("spk21.jl")
 
 end;
