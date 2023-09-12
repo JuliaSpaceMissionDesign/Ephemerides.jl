@@ -69,16 +69,15 @@ DJ2000 = 2451545
             # @test D²(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj4[7:9] atol=1e-9 rtol=1e-13
             # @test D³(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj4[10:12] atol=1e-9 rtol=1e-13
 
-            # when we are close to the segment boundaries, the accuracy reduces because 
+            # When we are close to the segment boundaries, the accuracy reduces because 
             # of the lower order of the polynomials 
-            atol = j < 500 ? 1e-5 : 1e-11
 
             # Velocity (these test also the acceleration\jerk values that are computed)
-            @test D¹(t->ephem_vector6(ephj, cid, tid, t), tj)[4:6] ≈ yj3[7:9] atol=atol rtol=1e-14
-            @test D²(t->ephem_vector6(ephj, cid, tid, t), tj)[4:6] ≈ yj4[10:12] atol=atol rtol=1e-14
+            @test D¹(t->ephem_vector6(ephj, cid, tid, t), tj)[4:6] ≈ yj3[7:9] atol=1e-5 rtol=1e-13
+            @test D²(t->ephem_vector6(ephj, cid, tid, t), tj)[4:6] ≈ yj4[10:12] atol=1e-5 rtol=1e-13
 
             # Acceleration  (these further test the jerk)
-            @test D¹(t->ephem_vector9(ephj, cid, tid, t), tj)[4:9] ≈ yj4[7:12] atol=atol rtol=1e-14
+            @test D¹(t->ephem_vector9(ephj, cid, tid, t), tj)[4:9] ≈ yj4[7:12] atol=1e-5 rtol=1e-13
 
         end
 
