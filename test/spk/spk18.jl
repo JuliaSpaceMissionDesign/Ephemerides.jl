@@ -25,7 +25,7 @@ DJ2000 = 2451545
             desc = ephj.files[1].desc[idj]
             t1j, t2j = desc.tstart, desc.tend
 
-            head = ephj.files[1].seglist.spk18[idj].head
+            head = Ephemerides.cache(ephj.files[1].seglist.spk19[idj]).minihead
 
             cid = Int(desc.cid)
             tid = Int(desc.tid)

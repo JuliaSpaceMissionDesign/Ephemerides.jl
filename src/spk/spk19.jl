@@ -2,13 +2,21 @@
 """ 
     SPKSegmentHeader19(daf::DAF, desc::DAFSegmentDescriptor)
 
-Create the segment header for an SPK segment of type 19.
+Create the segment header for an SPK segment of type 18 and 19.
 """
 function SPKSegmentHeader19(daf::DAF, desc::DAFSegmentDescriptor)
 
     iaa = initial_address(desc)
     faa = final_address(desc)
 
+    type = segment_type(desc)
+
+    # SPK type 18 are handled as special cases of type 19 with a single mini-segment   
+    # We're just trading away some small amount of memory because the constant type 18 
+    # headers are duplicated inside each of the type 19 caches.
+    type == 18 && return SPKSegmentHeader19(1, 0, Float64[], iaa, faa, 0, false, type)
+
+    # If we have arrived here, the segment is a generic SPK type 19
     i0 = 8*(faa - 3)
 
     # Retrieve mini-segment stop pointer
@@ -42,7 +50,7 @@ function SPKSegmentHeader19(daf::DAF, desc::DAFSegmentDescriptor)
         end
     end
 
-    SPKSegmentHeader19(n, ndirs, times, iaa, etid, ptid, flag)
+    SPKSegmentHeader19(n, ndirs, times, iaa, etid, ptid, flag, type)
 end
 
 """ 
@@ -61,7 +69,7 @@ function SPKSegmentCache19(daf::DAF, head::SPKSegmentHeader19)
     for j = 1:head.n
         if j == head.n 
             # leverage the interval table byte address
-            i0 = head.etid - 8
+            i0 = (head.type == 19 ? head.etid : 8*head.etid) - 8
         else
             # use the start pointer of the next mini-segment 
             pnt = Int(get_float(array(daf), head.ptid + 8*j, endian(daf)))
@@ -100,7 +108,15 @@ function SPKSegmentCache19(daf::DAF, head::SPKSegmentHeader19)
         InterpCache{Float64}(nbuff, buffsize)
     )
 
-    SPKSegmentCache19(minihead, minidata, MVector(-1))
+    id = MVector(-1)
+    
+    if head.type == 18 
+        # Update the header with the single type 18 information 
+        update_header!(minihead, daf, head.iaa, head.etid, head.type)
+        @inbounds id[1] = 0 # Update the cached index
+    end
+
+    return SPKSegmentCache19(minihead, minidata, id)
 
 end
 
@@ -134,7 +150,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType19, time::Number)
     load_minisegment!(daf, head, data, index)
 
     # Interpolate inside the minisegment 
-    return _spk3(daf, data.minihead, data.minidata, time)
+    return spk_vector3(daf, data.minihead, data.minidata, time)
 
 end
 
@@ -150,7 +166,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType19, time::Number)
     load_minisegment!(daf, head, data, index)
 
     # Interpolate inside the minisegment 
-    return _spk6(daf, data.minihead, data.minidata, time)
+    return spk_vector6(daf, data.minihead, data.minidata, time)
 
 end
 
@@ -166,7 +182,7 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType19, time::Number)
     load_minisegment!(daf, head, data, index)
 
     # Interpolate inside the minisegment 
-    return _spk9(daf, data.minihead, data.minidata, time)
+    return spk_vector9(daf, data.minihead, data.minidata, time)
 
 end
 
@@ -182,7 +198,7 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType19, time::Number)
     load_minisegment!(daf, head, data, index)
 
     # Interpolate inside the minisegment 
-    return _spk12(daf, data.minihead, data.minidata, time)
+    return spk_vector12(daf, data.minihead, data.minidata, time)
 
 end
 

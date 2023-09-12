@@ -1,34 +1,10 @@
 
 """ 
-    SPKSegmentHeader18(daf::DAF, desc::DAFSegmentDescriptor)
-
-Create the segment header for an SPK segment of type 18.
-"""
-function SPKSegmentHeader18(daf::DAF, desc::DAFSegmentDescriptor)
-
-    faa = final_address(desc)
-
-    # Retrieve number of packets 
-    n = Int(get_float(array(daf), 8*(faa - 1), endian(daf)))
-
-    # Number of directory epochs (if there are 100 packets, no directory epoch is stored) 
-    ndirs = (n-1) ÷ 100
-
-    # Create a default Segment header for type 18
-    head = SPKSegmentHeader18(ndirs == 0 ? n : ndirs)
-
-    # Update the header with the actual segment content 
-    update_header!(head, daf, initial_address(desc), faa, segment_type(desc))
-    return head
-
-end
-
-""" 
     SPKSegmentHeader18(n::Int)
 
 Create a default header for type 18 segments, whose epoch array has length `n`.
 """
-@inline SPKSegmentHeader18(n::Int) = SPKSegmentHeader18(0, 0, zeros(n), 0, 0, 0, 0, 0, 0)
+SPKSegmentHeader18(n::Int) = SPKSegmentHeader18(0, 0, zeros(n), 0, 0, 0, 0, 0, 0)
 
 """
     update_header!(head::SPKSegmentHeader18, daf::DAF, iaa, faa, type)
@@ -98,32 +74,6 @@ function update_header!(head::SPKSegmentHeader18, daf::DAF, iaa, faa, type)
 
 end
 
-""" 
-    SPKSegmentCache18(spkhead::SPKSegmentHeader2)
-
-Initialise the cache for an SPK segment of type 18.
-"""
-function SPKSegmentCache18(header::SPKSegmentHeader18) 
-    
-    if header.subtype == 0 # Hermite
-        buffsize = 2*header.N  
-    else
-        buffsize = header.N # Lagrange
-    end
-
-    # For this spk type, both subtypes share the same number of buffers because 
-    # also for the Hermite polynomials we have two independent set of coefficients 
-    # for the position and the velocity
-    nbuff = 3
-    
-    SPKSegmentCache18(
-        MVector(-1, -1, header.N),
-        zeros(header.N), 
-        zeros(header.N, header.packetsize),
-        InterpCache{Float64}(nbuff, buffsize)
-    )
-end
-
 """
     reset_indexes!(cache::SPKSegmentCache18)
 
@@ -134,39 +84,168 @@ function reset_indexes!(cache::SPKSegmentCache18)
     @inbounds cache.p[2] = -1
 end
 
-""" 
-    SPKSegmentType18(daf::DAF, desc::DAFSegmentDescriptor)
 
-Create the object representing an SPK segment of type 18.
-"""
-function SPKSegmentType18(daf::DAF, desc::DAFSegmentDescriptor)
+function spk_vector3(daf::DAF, head::SPKSegmentHeader18, data::SPKSegmentCache18, t::Number)
 
-    # Initialise the segment header and cache
-    header = SPKSegmentHeader18(daf, desc)
-    caches = [SPKSegmentCache18(header) for _ in 1:Threads.nthreads()]
+    # Retrieve the indexes of the first and last point and the size of the 
+    # polynomial sliding-window. 
+    first, last = find_logical_record(daf, head, t)
+    get_coefficients!(daf, head, data, first, last)
 
-    SPKSegmentType18(header, caches)
+    # Retrieve the windowsize
+    @inbounds N = data.p[3]
+
+    # Interpolate the position coefficients
+    if head.subtype == 0 || head.subtype == 2
+        x = hermite(data.buff, data.states, data.epochs, t, 1, N)
+        y = hermite(data.buff, data.states, data.epochs, t, 2, N)
+        z = hermite(data.buff, data.states, data.epochs, t, 3, N)
+
+    else
+        x = lagrange(data.buff, data.states, data.epochs, t, 1, N)
+        y = lagrange(data.buff, data.states, data.epochs, t, 2, N)
+        z = lagrange(data.buff, data.states, data.epochs, t, 3, N)
+
+    end
+
+    return SA[x, y, z]
+    
+end
+
+function spk_vector6(daf::DAF, head::SPKSegmentHeader18, data::SPKSegmentCache18, t::Number)
+
+    # Retrieve the indexes of the first and last point and the size of the 
+    # polynomial sliding-window. 
+    first, last = find_logical_record(daf, head, t)
+    get_coefficients!(daf, head, data, first, last)
+
+    # Retrieve the windowsize
+    @inbounds N = data.p[3]
+
+    if head.subtype == 0
+        # Interpolate the position
+        x = hermite(data.buff, data.states, data.epochs, t, 1, N)
+        y = hermite(data.buff, data.states, data.epochs, t, 2, N)
+        z = hermite(data.buff, data.states, data.epochs, t, 3, N)
+
+        # Interpolate the velocity
+        vx = hermite(data.buff, data.states, data.epochs, t, 7, N)
+        vy = hermite(data.buff, data.states, data.epochs, t, 8, N)
+        vz = hermite(data.buff, data.states, data.epochs, t, 9, N)
+
+    elseif head.subtype == 1
+        # Interpolate the position
+        x = lagrange(data.buff, data.states, data.epochs, t, 1, N)
+        y = lagrange(data.buff, data.states, data.epochs, t, 2, N)
+        z = lagrange(data.buff, data.states, data.epochs, t, 3, N)
+
+        # Interpolate the velocity
+        vx = lagrange(data.buff, data.states, data.epochs, t, 4, N)
+        vy = lagrange(data.buff, data.states, data.epochs, t, 5, N)
+        vz = lagrange(data.buff, data.states, data.epochs, t, 6, N)
+
+    else 
+        # SPK type 19 mini-segment
+        # Interpolate the position and velocity 
+        x, vx = ∂hermite(data.buff, data.states, data.epochs, t, 1, N)
+        y, vy = ∂hermite(data.buff, data.states, data.epochs, t, 2, N)
+        z, vz = ∂hermite(data.buff, data.states, data.epochs, t, 3, N)
+
+    end
+
+    return SA[x, y, z, vx, vy, vz]
 
 end
 
-@inline spk_field(::SPKSegmentType18) = SPK_SEGMENTLIST_MAPPING[18]
+function spk_vector9(daf::DAF, head::SPKSegmentHeader18, data::SPKSegmentCache18, t::Number)
 
+    # Retrieve the indexes of the first and last point and the size of the 
+    # polynomial sliding-window. 
+    first, last = find_logical_record(daf, head, t)
+    get_coefficients!(daf, head, data, first, last)
 
-@inline function spk_vector3(daf::DAF, seg::SPKSegmentType18, time::Number) 
-    return _spk3(daf, header(seg), cache(seg), time)
+    # Retrieve the windowsize
+    @inbounds N = data.p[3]
+
+    if head.subtype == 0
+        # Interpolate the position
+        x = hermite(data.buff, data.states, data.epochs, t, 1, N)
+        y = hermite(data.buff, data.states, data.epochs, t, 2, N)
+        z = hermite(data.buff, data.states, data.epochs, t, 3, N)
+
+        # Interpolate the velocity and acceleration
+        vx, ax = ∂hermite(data.buff, data.states, data.epochs, t, 7, N)
+        vy, ay = ∂hermite(data.buff, data.states, data.epochs, t, 8, N)
+        vz, az = ∂hermite(data.buff, data.states, data.epochs, t, 9, N)
+
+    elseif head.subtype == 1
+        # Interpolate the position
+        x = lagrange(data.buff, data.states, data.epochs, t, 1, N)
+        y = lagrange(data.buff, data.states, data.epochs, t, 2, N)
+        z = lagrange(data.buff, data.states, data.epochs, t, 3, N)
+
+        # Interpolate the velocity and acceleration
+        vx, ax = ∂lagrange(data.buff, data.states, data.epochs, t, 4, N)
+        vy, ay = ∂lagrange(data.buff, data.states, data.epochs, t, 5, N)
+        vz, az = ∂lagrange(data.buff, data.states, data.epochs, t, 6, N)
+
+    else 
+        # SPK type 19 mini-segment
+        # Interpolate the position, velocity and acceleration
+        x, vx, ax = ∂²hermite(data.buff, data.states, data.epochs, t, 1, N)
+        y, vy, ay = ∂²hermite(data.buff, data.states, data.epochs, t, 2, N)
+        z, vz, az = ∂²hermite(data.buff, data.states, data.epochs, t, 3, N)
+
+    end
+
+    return SA[x, y, z, vx, vy, vz, ax, ay, az]
+
 end
 
-@inline function spk_vector6(daf::DAF, seg::SPKSegmentType18, time::Number)
-    return _spk6(daf, header(seg), cache(seg), time)
-end
+function spk_vector12(daf::DAF, head::SPKSegmentHeader18, data::SPKSegmentCache18, t::Number)
 
-@inline function spk_vector9(daf::DAF, seg::SPKSegmentType18, time::Number)
-    return _spk9(daf, header(seg), cache(seg), time)
-end
+    # Retrieve the indexes of the first and last point and the size of the 
+    # polynomial sliding-window. 
+    first, last = find_logical_record(daf, head, t)
+    get_coefficients!(daf, head, data, first, last)
 
-@inline function spk_vector12(daf::DAF, seg::SPKSegmentType18, time::Number)
-    return _spk12(daf, header(seg), cache(seg), time)
-end
+    # Retrieve the windowsize
+    @inbounds N = data.p[3]
+
+    if head.subtype == 0
+        # Interpolate the position
+        x = hermite(data.buff, data.states, data.epochs, t, 1, N)
+        y = hermite(data.buff, data.states, data.epochs, t, 2, N)
+        z = hermite(data.buff, data.states, data.epochs, t, 3, N)
+
+        # Interpolate the velocity, acceleration and jerk
+        vx, ax, jx = ∂²hermite(data.buff, data.states, data.epochs, t, 7, N)
+        vy, ay, jy = ∂²hermite(data.buff, data.states, data.epochs, t, 8, N)
+        vz, az, jz = ∂²hermite(data.buff, data.states, data.epochs, t, 9, N)
+
+    elseif head.subtype == 1
+        # Interpolate the position
+        x = lagrange(data.buff, data.states, data.epochs, t, 1, N)
+        y = lagrange(data.buff, data.states, data.epochs, t, 2, N)
+        z = lagrange(data.buff, data.states, data.epochs, t, 3, N)
+
+        # Interpolate the velocity, acceleration and jerk
+        vx, ax, jx = ∂²lagrange(data.buff, data.states, data.epochs, t, 4, N)
+        vy, ay, jy = ∂²lagrange(data.buff, data.states, data.epochs, t, 5, N)
+        vz, az, jz = ∂²lagrange(data.buff, data.states, data.epochs, t, 6, N)
+
+    else 
+        # SPK type 19 mini-segment
+        # Interpolate the position, velocity, acceleration and jerk
+        x, vx, ax, jx = ∂³hermite(data.buff, data.states, data.epochs, t, 1, N)
+        y, vy, ay, jy = ∂³hermite(data.buff, data.states, data.epochs, t, 2, N)
+        z, vz, az, jz = ∂³hermite(data.buff, data.states, data.epochs, t, 3, N)
+
+    end
+
+    return SA[x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz]
+
+end 
 
 
 """
@@ -270,168 +349,5 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader18, cache::SPKSegment
     end
 
     nothing
-
-end 
-
-
-function _spk3(daf::DAF, head::SPKSegmentHeader18, data::SPKSegmentCache18, time::Number)
-
-    # Retrieve the indexes of the first and last point and the size of the 
-    # polynomial sliding-window. 
-    first, last = find_logical_record(daf, head, time)
-    get_coefficients!(daf, head, data, first, last)
-
-    # Retrieve the windowsize
-    @inbounds N = data.p[3]
-
-    # Interpolate the position coefficients
-    if head.subtype == 0 || head.subtype == 2
-        x = hermite(data.buff, data.states, data.epochs, time, 1, N)
-        y = hermite(data.buff, data.states, data.epochs, time, 2, N)
-        z = hermite(data.buff, data.states, data.epochs, time, 3, N)
-
-    else
-        x = lagrange(data.buff, data.states, data.epochs, time, 1, N)
-        y = lagrange(data.buff, data.states, data.epochs, time, 2, N)
-        z = lagrange(data.buff, data.states, data.epochs, time, 3, N)
-
-    end
-
-    return SA[x, y, z]
-    
-end
-
-function _spk6(daf::DAF, head::SPKSegmentHeader18, data::SPKSegmentCache18, time::Number)
-
-    # Retrieve the indexes of the first and last point and the size of the 
-    # polynomial sliding-window. 
-    first, last = find_logical_record(daf, head, time)
-    get_coefficients!(daf, head, data, first, last)
-
-    # Retrieve the windowsize
-    @inbounds N = data.p[3]
-
-    if head.subtype == 0
-        # Interpolate the position
-        x = hermite(data.buff, data.states, data.epochs, time, 1, N)
-        y = hermite(data.buff, data.states, data.epochs, time, 2, N)
-        z = hermite(data.buff, data.states, data.epochs, time, 3, N)
-
-        # Interpolate the velocity
-        vx = hermite(data.buff, data.states, data.epochs, time, 7, N)
-        vy = hermite(data.buff, data.states, data.epochs, time, 8, N)
-        vz = hermite(data.buff, data.states, data.epochs, time, 9, N)
-
-    elseif head.subtype == 1
-        # Interpolate the position
-        x = lagrange(data.buff, data.states, data.epochs, time, 1, N)
-        y = lagrange(data.buff, data.states, data.epochs, time, 2, N)
-        z = lagrange(data.buff, data.states, data.epochs, time, 3, N)
-
-        # Interpolate the velocity
-        vx = lagrange(data.buff, data.states, data.epochs, time, 4, N)
-        vy = lagrange(data.buff, data.states, data.epochs, time, 5, N)
-        vz = lagrange(data.buff, data.states, data.epochs, time, 6, N)
-
-    else 
-        # SPK type 19 mini-segment
-        # Interpolate the position and velocity 
-        x, vx = ∂hermite(data.buff, data.states, data.epochs, time, 1, N)
-        y, vy = ∂hermite(data.buff, data.states, data.epochs, time, 2, N)
-        z, vz = ∂hermite(data.buff, data.states, data.epochs, time, 3, N)
-
-    end
-
-    return SA[x, y, z, vx, vy, vz]
-
-end
-
-function _spk9(daf::DAF, head::SPKSegmentHeader18, data::SPKSegmentCache18, time::Number)
-
-    # Retrieve the indexes of the first and last point and the size of the 
-    # polynomial sliding-window. 
-    first, last = find_logical_record(daf, head, time)
-    get_coefficients!(daf, head, data, first, last)
-
-    # Retrieve the windowsize
-    @inbounds N = data.p[3]
-
-    if head.subtype == 0
-        # Interpolate the position
-        x = hermite(data.buff, data.states, data.epochs, time, 1, N)
-        y = hermite(data.buff, data.states, data.epochs, time, 2, N)
-        z = hermite(data.buff, data.states, data.epochs, time, 3, N)
-
-        # Interpolate the velocity and acceleration
-        vx, ax = ∂hermite(data.buff, data.states, data.epochs, time, 7, N)
-        vy, ay = ∂hermite(data.buff, data.states, data.epochs, time, 8, N)
-        vz, az = ∂hermite(data.buff, data.states, data.epochs, time, 9, N)
-
-    elseif head.subtype == 1
-        # Interpolate the position
-        x = lagrange(data.buff, data.states, data.epochs, time, 1, N)
-        y = lagrange(data.buff, data.states, data.epochs, time, 2, N)
-        z = lagrange(data.buff, data.states, data.epochs, time, 3, N)
-
-        # Interpolate the velocity and acceleration
-        vx, ax = ∂lagrange(data.buff, data.states, data.epochs, time, 4, N)
-        vy, ay = ∂lagrange(data.buff, data.states, data.epochs, time, 5, N)
-        vz, az = ∂lagrange(data.buff, data.states, data.epochs, time, 6, N)
-
-    else 
-        # SPK type 19 mini-segment
-        # Interpolate the position, velocity and acceleration
-        x, vx, ax = ∂²hermite(data.buff, data.states, data.epochs, time, 1, N)
-        y, vy, ay = ∂²hermite(data.buff, data.states, data.epochs, time, 2, N)
-        z, vz, az = ∂²hermite(data.buff, data.states, data.epochs, time, 3, N)
-
-    end
-
-    return SA[x, y, z, vx, vy, vz, ax, ay, az]
-
-end
-
-function _spk12(daf::DAF, head::SPKSegmentHeader18, data::SPKSegmentCache18, time::Number)
-
-    # Retrieve the indexes of the first and last point and the size of the 
-    # polynomial sliding-window. 
-    first, last = find_logical_record(daf, head, time)
-    get_coefficients!(daf, head, data, first, last)
-
-    # Retrieve the windowsize
-    @inbounds N = data.p[3]
-
-    if head.subtype == 0
-        # Interpolate the position
-        x = hermite(data.buff, data.states, data.epochs, time, 1, N)
-        y = hermite(data.buff, data.states, data.epochs, time, 2, N)
-        z = hermite(data.buff, data.states, data.epochs, time, 3, N)
-
-        # Interpolate the velocity, acceleration and jerk
-        vx, ax, jx = ∂²hermite(data.buff, data.states, data.epochs, time, 7, N)
-        vy, ay, jy = ∂²hermite(data.buff, data.states, data.epochs, time, 8, N)
-        vz, az, jz = ∂²hermite(data.buff, data.states, data.epochs, time, 9, N)
-
-    elseif head.subtype == 1
-        # Interpolate the position
-        x = lagrange(data.buff, data.states, data.epochs, time, 1, N)
-        y = lagrange(data.buff, data.states, data.epochs, time, 2, N)
-        z = lagrange(data.buff, data.states, data.epochs, time, 3, N)
-
-        # Interpolate the velocity, acceleration and jerk
-        vx, ax, jx = ∂²lagrange(data.buff, data.states, data.epochs, time, 4, N)
-        vy, ay, jy = ∂²lagrange(data.buff, data.states, data.epochs, time, 5, N)
-        vz, az, jz = ∂²lagrange(data.buff, data.states, data.epochs, time, 6, N)
-
-    else 
-        # SPK type 19 mini-segment
-        # Interpolate the position, velocity, acceleration and jerk
-        x, vx, ax, jx = ∂³hermite(data.buff, data.states, data.epochs, time, 1, N)
-        y, vy, ay, jy = ∂³hermite(data.buff, data.states, data.epochs, time, 2, N)
-        z, vz, az, jz = ∂³hermite(data.buff, data.states, data.epochs, time, 3, N)
-
-    end
-
-    return SA[x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz]
 
 end 

@@ -422,6 +422,14 @@ end
 Header instance for SPK segments of type 19.
 
 ### Fields 
+- `n` -- `Int` number of states in the segment.
+- `ndirs` -- `Int` number of epoch directories.
+- `times` -- Storage for interval directories or start times (when ndirs = 0).
+- `iaa` - `Int` initial segment file address.
+- `etid` -- `Int` byte address for the interval table (after all the minisegment data).
+- `ptid` -- `Int` byte for the pointer table.
+- `usefirst` -- `Bool` boundary flag, true if the preceding segment should be used.
+- `type` -- `Int` either type 18 or 19.
 """
 struct SPKSegmentHeader19 <: AbstractSPKHeader
     n::Int 
@@ -431,6 +439,7 @@ struct SPKSegmentHeader19 <: AbstractSPKHeader
     etid::Int 
     ptid::Int 
     usefirst::Bool
+    type::Int 
 end
 
 """
@@ -447,7 +456,8 @@ end
 """ 
     SPKSegmentType19 <: AbstractSPKSegment
 
-Segment instance for SPK segments of type 19.
+Segment instance for SPK segments of type 18 and 19. Type 18 segments are treated as 
+special cases of a type 19 with a single mini-segment.
 
 ### Fields 
 - `head` -- Segment header 
@@ -481,7 +491,7 @@ const SPK_SEGMENTLIST_MAPPING = Dict(
     12 => 4,
     13 => 5,
     18 => 6,
-    19 => 7,
+    19 => 6,
     21 => 1,
 )
 
@@ -512,7 +522,6 @@ struct SPKSegmentList
     spk3::Vector{SPKSegmentType3}
     spk8::Vector{SPKSegmentType8}
     spk9::Vector{SPKSegmentType9}
-    spk18::Vector{SPKSegmentType18}
     spk19::Vector{SPKSegmentType19}
 
     function SPKSegmentList()
@@ -522,7 +531,6 @@ struct SPKSegmentList
             SPKSegmentType3[], 
             SPKSegmentType8[],
             SPKSegmentType9[],
-            SPKSegmentType18[],
             SPKSegmentType19[]
         )
     end
