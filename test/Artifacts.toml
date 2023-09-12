@@ -1,7 +1,7 @@
 [testdata]
-git-tree-sha1 = "fca22dec8a9827a3062ec0fc31f1b31b49051334"
-lazy = true 
+git-tree-sha1 = "db04ad5cc71488e0920f0f7db55ed9f68c019d2b"
+lazy = true
 
     [[testdata.download]]
-    sha256 = "ddbc43bd816699bdcef86d956ba1774d95c534519ec13b97abda5cf3fce6d761"
-    url = "https://gist.github.com/MicheleCeresoli/3d42bb3ab48664021a0e24909fcc9fd4/raw/fca22dec8a9827a3062ec0fc31f1b31b49051334.tar.gz"
+    sha256 = "f36137f9b5bd65b56fa14328fb6c309262adca6464f10eaee1e82308cde25139"
+    url = "https://gist.github.com/MicheleCeresoli/22b251382e564f1d939a00f173224c0d/raw/db04ad5cc71488e0920f0f7db55ed9f68c019d2b.tar.gz"
