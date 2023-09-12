@@ -28,6 +28,7 @@ include("spk/spk3.jl")
 include("spk/spk8.jl")
 include("spk/spk9.jl")
 include("spk/spk18.jl")
+include("spk/spk19.jl")
 
 # Descriptors linking and provider 
 include("links.jl")
@@ -38,5 +39,7 @@ include("transform.jl")
 
 # Provide compatibility with JSMDInterfaces
 include("interfaces.jl")
+
+# TODO: add precompilation
 
 end

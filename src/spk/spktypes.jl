@@ -366,7 +366,7 @@ Header instance for SPK segments of type 18.
 - `subtype` -- `Int` type 18 subtype, either 0 (Hermite) or 1 (Lagrange)
 - `packetsize` -- `Int` packet size for each point, either 12 (Hermite) or 6 (Lagrange)
 """
-struct SPKSegmentHeader18 <: AbstractSPKHeader
+mutable struct SPKSegmentHeader18 <: AbstractSPKHeader
     n::Int
     ndirs::Int 
     epochs::Vector{Float64}
@@ -412,6 +412,61 @@ end
 @inline @inbounds cache(spk::SPKSegmentType18) = spk.cache[Threads.threadid()]
 
 
+# ----------------------------------
+# SPK TYPE 19
+# ----------------------------------
+
+"""
+    SPKSegmentHeader19 <: AbstractSPKHeader
+
+Header instance for SPK segments of type 19.
+
+### Fields 
+"""
+struct SPKSegmentHeader19 <: AbstractSPKHeader
+    n::Int 
+    ndirs::Int 
+    times::Vector{Float64}
+    iaa::Int 
+    etid::Int 
+    ptid::Int 
+    usefirst::Bool
+end
+
+"""
+    SPKSegmentCache19 <: AbstractSPKCache
+
+Cache instance for SPK segments of type 19.
+"""
+struct SPKSegmentCache19 <: AbstractSPKCache
+    minihead::SPKSegmentHeader18
+    minidata::SPKSegmentCache18
+    id::MVector{1, Int}
+end 
+
+""" 
+    SPKSegmentType19 <: AbstractSPKSegment
+
+Segment instance for SPK segments of type 19.
+
+### Fields 
+- `head` -- Segment header 
+- `cache` -- Segment cache 
+
+### References 
+- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
+- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
+"""
+struct SPKSegmentType19 <: AbstractSPKSegment
+    head::SPKSegmentHeader19
+    cache::Vector{SPKSegmentCache19}
+end
+
+@inline header(spk::SPKSegmentType19) = spk.head 
+@inline @inbounds cache(spk::SPKSegmentType19) = spk.cache[Threads.threadid()]
+
+
+
 """
     SPK_SEGMENT_MAPPING
 
@@ -426,6 +481,7 @@ const SPK_SEGMENTLIST_MAPPING = Dict(
     12 => 4,
     13 => 5,
     18 => 6,
+    19 => 7,
     21 => 1,
 )
 
@@ -457,6 +513,7 @@ struct SPKSegmentList
     spk8::Vector{SPKSegmentType8}
     spk9::Vector{SPKSegmentType9}
     spk18::Vector{SPKSegmentType18}
+    spk19::Vector{SPKSegmentType19}
 
     function SPKSegmentList()
         new(
@@ -465,7 +522,8 @@ struct SPKSegmentList
             SPKSegmentType3[], 
             SPKSegmentType8[],
             SPKSegmentType9[],
-            SPKSegmentType18[]
+            SPKSegmentType18[],
+            SPKSegmentType19[]
         )
     end
 end
