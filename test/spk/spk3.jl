@@ -48,8 +48,8 @@ DJ2000 = 2451545
         @test yj4 ≈ yc4 atol=1e-9 rtol=1e-11
 
         # Test against SPICE 
-        @test ys1 ≈ yj1 atol=1e-9 rtol=1e-14
-        @test ys2 ≈ yj2 atol=1e-9 rtol=1e-14
+        @test ys1 ≈ yj1 atol=1e-13 rtol=1e-14
+        @test ys2 ≈ yj2 atol=1e-13 rtol=1e-14
         
         # Test if AUTODIFF works 
         # Position (position doesn't work exactly because they have different coefficients)

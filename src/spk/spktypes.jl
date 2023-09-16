@@ -366,7 +366,7 @@ Header instance for SPK segments of type 18.
 - `subtype` -- `Int` type 18 subtype, either 0 (Hermite) or 1 (Lagrange)
 - `packetsize` -- `Int` packet size for each point, either 12 (Hermite) or 6 (Lagrange)
 """
-struct SPKSegmentHeader18 <: AbstractSPKHeader
+mutable struct SPKSegmentHeader18 <: AbstractSPKHeader
     n::Int
     ndirs::Int 
     epochs::Vector{Float64}
@@ -412,6 +412,133 @@ end
 @inline @inbounds cache(spk::SPKSegmentType18) = spk.cache[Threads.threadid()]
 
 
+# ----------------------------------
+# SPK TYPE 19
+# ----------------------------------
+
+"""
+    SPKSegmentHeader19 <: AbstractSPKHeader
+
+Header instance for SPK segments of type 19.
+
+### Fields 
+- `n` -- `Int` number of states in the segment.
+- `ndirs` -- `Int` number of epoch directories.
+- `times` -- Storage for interval directories or start times (when ndirs = 0).
+- `iaa` - `Int` initial segment file address.
+- `etid` -- `Int` byte address for the interval table (after all the minisegment data).
+- `ptid` -- `Int` byte for the pointer table.
+- `usefirst` -- `Bool` boundary flag, true if the preceding segment should be used.
+- `type` -- `Int` either type 18 or 19.
+"""
+struct SPKSegmentHeader19 <: AbstractSPKHeader
+    n::Int 
+    ndirs::Int 
+    times::Vector{Float64}
+    iaa::Int 
+    etid::Int 
+    ptid::Int 
+    usefirst::Bool
+    type::Int 
+end
+
+"""
+    SPKSegmentCache19 <: AbstractSPKCache
+
+Cache instance for SPK segments of type 19.
+"""
+struct SPKSegmentCache19 <: AbstractSPKCache
+    minihead::SPKSegmentHeader18
+    minidata::SPKSegmentCache18
+    id::MVector{1, Int}
+end 
+
+""" 
+    SPKSegmentType19 <: AbstractSPKSegment
+
+Segment instance for SPK segments of type 18 and 19. Type 18 segments are treated as 
+special cases of a type 19 with a single mini-segment.
+
+### Fields 
+- `head` -- Segment header 
+- `cache` -- Segment cache 
+
+### References 
+- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
+- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
+"""
+struct SPKSegmentType19 <: AbstractSPKSegment
+    head::SPKSegmentHeader19
+    cache::Vector{SPKSegmentCache19}
+end
+
+@inline header(spk::SPKSegmentType19) = spk.head 
+@inline @inbounds cache(spk::SPKSegmentType19) = spk.cache[Threads.threadid()]
+
+
+# ----------------------------------
+# SPK TYPE 20
+# ----------------------------------
+
+"""
+    SPKSegmentHeader20 <: AbstractSPKHeader
+
+Header instance for SPK segments of type 20.
+
+### Fields 
+"""
+struct SPKSegmentHeader20 <: AbstractSPKHeader 
+    dscale::Float64 
+    tscale::Float64 
+    tstart::Float64
+    tlen::Float64 
+    recsize::Float64 
+    order::Int 
+    N::Int 
+    n::Int 
+    iaa::Int 
+end
+
+""" 
+    SPKSegmentCache2 <: AbstractSPKCache 
+
+Cache instance for SPK segments of type 20.
+
+### Fields 
+- `A` -- Chebyshev's polynomial coefficients, with size (ncomp, order)
+- `p` -- Stores the record mid point and radius and scale factor
+- `x1` -- Values of the Chebyshev's polynomials
+- `x2` -- Derivatives of the Chebyshev's polynomials
+- `id` -- Index of the currently loaded logical record
+"""
+struct SPKSegmentCache20 <: AbstractSPKCache
+    id::MVector{1, Int}
+end
+
+""" 
+    SPKSegmentType2 <: AbstractSPKSegment
+
+Segment instance for SPK segments of type 20, which contain Chebyshev polynomial coefficients 
+for the position and/or state of the body as function of time. This data type is normally 
+used for planet barycenters, and for satellites whose ephemerides are integrated.
+
+### Fields 
+- `head` -- Segment header 
+- `cache` -- Segment cache 
+
+### References 
+- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
+- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
+"""
+struct SPKSegmentType20 <: AbstractSPKSegment
+    head::SPKSegmentHeader20
+    cache::Vector{SPKSegmentCache20}
+end
+
+@inline header(spk::SPKSegmentType20) = spk.head 
+@inline @inbounds cache(spk::SPKSegmentType20) = spk.cache[Threads.threadid()]
+
+
 """
     SPK_SEGMENT_MAPPING
 
@@ -426,6 +553,8 @@ const SPK_SEGMENTLIST_MAPPING = Dict(
     12 => 4,
     13 => 5,
     18 => 6,
+    19 => 6,
+    20 => 7,
     21 => 1,
 )
 
@@ -456,7 +585,8 @@ struct SPKSegmentList
     spk3::Vector{SPKSegmentType3}
     spk8::Vector{SPKSegmentType8}
     spk9::Vector{SPKSegmentType9}
-    spk18::Vector{SPKSegmentType18}
+    spk19::Vector{SPKSegmentType19}
+    spk20::Vector{SPKSegmentType20}
 
     function SPKSegmentList()
         new(
@@ -465,7 +595,8 @@ struct SPKSegmentList
             SPKSegmentType3[], 
             SPKSegmentType8[],
             SPKSegmentType9[],
-            SPKSegmentType18[]
+            SPKSegmentType19[],
+            SPKSegmentType20[]
         )
     end
 end

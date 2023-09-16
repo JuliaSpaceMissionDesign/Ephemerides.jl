@@ -21,19 +21,36 @@ DJ2000 = 2451545
         desc = ephj.files[1].desc[1]
         t1j, t2j = desc.tstart, desc.tend
 
+        head = ephj.files[1].seglist.spk9[1].head
+
         cid = Int(desc.cid)
         tid = Int(desc.tid)
 
-        # Test values 
-        yc1 = zeros(3);
-        yc2 = zeros(6);
-        yc3 = zeros(9);
-        yc4 = zeros(12);
+        # # Test values 
+        # yc1 = zeros(3);
+        # yc2 = zeros(6);
+        # yc3 = zeros(9);
+        # yc4 = zeros(12);
 
         ep = t1j:1:t2j
-        for j in 1:2000
+        for j in 1:3000
             
-            tj = j == 1 ? t1j : (j == 2 ? t2j : rand(ep))
+            if j == 1 
+                # Test initial time
+                tj = t1j 
+            elseif j == 2
+                # Test final time
+                tj = t2j 
+            elseif j < 100
+                # Test values at the directory epochs
+                tj = rand(head.epochs)
+            elseif j < 500
+                # Test directory handling close to the borders
+                tj = min(t2j, max(rand(head.epochs) + randn(), t1j))
+            else 
+                tj = rand(ep)
+            end
+
             tc = tj/86400
 
             yj1 = ephem_vector3(ephj, cid, tid, tj);
@@ -56,8 +73,8 @@ DJ2000 = 2451545
             # @test yj4 ≈ yc4 atol=1e-9 rtol=1e-9
 
             # Test against SPICE
-            @test yj1 ≈ ys1 atol=1e-9 rtol=1e-14
-            @test yj2 ≈ ys2 atol=1e-9 rtol=1e-14
+            @test yj1 ≈ ys1 atol=1e-13 rtol=1e-14
+            @test yj2 ≈ ys2 atol=1e-13 rtol=1e-14
 
             # Test if AUTODIFF works 
             # Position (doesn't work exactly for SPK type 9 because the coefficients are 

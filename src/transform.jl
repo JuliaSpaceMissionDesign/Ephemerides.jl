@@ -99,11 +99,15 @@ for (order, pfun1, afun1, fun1) in zip(
                     return $(fun1)(daf, get_segment(segment_list(daf), 4, eid), time)
                 elseif lid == 5
                     return $(fun1)(daf, get_segment(segment_list(daf), 5, eid), time)
-                else
+                elseif lid == 6
                     return $(fun1)(daf, get_segment(segment_list(daf), 6, eid), time)
+                else 
+                    return $(fun1)(daf, get_segment(segment_list(daf), 7, eid), time)
                 end
             end
         end
+
+        # TODO: write custom transform function for PCKs which have a limited subset of types
 
     end
 

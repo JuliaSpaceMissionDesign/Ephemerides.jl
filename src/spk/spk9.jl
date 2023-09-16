@@ -235,7 +235,7 @@ function find_logical_record(daf::DAF, head::SPKSegmentHeader9, time::Number)
         end
 
         index = subdir*100
-        stop_idx = max(index + 100, head.n)
+        stop_idx = min(index + 100, head.n)
 
         # Find the actual epoch
         found = false

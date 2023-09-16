@@ -1,4 +1,6 @@
 
+# TODO: merge SPK type 2 and 3? 
+
 """ 
     SPKSegmentHeader2(daf::DAF, desc::DAFSegmentDescriptor)
 
