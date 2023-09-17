@@ -108,12 +108,8 @@ function ∂chebyshev(cache::InterpCache, cₖ, t::Number, idx::Int, N::Int, Δt
         end
         
     end
-    
-    vx *= Δt 
-    vy *= Δt 
-    vz *= Δt
 
-    return x, y, z, vx, vy, vz
+    return x, y, z, Δt*vx, Δt*vy, Δt*vz
 
 end 
 
@@ -192,17 +188,7 @@ function ∂²chebyshev(cache::InterpCache, cₖ, t::Number, idx::Int, N::Int, �
         
     end
 
-    vx *= Δt
-    vy *= Δt
-    vz *= Δt
-
-    Δt² = Δt*Δt
-
-    ax *= Δt²
-    ay *= Δt²
-    az *= Δt²
-
-    return x, y, z, vx, vy, vz, ax, ay, az
+    return x, y, z, Δt*vx, Δt*vy, Δt*vz, Δt²*ax, Δt²*ay, Δt²*az
 
 end 
 
@@ -294,22 +280,9 @@ function ∂³chebyshev(cache::InterpCache, cₖ, t::Number, idx::Int, N::Int, �
         
     end
 
-    vx *= Δt
-    vy *= Δt
-    vz *= Δt
-
     Δt² = Δt*Δt
-
-    ax *= Δt²
-    ay *= Δt²
-    az *= Δt²
-
     Δt³ = Δt²*Δt
 
-    jx *= Δt³
-    jy *= Δt³
-    jz *= Δt³
-
-    return x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz
+    return x, y, z, Δt*vx, Δt*vy, Δt*vz, Δt²*ax, Δt²*ay, Δt²*az, Δt³*jx, Δt³*jy, Δt³*jz
 
 end 

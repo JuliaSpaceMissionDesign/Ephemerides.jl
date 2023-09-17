@@ -479,6 +479,7 @@ struct SPKSegmentCache20 <: AbstractSPKCache
     id::MVector{1, Int}
     p::MVector{3, Float64}
     A::Matrix{Float64}
+    buff::InterpCache{Float64}
 end
 
 """ 
