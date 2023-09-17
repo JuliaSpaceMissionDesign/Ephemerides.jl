@@ -600,6 +600,10 @@ function create_spk_segment(daf::DAF, desc::DAFSegmentDescriptor)
     elseif mapped_spktype == 6
         SPKSegmentType20(daf, desc)
         
+    else 
+        throw(jEph.EphemerisError(
+            "unsupported SPK segment type $(segment_type(desc)) found in $(filepath(daf))."
+        ))
     end
     
 end
