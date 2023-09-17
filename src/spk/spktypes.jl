@@ -375,27 +375,6 @@ struct SPKSegmentCache18 <: AbstractSPKCache
     buff::InterpCache{Float64}
 end 
 
-""" 
-    SPKSegmentType18 <: AbstractSPKSegment
-
-Segment instance for SPK segments of type 18.
-
-### Fields 
-- `head` -- Segment header 
-- `cache` -- Segment cache 
-
-### References 
-- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
-- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
-"""
-struct SPKSegmentType18 <: AbstractSPKSegment
-    head::SPKSegmentHeader18
-    cache::Vector{SPKSegmentCache18}
-end
-
-@inline header(spk::SPKSegmentType18) = spk.head 
-@inline @inbounds cache(spk::SPKSegmentType18) = spk.cache[Threads.threadid()]
-
 
 # ----------------------------------
 # SPK TYPE 19
