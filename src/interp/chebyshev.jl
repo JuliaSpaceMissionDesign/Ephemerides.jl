@@ -10,7 +10,7 @@ index of the starting row (in 0-based notation) in the matrix of coefficients `c
     `x` is a re-work of the actual ascissa value that lies between [-1, 1]
 
 ### See Also 
-See also [`∂chebyshev`](@ref), [`∂²chebyshev](@ref) and [`∂³chebyshev`](@ref)
+See also [`∂chebyshev`](@ref), [`∂²chebyshev`](@ref) and [`∂³chebyshev`](@ref)
 
 """
 function chebyshev(cache::InterpCache, cₖ, t::Number, idx::Int, N::Int)
@@ -51,7 +51,7 @@ end
 
 
 """
-    chebyshev(cache::InterpCache, cₖ, t::Number, idx::Int, N::Int, Δt)
+    ∂chebyshev(cache::InterpCache, cₖ, t::Number, idx::Int, N::Int, Δt)
 
 Evaluate a sum of Cheybyshev polynomials of the first kind and its derivative at `t` 
 using a recursive algorithm. It simultenously evalutes the 3 state components. `idx` 
@@ -61,7 +61,7 @@ is the index of the starting row (in 0-based notation) in the matrix of coeffici
     `x` is a re-work of the actual ascissa value that lies between [-1, 1]
 
 ### See Also 
-See also [`chebyshev`](@ref), [`∂²chebyshev](@ref) and [`∂³chebyshev`](@ref)
+See also [`chebyshev`](@ref), [`∂²chebyshev`](@ref) and [`∂³chebyshev`](@ref)
 
 """
 function ∂chebyshev(cache::InterpCache, cₖ, t::Number, idx::Int, N::Int, Δt::Number)
@@ -129,7 +129,7 @@ is the index of the starting row (in 0-based notation) in the matrix of coeffici
     `x` is a re-work of the actual ascissa value that lies between [-1, 1]
 
 ### See Also 
-See also [`chebyshev`](@ref), [`∂chebyshev](@ref) and [`∂³chebyshev`](@ref)
+See also [`chebyshev`](@ref), [`∂chebyshev`](@ref) and [`∂³chebyshev`](@ref)
 
 """
 function ∂²chebyshev(cache::InterpCache, cₖ, t::Number, idx::Int, N::Int, Δt)
@@ -217,7 +217,7 @@ is the index of the starting row (in 0-based notation) in the matrix of coeffici
     `x` is a re-work of the actual ascissa value that lies between [-1, 1]
 
 ### See Also 
-See also [`chebyshev`](@ref), [`∂chebyshev](@ref) and [`∂²chebyshev](@ref)
+See also [`chebyshev`](@ref), [`∂chebyshev`](@ref) and [`∂²chebyshev`](@ref)
 
 """
 function ∂³chebyshev(cache::InterpCache, cₖ, t::Number, idx::Int, N::Int, Δt)
