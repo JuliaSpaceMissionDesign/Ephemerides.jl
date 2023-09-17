@@ -146,6 +146,7 @@ Header instance for SPK segments of type 2 and 3.
 - `recsize` -- `Int` byte size of each logical record
 - `ncomp` -- `Int` number of vector components
 - `iaa` -- `Int` initial segment file address
+- `type` -- `Int` SPK segment type, either 2 or 2
 """
 struct SPKSegmentHeader2 <: AbstractSPKHeader
     tstart::Float64     
@@ -156,6 +157,7 @@ struct SPKSegmentHeader2 <: AbstractSPKHeader
     recsize::Int
     ncomp::Int
     iaa::Int    
+    type::Int
 end
 
 """ 
@@ -166,24 +168,22 @@ Cache instance for SPK segments of type 2 and 3.
 ### Fields 
 - `A` -- Chebyshev's polynomial coefficients, with size (ncomp, order)
 - `p` -- Stores the record mid point and radius and scale factor
-- `x1` -- Values of the Chebyshev's polynomials
-- `x2` -- Derivatives of the Chebyshev's polynomials
+- `buff` -- Stores the buffers for the Chebyshev polynomials
 - `id` -- Index of the currently loaded logical record
 """
 struct SPKSegmentCache2 <: AbstractSPKCache
     A::Matrix{Float64}
     p::MVector{3, Float64} 
-    x1::DiffCache{Vector{Float64}, Vector{Float64}}
-    x2::DiffCache{Vector{Float64}, Vector{Float64}}
+    buff::InterpCache{Float64}
     id::MVector{1, Int}
 end
 
 """ 
     SPKSegmentType2 <: AbstractSPKSegment
 
-Segment instance for SPK segments of type 2, which contain Chebyshev polynomial coefficients 
-for the position and/or state of the body as function of time. This data type is normally 
-used for planet barycenters, and for satellites whose ephemerides are integrated.
+Segment instance for SPK segments of type 2 and 3, which contain Chebyshev polynomial 
+coefficients for the position and/or state of the body as function of time. This data type 
+is normally used for planet barycenters, and for satellites whose ephemerides are integrated.
 
 ### Fields 
 - `head` -- Segment header 
@@ -200,21 +200,6 @@ end
 
 @inline header(spk::SPKSegmentType2) = spk.head 
 @inline @inbounds cache(spk::SPKSegmentType2) = spk.cache[Threads.threadid()]
-
-# ----------------------------------
-# SPK TYPE 3
-# ----------------------------------
-
-"""
-    SPKSegmentType3 <: AbstractSPKSegment
-"""
-struct SPKSegmentType3 <: AbstractSPKSegment
-    head::SPKSegmentHeader2 
-    cache::Vector{SPKSegmentCache2}
-end
-
-@inline header(spk::SPKSegmentType3) = spk.head 
-@inline @inbounds cache(spk::SPKSegmentType3) = spk.cache[Threads.threadid()]
 
 
 # ----------------------------------
@@ -492,7 +477,7 @@ struct SPKSegmentHeader20 <: AbstractSPKHeader
     tscale::Float64 
     tstart::Float64
     tlen::Float64 
-    recsize::Float64 
+    recsize::Int 
     order::Int 
     N::Int 
     n::Int 
@@ -513,6 +498,8 @@ Cache instance for SPK segments of type 20.
 """
 struct SPKSegmentCache20 <: AbstractSPKCache
     id::MVector{1, Int}
+    p::MVector{3, Float64}
+    A::Matrix{Float64}
 end
 
 """ 
@@ -547,14 +534,14 @@ A dictionary mapping SPK segment types to the field index of the [`SPKSegmentLis
 const SPK_SEGMENTLIST_MAPPING = Dict(
     1 => 1,
     2 => 2,
-    3 => 3,
-    8 => 4,
-    9 => 5,
-    12 => 4,
-    13 => 5,
-    18 => 6,
-    19 => 6,
-    20 => 7,
+    3 => 2,
+    8 => 3,
+    9 => 4,
+    12 => 3,
+    13 => 4,
+    18 => 5,
+    19 => 5,
+    20 => 6,
     21 => 1,
 )
 
@@ -582,7 +569,6 @@ struct SPKSegmentList
     
     spk1::Vector{SPKSegmentType1}
     spk2::Vector{SPKSegmentType2}
-    spk3::Vector{SPKSegmentType3}
     spk8::Vector{SPKSegmentType8}
     spk9::Vector{SPKSegmentType9}
     spk19::Vector{SPKSegmentType19}
@@ -592,7 +578,6 @@ struct SPKSegmentList
         new(
             SPKSegmentType1[], 
             SPKSegmentType2[], 
-            SPKSegmentType3[], 
             SPKSegmentType8[],
             SPKSegmentType9[],
             SPKSegmentType19[],

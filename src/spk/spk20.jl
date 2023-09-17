@@ -50,7 +50,11 @@ end
 Initialise the cache for an SPK segment of type 20.
 """
 function SPKSegmentCache20(head::SPKSegmentHeader20) 
-    SPKSegmentCache20(MVector(-1))
+    SPKSegmentCache20(
+        MVector(-1), 
+        MVector(0.0, 0.0, 0.0), 
+        zeros(3, head.N)
+        )
 end
 
 """ 
@@ -87,7 +91,21 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType20, time::Number)
     head = header(seg)
     data = cache(seg)
 
+    # Find the logical record containing the Chebyshev coefficients at `time`
+    index = find_logical_record(head, time)
+    get_coefficients!(daf, head, data, index)
+
     # TODO: implement me
+    x, y, z = 0.0, 0.0, 0.0
+
+    # Normalise the time argument between [-1, 1]
+    t = chebyshev_time(head, time, index)
+
+    # Compute the Chebyshev polynomials
+    cheb = chebyshev!(data, t, head.N)
+    vel = interpol(data, cheb, 0, 1, 0, head.N)*head.dscale/head.tscale
+
+    return SA[x, y, z, vel[1], vel[2], vel[3]]
 
 end
 
@@ -129,11 +147,9 @@ end
 """
     get_coefficients!(daf::DAF, head, cache, index::Int)
 """
-function get_coefficients!(daf::DAF, head::SPKSegmentHeader20, cache::SPKSegmentCache20, 
-            time::Number)
-
-    # Find the logical record containing the Chebyshev coefficients at `time`
-    index = find_logical_record(head, time)
+function get_coefficients!(
+    daf::DAF, head::SPKSegmentHeader20, cache::SPKSegmentCache20, index::Int
+    )
 
     # Check whether the coefficients for this record are already loaded
     index == cache.id[1] && return nothing
@@ -141,9 +157,69 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader20, cache::SPKSegment
 
     # Address of desired logical record 
     k = 8*(head.iaa-1) + head.recsize*index
-    
-    # For type 20 we do not have repeated midpoint and radius values 
-    
 
+    # For type 20 we do not have repeated midpoint and radius values 
+    @inbounds for j = 1:3
+        
+        for i = 1:head.N 
+            cache.A[j, i] = get_float(array(daf), k, endian(daf))
+            k += 8
+        end
+
+        cache.p[j] = get_float(array(daf), k, endian(daf))
+        k += 8
+
+    end
+
+    nothing 
+
+end
+
+function chebyshev_time(head::SPKSegmentHeader20, time::Number, index::Int)
+    tbeg = head.tstart + head.tlen*index
+    hlen = head.tlen/2 
+    return (time - tbeg)/hlen - 1
+end
+
+
+
+"""
+    chebyshev!(cache::SPKSegmentCache2, t::Number, N::Int)
+"""
+function chebyshev!(cache::SPKSegmentCache20, t::Number, N::Int)
+
+    x1 = zeros(max(3, N))
+
+    @inbounds begin 
+        x1[1] = 1
+        x1[2] = t 
+        x1[3] = 2t*t - 1
+        
+        for j = 4:N 
+            x1[j] = 2*t*x1[j-1] - x1[j-2]
+        end
+    end
+
+    return x1
+end 
+
+"""
+    interpol(cache::SPKSegmentCache2, cheb, order::Int, scale::Number, offset::Int, N::Int)
+"""
+function interpol(cache::SPKSegmentCache20, cheb::AbstractVector{T}, order::Int, 
+            scale::Number, offset::Int, N::Int) where T
+
+    ax = 1 + offset
+    ay = 2 + offset
+    az = 3 + offset
+
+    x, y, z = T(0), T(0), T(0)
+    @inbounds @simd for i in order+1:N
+        x += cheb[i]*cache.A[ax, i]
+        y += cheb[i]*cache.A[ay, i]
+        z += cheb[i]*cache.A[az, i]
+    end
+
+    return scale*SA[x, y, z]
 
 end
