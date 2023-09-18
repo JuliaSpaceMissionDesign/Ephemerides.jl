@@ -188,6 +188,8 @@ function ∂²chebyshev(cache::InterpCache, cₖ, t::Number, idx::Int, N::Int, �
         
     end
 
+    Δt² = Δt*Δt
+
     return x, y, z, Δt*vx, Δt*vy, Δt*vz, Δt²*ax, Δt²*ay, Δt²*az
 
 end 
