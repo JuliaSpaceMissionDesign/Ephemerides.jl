@@ -2,11 +2,12 @@
 export ephem_vector3, ephem_vector6, ephem_vector9, ephem_vector12, 
        ephem_rotation3, ephem_rotation6, ephem_rotation9, ephem_rotation12
 
-for (order, pfun1, afun1, fun1) in zip(
+for (order, pfun1, afun1, pfun2, afun2) in zip(
     (1, 2, 3, 4),
     (:ephem_vector3, :ephem_vector6, :ephem_vector9, :ephem_vector12),
     (:ephem_rotation3, :ephem_rotation6, :ephem_rotation9, :ephem_rotation12),
-    (:spk_vector3, :spk_vector6, :spk_vector9, :spk_vector12)
+    (:spk_vector3, :spk_vector6, :spk_vector9, :spk_vector12),
+    (:pck_vector3, :pck_vector6, :pck_vector9, :pck_vector12)
 )
 
     @eval begin 
@@ -24,7 +25,7 @@ for (order, pfun1, afun1, fun1) in zip(
             if haskey(links, from) && haskey(links[from], to)
                 for link in links[from][to] 
                     if initial_time(link) <= time <= final_time(link)   
-                        return factor(link)*$(fun1)(get_daf(eph, file_id(link)), link, time)
+                        return factor(link)*$(pfun2)(get_daf(eph, file_id(link)), link, time)
                     end
                 end
             else 
@@ -58,7 +59,7 @@ for (order, pfun1, afun1, fun1) in zip(
             if haskey(links, from) && haskey(links[from], to)
                 for link in links[from][to] 
                     if initial_time(link) <= time <= final_time(link)   
-                        return factor(link)*$(fun1)(get_daf(eph, file_id(link)), link, time)
+                        return factor(link)*$(afun2)(get_daf(eph, file_id(link)), link, time)
                     end
                 end
             else 
@@ -79,7 +80,7 @@ for (order, pfun1, afun1, fun1) in zip(
 
         end
 
-        function ($fun1)(daf::DAF, link::SPKLink, time::Number)
+        function ($pfun2)(daf::DAF, link::SPKLink, time::Number)
 
             # Retrieve list and element link IDs
             lid = list_id(link)
@@ -88,25 +89,36 @@ for (order, pfun1, afun1, fun1) in zip(
             # Use binary search to reduce the time spent within the if\cycle
             if lid < 4  
                 if lid == 1 
-                    return $(fun1)(daf, get_segment(segment_list(daf), 1, eid), time)
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 1, eid), time)
                 elseif lid == 2
-                    return $(fun1)(daf, get_segment(segment_list(daf), 2, eid), time)
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 2, eid), time)
                 else
-                    return $(fun1)(daf, get_segment(segment_list(daf), 3, eid), time)
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 3, eid), time)
                 end
             else
                 if lid == 4
-                    return $(fun1)(daf, get_segment(segment_list(daf), 4, eid), time)
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 4, eid), time)
                 elseif lid == 5
-                    return $(fun1)(daf, get_segment(segment_list(daf), 5, eid), time)
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 5, eid), time)
                 else 
-                    return $(fun1)(daf, get_segment(segment_list(daf), 6, eid), time)
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 6, eid), time)
                 end
             end
         end
 
-        # TODO: write custom transform function for PCKs which have a limited subset of types
+        function ($afun2)(daf::DAF, link::SPKLink, time::Number)
 
+            # Retrieve list and element link IDs
+            lid = list_id(link)
+            eid = element_id(link)
+            
+            if lid == 2 
+                return $(pfun2)(daf, get_segment(segment_list(daf), 2, eid), time)
+            else
+                return $(pfun2)(daf, get_segment(segment_list(daf), 6, eid), time)
+            end
+
+        end
     end
 
 end
