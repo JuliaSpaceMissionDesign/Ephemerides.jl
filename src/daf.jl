@@ -1,4 +1,4 @@
-# TODO: remove Int32 numbers from everywhere!
+
 """
     FTPSTR 
 
@@ -32,11 +32,11 @@ information about the content of the file.
 See also [`DAF`](@ref) and [`EphemerisProvider`](@ref)
 """
 struct DAFHeader
-    nd::Int32       
-    ni::Int32       
-    fwd::Int32      
-    bwd::Int32      
-    ffa::Int32      
+    nd::Int       
+    ni::Int       
+    fwd::Int      
+    bwd::Int      
+    ffa::Int      
     name::String    
     lend::Bool      
 end
@@ -146,14 +146,14 @@ A container object to store both SPK and PCK descriptors information.
 - [PCK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html)
 """
 struct DAFSegmentDescriptor
-    segtype::Int32       
+    segtype::Int       
     tstart::Float64      
     tend::Float64       
-    tid::Int32           
-    cid::Int32          
-    axesid::Int32       
-    iaa::Int32          
-    faa::Int32          
+    tid::Int           
+    cid::Int          
+    axesid::Int       
+    iaa::Int          
+    faa::Int          
 end
 
 """ 
