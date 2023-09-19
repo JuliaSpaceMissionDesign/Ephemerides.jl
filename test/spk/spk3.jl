@@ -25,6 +25,10 @@ DJ2000 = 2451545
     ep = t1j:1:t2j
     for j in 1:2000
 
+        if iseven(j) 
+            cid, tid = tid, cid 
+        end
+        
         tj = j == 1 ? t1j : (j == 2 ? t2j : rand(ep))
         tc = tj/86400
 

@@ -32,6 +32,10 @@ DJ2000 = 2451545
         ep = t1j:1:t2j
         for j in 1:3000
             
+            if iseven(j) 
+                cid, tid = tid, cid 
+            end
+
             if j == 1 
                 # Test start time 
                 tj = t1j 
