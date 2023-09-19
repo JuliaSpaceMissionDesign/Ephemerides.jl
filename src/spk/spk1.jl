@@ -52,7 +52,7 @@ function SPKSegmentHeader1(daf::DAF, desc::DAFSegmentDescriptor)
 end
 
 """ 
-    SPKSegmentCache1()
+    SPKSegmentCache1(head::SPKSegmentHeader1)
 
 Initialise the cache for an SPK segment of type 1.
 """

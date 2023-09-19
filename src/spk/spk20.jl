@@ -138,8 +138,7 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType20, time::Number)
     Δt = head.tscale 
 
     Δlt = Δl/Δt
-    Δlt² = Δlt/Δt
-
+    
     # Find the logical record containing the Chebyshev coefficients at `time`
     index = find_logical_record(head, time)
     get_coefficients!(daf, head, data, index)
@@ -148,12 +147,14 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType20, time::Number)
     t = chebyshev_time(head, time, index)
 
     # Compute the velocity and acceleration
-    vx, vy, vz, ax, ay, az = ∂chebyshev(data.buff, data.A, t, 0, head.N, 2)
+    vx, vy, vz, ax, ay, az = ∂chebyshev(data.buff, data.A, t, 0, head.N, 2/head.tlen, 2)
 
     # Compute the position 
     x, y, z = ∫chebyshev(data.buff, data.A, t, head.N, Δt, head.tlen, data.p, 2)
 
-    return SA[Δl*x, Δl*y, Δl*z, Δlt*vx, Δlt*vy, Δlt*vz, Δlt²*ax, Δlt²*ay, Δlt²*az]
+    return SA[Δl*x, Δl*y, Δl*z, 
+              Δlt*vx, Δlt*vy, Δlt*vz, 
+              Δlt*ax, Δlt*ay, Δlt*az]
 
 end
 
@@ -167,8 +168,6 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType20, time::Number)
     Δt = head.tscale 
 
     Δlt = Δl/Δt
-    Δlt² = Δlt/Δt
-    Δlt³ = Δlt²/Δt
 
     # Find the logical record containing the Chebyshev coefficients at `time`
     index = find_logical_record(head, time)
@@ -178,15 +177,17 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType20, time::Number)
     t = chebyshev_time(head, time, index)
 
     # Compute the velocity and acceleration and jerk
-    vx, vy, vz, ax, ay, az, jx, jy, jz = ∂²chebyshev(data.buff, data.A, t, 0, head.N, 2)
+    vx, vy, vz, ax, ay, az, jx, jy, jz = ∂²chebyshev(
+        data.buff, data.A, t, 0, head.N, 2/head.tlen, 2
+    )
 
     # Compute the position 
     x, y, z = ∫chebyshev(data.buff, data.A, t, head.N, Δt, head.tlen, data.p, 2)
 
     return SA[Δl*x, Δl*y, Δl*z, 
               Δlt*vx, Δlt*vy, Δlt*vz, 
-              Δlt²*ax, Δlt²*ay, Δlt²*az, 
-              Δlt³*jx, Δlt³*jy, Δlt³*jz]
+              Δlt*ax, Δlt*ay, Δlt*az, 
+              Δlt*jx, Δlt*jy, Δlt*jz]
 
 end
 

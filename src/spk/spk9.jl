@@ -54,24 +54,24 @@ function SPKSegmentHeader9(daf::DAF, desc::DAFSegmentDescriptor)
 end
 
 """ 
-    SPKSegmentCache9(spkhead::SPKSegmentHeader2)
+    SPKSegmentCache9(head::SPKSegmentHeader2)
 
 Initialise the cache for an SPK segment of type 9 and 13.
 """
-function SPKSegmentCache9(header::SPKSegmentHeader9) 
+function SPKSegmentCache9(head::SPKSegmentHeader9) 
 
-    if header.type == 9 
-        buffsize = header.N 
+    if head.type == 9 
+        buffsize = head.N 
         # Only for SPK 12/13 we need an array to store the the third derivatives
         nbuff = 3
     else 
-        buffsize = 2*header.N
+        buffsize = 2*head.N
         nbuff = 4 
     end 
 
     SPKSegmentCache9(
-        zeros(header.N),
-        zeros(header.N, 6), 
+        zeros(head.N),
+        zeros(head.N, 6), 
         InterpCache{Float64}(nbuff, buffsize),
         MVector(-1)
     )
