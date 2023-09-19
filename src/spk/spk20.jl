@@ -177,7 +177,7 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType20, time::Number)
     # Normalise the time argument between [-1, 1]
     t = chebyshev_time(head, time, index)
 
-    # Compute the velocity and acceleration
+    # Compute the velocity and acceleration and jerk
     vx, vy, vz, ax, ay, az, jx, jy, jz = ∂²chebyshev(data.buff, data.A, t, 0, head.N, 2)
 
     # Compute the position 
