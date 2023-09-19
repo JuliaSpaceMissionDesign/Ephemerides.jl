@@ -22,8 +22,8 @@ for (order, pfun1, afun1, pfun2, afun2) in zip(
         function ($pfun1)(eph::EphemerisProvider, from::Int, to::Int, time::Number)
 
             links = spk_links(eph)
-            if haskey(links, from) && haskey(links[from], to)
-                for link in links[from][to] 
+            if haskey(links, to) && haskey(links[to], from)
+                for link in links[to][from] 
                     if initial_time(link) <= time <= final_time(link)   
                         return factor(link)*$(pfun2)(get_daf(eph, file_id(link)), link, time)
                     end
@@ -52,14 +52,19 @@ for (order, pfun1, afun1, pfun2, afun2) in zip(
         Compute the $(3*$order)-elements orientation angles of one set of axes (to) relative 
         to another (from) at `time`, expressed in TDB/TCB seconds since J2000, in accordance 
         with the kernel timescale.
+
+        !!! note 
+            For the orientation angles, it is not possible to automatically compute the 
+            reverse transformation , i.e., if the orientation of PA440 is defined 
+            with respect to the ICRF, it is not possible to compute the rotation from the 
+            PA440 to the ICRF with this routine.
         """
         function ($afun1)(eph::EphemerisProvider, from::Int, to::Int, time::Number)
-            # TODO: check whether this -factor is also valid for orientation angles!
             links = pck_links(eph)
-            if haskey(links, from) && haskey(links[from], to)
-                for link in links[from][to] 
+            if haskey(links, to) && haskey(links[to], from)
+                for link in links[to][from] 
                     if initial_time(link) <= time <= final_time(link)   
-                        return factor(link)*$(afun2)(get_daf(eph, file_id(link)), link, time)
+                        return $(afun2)(get_daf(eph, file_id(link)), link, time)
                     end
                 end
             else 
@@ -80,6 +85,7 @@ for (order, pfun1, afun1, pfun2, afun2) in zip(
 
         end
 
+        # This is internal for the SPKs
         function ($pfun2)(daf::DAF, link::SPKLink, time::Number)
 
             # Retrieve list and element link IDs
@@ -106,6 +112,7 @@ for (order, pfun1, afun1, pfun2, afun2) in zip(
             end
         end
 
+        # This is internal for the PCKs
         function ($afun2)(daf::DAF, link::SPKLink, time::Number)
 
             # Retrieve list and element link IDs
@@ -119,6 +126,7 @@ for (order, pfun1, afun1, pfun2, afun2) in zip(
             end
 
         end
+
     end
 
 end

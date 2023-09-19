@@ -13,7 +13,7 @@ DJ2000 = 2451545.0
     kern = jEphem.load(EphemerisProvider, [path_pa421, path_de421])
 
     points = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 199, 299, 301, 399, 499]
-    axes = [1, 31006]
+    axes = [31006]
 
     # Test inexistent file error 
     @test_throws SystemError EphemerisProvider("c3c12c.bsp")
