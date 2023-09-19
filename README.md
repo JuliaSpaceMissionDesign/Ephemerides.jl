@@ -8,14 +8,14 @@ _A Modern Binary Ephemeris Reader for Julia, in Julia_
 [![codecov](https://codecov.io/gh/JuliaSpaceMissionDesign/Ephemerides.jl/branch/main/graph/badge.svg?token=3SJCV229XX)](https://codecov.io/gh/JuliaSpaceMissionDesign/Ephemerides.jl)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
-Ephemerides.jl is a Julia library that provides fast, thread-safe and allocation-free access to binary JPL
-[SPK](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html) and [PCK](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html) ephemeris files. Completely written in Julia, it enables 
-Automatic-Differentiation (AD) via [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) 
-across all of its function calls. 
+Ephemerides.jl is a Julia library that provides fast, thread-safe and allocation-free access to binary JPL [SPK](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html) and [PCK](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html) ephemeris files. Completely written in Julia, it enables Automatic-Differentiation (AD) via [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) across all of its function calls. 
 
 It outperforms both [SPICE.jl](https://github.com/JuliaAstro/SPICE.jl) and [CALCEPH.jl](https://github.com/JuliaAstro/CALCEPH.jl) calls for most types of SPK segments and supports state vector and orientation angles computation up to order 3 (jerk).
 
 This package is meant to be used in combination with [FrameTransformations.jl](https://github.com/JuliaSpaceMissionDesign/FrameTransformations.jl), which enables transformations between different point and axes. Indeed, differently from traditional ephemeris readers such as [CALCEPH](https://www.imcce.fr/inpop/calceph) and [SPICE](https://naif.jpl.nasa.gov/naif/toolkit.html), this package is only meant to read the data stored in the binary kernels. It does not perform transformations between reference frames nor concatenations of state vectors. For example, if ephemeris data for point 399 (Earth) is defined with respect to point 3 (Earth-Moon Barycenter) in the ICRF axes, with this package we will only be able to compute the state vector from 399 to 3 or viceversa. 
+
+!!! note 
+    All the package routines have been extensively tested against both SPICE and CALCEPH.
 
 ## Installation
 
