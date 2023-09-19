@@ -581,6 +581,12 @@ Initialise an SPK segment according to the segment type defined in the
 """
 function create_spk_segment(daf::DAF, desc::DAFSegmentDescriptor)
     
+    if !(segment_type(desc) in keys(SPK_SEGMENTLIST_MAPPING))
+        throw(jEph.EphemerisError(
+            "unsupported SPK segment type $(segment_type(desc)) found in $(filepath(daf))."
+        ))
+    end 
+
     mapped_spktype = SPK_SEGMENTLIST_MAPPING[segment_type(desc)]
     if mapped_spktype == 1
         SPKSegmentType1(daf, desc)
@@ -597,13 +603,8 @@ function create_spk_segment(daf::DAF, desc::DAFSegmentDescriptor)
     elseif mapped_spktype == 5
         SPKSegmentType19(daf, desc)
 
-    elseif mapped_spktype == 6
+    else
         SPKSegmentType20(daf, desc)
-        
-    else 
-        throw(jEph.EphemerisError(
-            "unsupported SPK segment type $(segment_type(desc)) found in $(filepath(daf))."
-        ))
     end
     
 end
