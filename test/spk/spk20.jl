@@ -4,7 +4,7 @@ DJ2000 = 2451545
 
 @testset "SPK Type 20" verbose=true begin 
 
-    kernel = joinpath(testdir, "example1spk_seg20.bsp")
+    kernel = joinpath(test_dir, "example1spk_seg20.bsp")
 
     ephj = EphemerisProvider(kernel);
     ephc = CalcephProvider(kernel);
