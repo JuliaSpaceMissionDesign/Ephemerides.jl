@@ -36,22 +36,22 @@ function SPKSegmentHeader8(daf::DAF, desc::DAFSegmentDescriptor)
 end
 
 """ 
-    SPKSegmentCache8(spkhead::SPKSegmentHeader2)
+    SPKSegmentCache8(head::SPKSegmentHeader2)
 
 Initialise the cache for an SPK segment of type 8 and 12.
 """
-function SPKSegmentCache8(header::SPKSegmentHeader8) 
+function SPKSegmentCache8(head::SPKSegmentHeader8) 
 
-    if header.type == 8 
-        buffsize = header.N 
+    if head.type == 8 
+        buffsize = head.N 
         nbuff = 3
     else 
-        buffsize = 2*header.N
+        buffsize = 2*head.N
         nbuff = 4
     end 
 
     SPKSegmentCache8(
-        zeros(header.N, 6), 
+        zeros(head.N, 6), 
         InterpCache{Float64}(nbuff, buffsize),
         MVector(-1)
     )

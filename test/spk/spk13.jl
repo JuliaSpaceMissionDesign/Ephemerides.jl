@@ -20,6 +20,7 @@ DJ2000 = 2451545
 
         for (cdj, idj) in enumerate(descidj[ik])
             desc = ephj.files[1].desc[idj]
+            head = ephj.files[1].seglist.spk9[idj].head
 
             t1j, t2j = desc.tstart, desc.tend
 
@@ -33,9 +34,27 @@ DJ2000 = 2451545
             yc4 = zeros(12);
 
             ep = t1j:1:t2j
-            for j in 1:2000
+            for j in 1:3000
                 
-                tj = j == 1 ? t1j : (j == 2 ? t2j : rand(ep))
+                if iseven(j) 
+                    cid, tid = tid, cid 
+                end
+
+                if j == 1 
+                    # Test initial time
+                    tj = t1j 
+                elseif j == 2
+                    # Test final time
+                    tj = t2j 
+                elseif j < 100
+                    # Test values at the directory epochs
+                    tj = rand(head.epochs)
+                elseif j < 500
+                    # Test directory handling close to the borders
+                    tj = min(t2j, max(rand(head.epochs) + randn(), t1j))
+                else 
+                    tj = rand(ep)
+                end
                 tc = tj/86400
 
                 yj1 = ephem_vector3(ephj, cid, tid, tj);
@@ -58,24 +77,26 @@ DJ2000 = 2451545
                 @test yj4 ≈ yc4 atol=1e-9 rtol=1e-9
 
                 # Test against SPICE
-                @test yj1 ≈ ys1 atol=1e-9 rtol=1e-14
-                @test yj2 ≈ ys2 atol=1e-9 rtol=1e-14
+                @test yj1 ≈ ys1 atol=1e-13 rtol=1e-14
+                @test yj2 ≈ ys2 atol=1e-13 rtol=1e-14
 
+                # The accuracy of the interpolation derivatives reduces when the requested
+                # time is close to the segment boundaries 
                 if ik == 2 && cdj == 2
-                    jatol, jrtol = 1e-6, 1e-9 
+                    jatol, jrtol = 1e-5, 1e-9 
                 else 
-                    jatol, jrtol = 1e-9, 1e-13
+                    jatol, jrtol = 1e-5, 1e-13
                 end
 
                 # Test if AUTODIFF works 
                 # Position
-                @test D¹(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj4[4:6] atol=1e-9 rtol=1e-13
-                @test D²(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj4[7:9] atol=1e-9 rtol=1e-13
+                @test D¹(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj4[4:6] atol=jatol rtol=jrtol
+                @test D²(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj4[7:9] atol=jatol rtol=jrtol
 
                 @test D³(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj4[10:12] atol=jatol rtol=jrtol
 
                 # Velocity 
-                @test D¹(t->ephem_vector6(ephj, cid, tid, t), tj) ≈ yj4[4:9] atol=1e-9 rtol=1e-13
+                @test D¹(t->ephem_vector6(ephj, cid, tid, t), tj) ≈ yj4[4:9] atol=jatol rtol=jrtol
                 @test D²(t->ephem_vector6(ephj, cid, tid, t), tj) ≈ yj4[7:12]  atol=jatol rtol=jrtol
 
                 # Acceleration 

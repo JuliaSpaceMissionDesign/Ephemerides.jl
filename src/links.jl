@@ -132,15 +132,19 @@ function add_spklinks!(table::SPKLinkTable, daf::DAF, fid::Int)
         counter[lid] += 1
 
         # Create the forward and backward SPKLink if not already available 
-        f_map = get!(table, center(desc), Dict{Int, Vector{SPKLink}}())
-        b_map = get!(table, target(desc), Dict{Int, Vector{SPKLink}}())
+        # The forward link always goes from target to center! 
+        f_map = get!(table, target(desc), Dict{Int, Vector{SPKLink}}())
 
         f_link = SPKLink(desc, fid, lid, counter[lid], 1)
+        push!(get!(f_map, center(desc), SPKLink[]), f_link)
 
         # Populate with both the forward and backward links, initialising the 
-        # SPKLink key if a link between the two bodies was yet to be found
-        push!(get!(f_map, target(desc), SPKLink[]), f_link)
-        push!(get!(b_map, center(desc), SPKLink[]), reverse_link(f_link))
+        # SPKLink key if a link between the two bodies was yet to be found. 
+        # NOTE: the backward link is created only for SPK files 
+        if is_spk(daf)
+            b_map = get!(table, center(desc), Dict{Int, Vector{SPKLink}}())
+            push!(get!(b_map, target(desc), SPKLink[]), reverse_link(f_link))
+        end
     end
 
 end

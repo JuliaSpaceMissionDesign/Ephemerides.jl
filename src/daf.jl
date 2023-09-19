@@ -32,11 +32,11 @@ information about the content of the file.
 See also [`DAF`](@ref) and [`EphemerisProvider`](@ref)
 """
 struct DAFHeader
-    nd::Int32       
-    ni::Int32       
-    fwd::Int32      
-    bwd::Int32      
-    ffa::Int32      
+    nd::Int       
+    ni::Int       
+    fwd::Int      
+    bwd::Int      
+    ffa::Int      
     name::String    
     lend::Bool      
 end
@@ -146,14 +146,14 @@ A container object to store both SPK and PCK descriptors information.
 - [PCK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html)
 """
 struct DAFSegmentDescriptor
-    segtype::Int32       
+    segtype::Int       
     tstart::Float64      
     tend::Float64       
-    tid::Int32           
-    cid::Int32          
-    axesid::Int32       
-    iaa::Int32          
-    faa::Int32          
+    tid::Int           
+    cid::Int          
+    axesid::Int       
+    iaa::Int          
+    faa::Int          
 end
 
 """ 
@@ -581,19 +581,30 @@ Initialise an SPK segment according to the segment type defined in the
 """
 function create_spk_segment(daf::DAF, desc::DAFSegmentDescriptor)
     
+    if !(segment_type(desc) in keys(SPK_SEGMENTLIST_MAPPING))
+        throw(jEph.EphemerisError(
+            "unsupported SPK segment type $(segment_type(desc)) found in $(filepath(daf))."
+        ))
+    end 
+
     mapped_spktype = SPK_SEGMENTLIST_MAPPING[segment_type(desc)]
     if mapped_spktype == 1
         SPKSegmentType1(daf, desc)
+
     elseif mapped_spktype == 2
         SPKSegmentType2(daf, desc)
+
     elseif mapped_spktype == 3 
-        SPKSegmentType3(daf, desc)
-    elseif mapped_spktype == 4 
         SPKSegmentType8(daf, desc)
-    elseif mapped_spktype == 5 
+
+    elseif mapped_spktype == 4 
         SPKSegmentType9(daf, desc)
-    elseif mapped_spktype == 6
-        SPKSegmentType18(daf, desc)
+
+    elseif mapped_spktype == 5
+        SPKSegmentType19(daf, desc)
+
+    else
+        SPKSegmentType20(daf, desc)
     end
     
 end

@@ -23,7 +23,7 @@ end
 """
     ephem_position_records(eph::EphemerisProvider)
 
-Get an array of [`jEph.EphemPointRecord`](@ref), providing detailed informations on the 
+Get an array of `EphemPointRecord`, providing detailed informations on the 
 position content of the ephemeris file.
 """
 function jEph.ephem_position_records(eph::EphemerisProvider)
@@ -40,7 +40,7 @@ jEph.ephem_available_points(eph::EphemerisProvider) = ephem_get_points(eph)
 """
     ephem_orient_records(eph::EphemerisProvider)
 
-Get an array of [`jEph.EphemAxesRecord`](@ref), providing detailed 
+Get an array of `EphemAxesRecord`, providing detailed 
 informations on the orientation content of the ephemeris file.
 """
 function jEph.ephem_orient_records(eph::EphemerisProvider)
@@ -79,7 +79,7 @@ function jEph.ephem_timespan(eph::EphemerisProvider)
 
     ft, lt, ct = analyse_timespan([ephem_spk_records(eph)..., ephem_pck_records(eph)...])
     
-    DJ2000 = 2451544.5 # TODO: why do i have to put .5? 
+    DJ2000 = 2451545
     return ft/86400 + DJ2000, lt/86400 + DJ2000, ct
 
 end
@@ -112,8 +112,6 @@ must be equal to 3*order:
 
 The values stores in `res` are always returned in km, km/s, km/s², km/s³
 
-### See also 
-See also [`ephem_orient!`](@ref)
 """
 function jEph.ephem_compute!(
     res,
@@ -169,8 +167,6 @@ must be equal to 3*order:
 
 The values stores in `res` are always returned in rad, rad/s, rad/s², rad/s³
 
-### See also 
-See also [`ephem_compute!`](@ref)
 """
 function jEph.ephem_orient!(
     res, eph::EphemerisProvider, jd0::Number, time::Number, 

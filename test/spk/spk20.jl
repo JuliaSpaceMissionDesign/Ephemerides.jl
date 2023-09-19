@@ -2,9 +2,9 @@
 test_dir = artifact"testdata"
 DJ2000 = 2451545
 
-@testset "SPK Type 3" verbose=true begin 
+@testset "SPK Type 20" verbose=true begin 
 
-    kernel = joinpath(test_dir, "example1spk_seg3.bsp")
+    kernel = joinpath(test_dir, "example1spk_seg20.bsp")
 
     ephj = EphemerisProvider(kernel);
     ephc = CalcephProvider(kernel);
@@ -24,11 +24,11 @@ DJ2000 = 2451545
 
     ep = t1j:1:t2j
     for j in 1:2000
-
+        
         if iseven(j) 
             cid, tid = tid, cid 
         end
-        
+
         tj = j == 1 ? t1j : (j == 2 ? t2j : rand(ep))
         tc = tj/86400
 
@@ -56,17 +56,16 @@ DJ2000 = 2451545
         @test ys2 ≈ yj2 atol=1e-13 rtol=1e-14
         
         # Test if AUTODIFF works 
-        # Position (position doesn't work exactly because they have different coefficients)
-        # @test D¹(t->ephem_vector3(ephj, cid, tid,  t), tj) ≈ yj4[4:6] atol=1e-5 rtol=1e-5
-        # @test D²(t->ephem_vector3(ephj, cid, tid,  t), tj) ≈ yj4[7:9] atol=1e-5 rtol=1e-5
-        # @test D³(t->ephem_vector3(ephj, cid, tid,  t), tj) ≈ yj4[10:12] atol=1e-5 rtol=1e-5
+        @test D¹(t->ephem_vector3(ephj, cid, tid,  t), tj) ≈ yj4[4:6] atol=1e-8 rtol=1e-12
+        @test D²(t->ephem_vector3(ephj, cid, tid,  t), tj) ≈ yj4[7:9] atol=1e-8 rtol=1e-12
+        @test D³(t->ephem_vector3(ephj, cid, tid,  t), tj) ≈ yj4[10:12] atol=1e-8 rtol=1e-12
 
         # Velocity 
-        @test D¹(t->ephem_vector6(ephj, cid, tid,  t), tj)[4:6] ≈ yj4[7:9] atol=1e-9 rtol=1e-12
-        @test D²(t->ephem_vector6(ephj, cid, tid,  t), tj)[4:6] ≈ yj4[10:12] atol=1e-8 rtol=1e-12
+        @test D¹(t->ephem_vector6(ephj, cid, tid,  t), tj) ≈ yj4[4:9] atol=1e-8 rtol=1e-12
+        @test D²(t->ephem_vector6(ephj, cid, tid,  t), tj) ≈ yj4[7:12] atol=1e-8 rtol=1e-12
 
         # Acceleration 
-        @test D¹(t->ephem_vector9(ephj, cid, tid,  t), tj)[4:9] ≈ yj4[7:12] atol=1e-8 rtol=1e-12
+        @test D¹(t->ephem_vector9(ephj, cid, tid,  t), tj)[1:9] ≈ yj4[4:12] atol=1e-8 rtol=1e-12
 
     end
 

@@ -8,7 +8,7 @@ DJ2000 = 2451545
     #           SPK files 
     # --------------------------------------
 
-    kernel = joinpath(test_dir, "de421.bsp")
+    kernel = joinpath(test_dir, "example1spk_seg2.bsp")
 
     ephj = EphemerisProvider(kernel);
     ephc = CalcephProvider(kernel);
@@ -33,6 +33,10 @@ DJ2000 = 2451545
     ep = t1j:1:t2j
     for j in 1:2000
         
+        if iseven(j) 
+            cid, tid = tid, cid 
+        end
+
         tj = j == 1 ? t1j : (j == 2 ? t2j : rand(ep))
         tc = tj/86400
 
@@ -58,8 +62,8 @@ DJ2000 = 2451545
         @test yj4 ≈ yc4 atol=1e-9 rtol=1e-11
 
         # Test against SPICE
-        @test yj1 ≈ ys1 atol=1e-9 rtol=1e-14
-        @test yj2 ≈ ys2 atol=1e-9 rtol=1e-14
+        @test yj1 ≈ ys1 atol=1e-13 rtol=1e-14
+        @test yj2 ≈ ys2 atol=1e-13 rtol=1e-14
 
         # Test if AUTODIFF works 
         # Position
