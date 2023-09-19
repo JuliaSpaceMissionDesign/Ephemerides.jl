@@ -310,7 +310,7 @@ Container to hold the information of NAIF's Double precision Array File (DAF).
 - [DAF Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/daf.html)
 
 ### See Also 
-See also [`DAFHeader`](@ref), [`SPKSegmentList`](@ref) and [`EphemerisProvider`](@ref)
+See also [`DAFHeader`](@ref), [`Ephemerides.SPKSegmentList`](@ref) and [`EphemerisProvider`](@ref)
 """
 struct DAF 
     filepath::String
@@ -419,7 +419,7 @@ Return the SPK/PCK segment descriptors contained in the DAF.
 """
     get_segment_list(daf::DAF)
 
-Return the [`SPKSegmentList`](@ref) list of segments stored in the DAF.
+Return the [`Ephemerides.SPKSegmentList`](@ref) list of segments stored in the DAF.
 """
 @inline segment_list(daf::DAF) = daf.seglist
 
@@ -557,7 +557,7 @@ end
 """
     initialise_segments!(daf::DAF)
 
-Fill the [`SPKSegmentList`](@ref) by initialising the SPK/PCK segments associated to all 
+Fill the [`Ephemerides.SPKSegmentList`](@ref) by initialising the SPK/PCK segments associated to all 
 the descriptors stores within the DAF.
 
 ### See Also 
