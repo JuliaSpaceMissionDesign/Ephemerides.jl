@@ -8,7 +8,7 @@ DJ2000 = 2451545
     #           SPK files 
     # --------------------------------------
 
-    kernel = joinpath(test_dir, "de421.bsp")
+    kernel = joinpath(test_dir, "example1spk_seg2.bsp")
 
     ephj = EphemerisProvider(kernel);
     ephc = CalcephProvider(kernel);
