@@ -79,7 +79,7 @@ function jEph.ephem_timespan(eph::EphemerisProvider)
 
     ft, lt, ct = analyse_timespan([ephem_spk_records(eph)..., ephem_pck_records(eph)...])
     
-    DJ2000 = 2451544.5 # TODO: why do i have to put .5? 
+    DJ2000 = 2451545
     return ft/86400 + DJ2000, lt/86400 + DJ2000, ct
 
 end
