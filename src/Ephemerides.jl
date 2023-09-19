@@ -1,8 +1,10 @@
 
 module Ephemerides 
 
+using LazyArtifacts
 using Mmap
 using PreallocationTools
+using PrecompileTools: PrecompileTools
 using StaticArrays
 
 import JSMDInterfaces.Ephemeris as jEph
@@ -41,6 +43,7 @@ include("transform.jl")
 # Provide compatibility with JSMDInterfaces
 include("interfaces.jl")
 
-# TODO: add precompilation
+# Package precompilation routines
+include("precompile.jl")
 
 end
