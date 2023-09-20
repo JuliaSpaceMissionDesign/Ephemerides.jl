@@ -42,7 +42,7 @@ where `eph` is an [`EphemerisProvider`](@ref) instance. Both functions return th
 
 ## Available Points and Axes
 
-To retrieve the list of NAIF IDs with the points or axes that have available ephemeris data, these function should be called on an [`EphemerisProvider`] instance:
+To retrieve the list of NAIF IDs with the points or axes that have available ephemeris data, these function should be called on an [`EphemerisProvider`](@ref) instance:
 ```
 ephem_get_points(eph)
 ephem_get_axes(eph)

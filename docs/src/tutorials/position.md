@@ -19,14 +19,14 @@ ephem_vector12(eph, from, to, time)
 They all share the same interface, requiring an `EphemerisProvider` object as the first input. `from` and `to` are integer numbers representing the ID of the center and target points that we desired. The `time` argument is expressed in TDB seconds since J2000.0.
 
 !!! note
-    Differently, from traditional ephemerides readers, `Ephemerides.jl` is only meant to read the data stored in the binary kernels and it does not perform any concatenation of state vectors. This means that if data from point 399 is expressed with respect to point 3, we will only be able to compute the relative position of 339 with respect to 3 or viceversa, but not of 399 with respect to another point. The reason behind this is that `Ephemerides.jl` is meant to be used in combination with [`FrameTransformations.jl`](https://juliaspacemissiondesign.github.io/FrameTransformations.jl/stable/), which already enables tranformations between different user-defined point and axes.
+    Differently, from traditional ephemerides readers, `Ephemerides.jl` is only meant to read the data stored in the binary kernels and it does not perform any concatenation of state vectors. This means that if data from point 399 is expressed with respect to point 3, we will only be able to compute the relative position of 339 with respect to 3 or viceversa, but not of 399 with respect to another point. The reason behind this is that `Ephemerides.jl` is meant to be used in combination with [FrameTransformations.jl](https://juliaspacemissiondesign.github.io/FrameTransformations.jl/stable/), which already enables tranformations between different user-defined point and axes.
 
 An example to compute the position of the Moon (399) with respect to the Earth-Moon Barycenter (3) at J2000 (time = 0), is the following: 
 
 ```julia
 using Ephemerides
 
-# Load an ephemeris kernel containing the requested data from the package artifacts
+# Load an ephemeris kernel containing the requested data
 kernel = "path_to_de440"
 eph = EphemerisProvider(kernel)
 
@@ -73,7 +73,7 @@ An example to compute the Euler angles of the PA440 axes (31008) with respect to
 ```julia
 using Ephemerides
 
-# Load an ephemeris kernel containing the requested data from the package artifacts
+# Load an ephemeris kernel containing the requested data
 kernel = "path_to_pa440"
 eph = EphemerisProvider(kernel)
 
