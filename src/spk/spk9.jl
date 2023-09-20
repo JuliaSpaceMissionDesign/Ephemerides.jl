@@ -279,7 +279,7 @@ function find_logical_record(daf::DAF, head::SPKSegmentHeader9, time::Number)
 end
 
 """
-    get_coefficients!(daf::DAF, head, cache, index::Int)
+    get_coefficients!(daf::DAF, head::SPKSegmentHeader9, cache::SPKSegmentCache9, index::Int)
 """
 function get_coefficients!(daf::DAF, head::SPKSegmentHeader9, cache::SPKSegmentCache9, 
             index::Int)

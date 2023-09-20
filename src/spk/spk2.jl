@@ -76,7 +76,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType2, time::Number)
     get_coefficients!(daf, head, data, time)
 
     # Normalise the time argument between [-1, 1]
-    t = chebyshev_time(data, time)
+    t = normalise_time(data, time)
 
     x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
     return SA[x, y, z]
@@ -93,7 +93,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType2, time::Number)
     get_coefficients!(daf, head, data, time)
     
     # Normalise the time argument between [-1, 1]
-    t = chebyshev_time(data, time)
+    t = normalise_time(data, time)
 
     @inbounds if head.type == 2
         x, y, z, vx, vy, vz = ∂chebyshev(data.buff, data.A, t, 0, head.N, data.p[3])
@@ -115,7 +115,7 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType2, time::Number)
     get_coefficients!(daf, head, data, time)
 
     # Normalise the time argument between [-1, 1]
-    t = chebyshev_time(data, time)
+    t = normalise_time(data, time)
 
     @inbounds if head.type == 2
         x, y, z, vx, vy, vz, ax, ay, az = ∂²chebyshev(
@@ -140,7 +140,7 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType2, time::Number)
     get_coefficients!(daf, head, data, time)
 
     # Normalise the time argument between [-1, 1]
-    t = chebyshev_time(data, time)
+    t = normalise_time(data, time)
 
     @inbounds if head.type == 2
         x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz = ∂³chebyshev(
@@ -176,7 +176,7 @@ function find_logical_record(head::SPKSegmentHeader2, time::Number)
 end
 
 """
-    get_coefficients!(daf::DAF, head, cache, index::Int)
+    get_coefficients!(daf::DAF, head::SPKSegmentHeader2, cache::SPKSegmentCache2, index::Int)
 """
 function get_coefficients!(daf::DAF, head::SPKSegmentHeader2, cache::SPKSegmentCache2, 
             time::Number)
@@ -211,6 +211,11 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader2, cache::SPKSegmentC
 
 end
 
-@inline function chebyshev_time(cache::SPKSegmentCache2, time::Number)
+"""
+    normalise_time(cache::SPKSegmentCache2, time::Number)
+
+Transform `time` in an interval between [-1, 1] for compliance with Chebyshev polynomials.
+"""
+@inline function normalise_time(cache::SPKSegmentCache2, time::Number)
     @inbounds return (time - cache.p[1])/cache.p[2]
 end

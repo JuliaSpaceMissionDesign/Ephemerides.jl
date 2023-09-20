@@ -221,6 +221,9 @@ function find_logical_record(head::SPKSegmentHeader8, time::Number)
 
 end
 
+"""
+    get_coefficients!(daf::DAF, head::SPKSegmentHeader8, cache::SPKSegmentCache8, index::Int)
+"""
 function get_coefficients!(daf::DAF, head::SPKSegmentHeader8, cache::SPKSegmentCache8, 
             index::Int)
 
