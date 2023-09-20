@@ -103,6 +103,22 @@ DJ2000 = 2451545
                 @test D¹(t->ephem_vector9(ephj, cid, tid, t), tj) ≈ yj4[4:12]  atol=jatol rtol=jrtol
 
             end
+
+            # Thread-safe testing 
+            tj = shuffle(collect(LinRange(t1j, t2j, 200)))
+
+            pos = zeros(3, length(tj))
+            for j in eachindex(tj)
+                pos[:, j] =  ephem_vector3(ephj, cid, tid, tj[j])
+            end
+        
+            pos_m = zeros(3, length(tj))
+            Threads.@threads for j in eachindex(tj)
+                pos_m[:, j] = ephem_vector3(ephj, cid, tid, tj[j])
+            end
+
+            @test pos ≈ pos_m atol=1e-14 rtol=1e-14
+
         end
 
         kclear()
