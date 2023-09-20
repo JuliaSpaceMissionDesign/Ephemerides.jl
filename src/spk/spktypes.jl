@@ -13,7 +13,7 @@ abstract type AbstractSPKSegment end
 """
     spk_field(spk::AbstractSPKSegment)
 
-Return the field number in the [`SPKSegmentList`](@ref) associated to the given SPK 
+Return the field number in the [`Ephemerides.SPKSegmentList`](@ref) associated to the given SPK 
 segment type.
 """
 function spk_field(::T) where {T <: AbstractSPKSegment}
@@ -450,6 +450,15 @@ end
 Header instance for SPK segments of type 20.
 
 ### Fields 
+- `dscale` -- `Float64` length conversion factor
+- `tscale` -- `Float64` time conversion factor
+- `tstart` -- `Float64` initial epoch of the first record, in seconds since J2000
+- `tlen` -- `Float64` interval length covered by each record, in seconds
+- `recsize` -- `Int` byte size of each logical record
+- `order` -- `Int` polynomial order 
+- `N` -- `Int` number of coefficients in each window
+- `n` -- `Int` number of records in the segment
+- `iaa` -- `Int` initial segment file address
 """
 struct SPKSegmentHeader20 <: AbstractSPKHeader 
     dscale::Float64 
@@ -469,11 +478,11 @@ end
 Cache instance for SPK segments of type 20.
 
 ### Fields 
-- `A` -- Chebyshev's polynomial coefficients, with size (ncomp, order)
-- `p` -- Stores the record mid point and radius and scale factor
-- `x1` -- Values of the Chebyshev's polynomials
-- `x2` -- Derivatives of the Chebyshev's polynomials
 - `id` -- Index of the currently loaded logical record
+- `p` -- Stores the record position constants
+- `A` -- Chebyshev's polynomial coefficients, with size (ncomp, order)
+- `buff` -- Stores the buffers for the Chebyshev polynomials
+
 """
 struct SPKSegmentCache20 <: AbstractSPKCache
     id::MVector{1, Int}
@@ -542,7 +551,7 @@ within a single DAF file.
 Initialises an empty `SPKSegmentList` object.
 
 ### See also 
-See also [`add_segment!`](@ref)
+See also [`Ephemerides.add_segment!`](@ref)
 
 """
 struct SPKSegmentList
@@ -569,7 +578,7 @@ end
 """
     add_segment!(list::SPKSegmentList, spk::AbstractSPKSegment)
 
-Add the SPK segment to the proper vector within the given [`SPKSegmentList`](@ref) `list` 
+Add the SPK segment to the proper vector within the given [`Ephemerides.SPKSegmentList`](@ref) `list` 
 """
 @inline function add_segment!(list::SPKSegmentList, spk::AbstractSPKSegment)
     push!(getfield(list, spk_field(spk)), spk)

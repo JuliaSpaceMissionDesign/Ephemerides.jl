@@ -250,7 +250,9 @@ function find_minisegment(daf::DAF, head::SPKSegmentHeader19, time::Number)
 
 end
 
-
+"""
+    load_minisegment!(daf::DAF, head::SPKSegmentHeader19, cache::SPKSegmentCache19, index::Int)
+"""
 function load_minisegment!(daf::DAF, head::SPKSegmentHeader19, cache::SPKSegmentCache19, 
             index::Int)
 

@@ -89,7 +89,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType20, time::Number)
     get_coefficients!(daf, head, data, index)
 
     # Normalise the time argument between [-1, 1]
-    t = chebyshev_time(head, time, index)
+    t = normalise_time(head, time, index)
 
     # Compute the position 
     x, y, z = ∫chebyshev(data.buff, data.A, t, head.N, Δt, head.tlen, data.p)
@@ -116,7 +116,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType20, time::Number)
     get_coefficients!(daf, head, data, index)
 
     # Normalise the time argument between [-1, 1]
-    t = chebyshev_time(head, time, index)
+    t = normalise_time(head, time, index)
 
     # Compute the velocity 
     vx, vy, vz = chebyshev(data.buff, data.A, t, 0, head.N, 2)
@@ -144,7 +144,7 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType20, time::Number)
     get_coefficients!(daf, head, data, index)
 
     # Normalise the time argument between [-1, 1]
-    t = chebyshev_time(head, time, index)
+    t = normalise_time(head, time, index)
 
     # Compute the velocity and acceleration
     vx, vy, vz, ax, ay, az = ∂chebyshev(data.buff, data.A, t, 0, head.N, 2/head.tlen, 2)
@@ -174,7 +174,7 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType20, time::Number)
     get_coefficients!(daf, head, data, index)
 
     # Normalise the time argument between [-1, 1]
-    t = chebyshev_time(head, time, index)
+    t = normalise_time(head, time, index)
 
     # Compute the velocity and acceleration and jerk
     vx, vy, vz, ax, ay, az, jx, jy, jz = ∂²chebyshev(
@@ -193,7 +193,7 @@ end
 
 
 """
-    find_logical_record(head::SPKSegmentHeader2, time::Number)
+    find_logical_record(head::SPKSegmentHeader20, time::Number)
 """
 function find_logical_record(head::SPKSegmentHeader20, time::Number)
     
@@ -209,7 +209,7 @@ function find_logical_record(head::SPKSegmentHeader20, time::Number)
 end
 
 """
-    get_coefficients!(daf::DAF, head, cache, index::Int)
+    get_coefficients!(daf::DAF, head::SPKSegmentHeader20, cache::SPKSegmentCache20, index::Int)
 """
 function get_coefficients!(
     daf::DAF, head::SPKSegmentHeader20, cache::SPKSegmentCache20, index::Int
@@ -239,7 +239,10 @@ function get_coefficients!(
 
 end
 
-function chebyshev_time(head::SPKSegmentHeader20, time::Number, index::Int)
+"""
+    normalise_time(head::SPKSegmentHeader20, time::Number, index::Int)
+"""
+function normalise_time(head::SPKSegmentHeader20, time::Number, index::Int)
     tbeg = head.tstart + head.tlen*index
     hlen = head.tlen/2 
     return (time - tbeg)/hlen - 1
