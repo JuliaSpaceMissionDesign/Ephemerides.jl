@@ -5,13 +5,15 @@
 
 ```@docs
 EphemerisProvider 
+Ephemerides.EphemRecordSPK 
+Ephemerides.EphemRecordPCK 
 
 ephem_timescale_id
 
 ephem_spk_timespan
-ephem_spk_records
-
 ephem_pck_timespan
+
+ephem_spk_records
 ephem_pck_records
 
 ephem_get_points

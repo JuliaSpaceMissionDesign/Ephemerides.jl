@@ -9,7 +9,6 @@ only to aid future developments of the package.
 Ephemerides.get_daf 
 Ephemerides.spk_links 
 Ephemerides.pck_links
-
 ```
 
 ## DAF Routines 
@@ -39,12 +38,18 @@ Ephemerides.axes
 Ephemerides.initial_address
 Ephemerides.final_address
 
+Ephemerides.get_segment_boundaries
+
 Ephemerides.parse_spk_segment_descriptor
 Ephemerides.parse_pck_segment_descriptor
 ```
 
+### DAF 
+
 ```@docs
 Ephemerides.DAF
+Ephemerides.DAF_RECORD_LENGTH
+Ephemerides.FTPSTR
 
 Ephemerides.comment
 Ephemerides.header
@@ -60,6 +65,9 @@ Ephemerides.parse_daf_summaries
 
 Ephemerides.initialise_segments!
 Ephemerides.create_spk_segment
+
+Ephemerides.get_record
+Ephemerides.is_little_endian
 ```
 
 ## SPK Links 
@@ -75,16 +83,39 @@ Ephemerides.factor
 Ephemerides.reverse_link
 Ephemerides.create_linktables
 Ephemerides.add_spklinks!
+```
 
+## SPK Segment List 
+```@docs 
+Ephemerides.SPKSegmentList 
+Ephemerides.add_segment! 
+Ephemerides.get_segment
+
+Ephemerides.SPK_SEGMENTLIST_MAPPING
+Ephemerides.TCB_SEGMENTS
+Ephemerides.TDB_SEGMENTS
 ```
 
 ## SPK Segment Types 
+
+### Abstract SPK Types 
+```@docs 
+Ephemerides.AbstractSPKHeader 
+Ephemerides.AbstractSPKCache 
+Ephemerides.AbstractSPKSegment
+
+Ephemerides.cache 
+Ephemerides.spk_field
+```
 
 ### SPK Type 1 and 21
 ```@docs 
 Ephemerides.SPKSegmentHeader1
 Ephemerides.SPKSegmentCache1 
 Ephemerides.SPKSegmentType1
+
+Ephemerides.compute_mda_position 
+Ephemerides.compute_mda_velocity
 ```
 
 ### SPK Type 2 and 3
@@ -102,20 +133,30 @@ Ephemerides.SPKSegmentType8
 ```
 
 ### SPK Type 9 and 13
-```@docs 
+```@docs
 Ephemerides.SPKSegmentHeader9
 Ephemerides.SPKSegmentCache9
 Ephemerides.SPKSegmentType9
 ```
 
 ### SPK Type 18 and 19
-```@docs 
+```@docs
 Ephemerides.SPKSegmentHeader18
 Ephemerides.SPKSegmentCache18
+
+Ephemerides.reset_indexes!
+Ephemerides.update_header!
+
 Ephemerides.SPKSegmentHeader19
 Ephemerides.SPKSegmentCache19
 Ephemerides.SPKSegmentType19
+
+Ephemerides.find_minisegment
+Ephemerides.load_minisegment!
 ```
+
+!!! note 
+    SPK segments of type 18 are the only ones that do not posses a dedicated SPK segment type structure, because they are treated as special cases (i.e., single minisegments) of the type 19.
 
 ### SPK Type 20
 ```@docs 
@@ -124,8 +165,22 @@ Ephemerides.SPKSegmentCache20
 Ephemerides.SPKSegmentType20
 ```
 
+### SPK Utility Functions 
+```@docs 
+Ephemerides.normalise_time
+Ephemerides.find_logical_record 
+Ephemerides.get_coefficients!
+```
+
+### Parsing 
 
 ## Interpolating Functions
+
+### Caches 
+```@docs 
+Ephemerides.InterpCache 
+Ephemerides.get_buffer
+```
 
 ### Chebyshev Polynomials 
 
@@ -154,6 +209,14 @@ Ephemerides.∂²hermite
 Ephemerides.∂³hermite
 ```
 
+## Introspection 
+```@docs 
+Ephemerides.AbstractEphemRecord
+Ephemerides.initial_times
+Ephemerides.final_times
+
+Ephemerides.analyse_timespan 
+```
 
 
 
