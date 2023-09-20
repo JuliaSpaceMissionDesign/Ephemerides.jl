@@ -19,21 +19,19 @@ id = ephem_timescale_id(eph)
 The retrieved ID is 1 for TDB and 2 for TCB. A value of -1 is returned if the kernels are empty. 
 
 !!! note 
-    Only one timescale is admissed within a single `EphemerisProvider` object, 
+    Only one timescale is admissed within a single [`EphemerisProvider`](@ref) object, 
 
 ### Timespan
 
 To retrieve the first and last available time in the ephemeris files associated to a provider 
 object, two functions are available to distinguish between SPK and PCK data: 
 
-```
+````
 ephem_spk_timespan(eph)
 ephem_pck_timespan(eph)
-```
+````
 
-where `eph` is an `EphemerisProvider` instance. Both functions return the minimum and maximum 
-available time in TDB seconds since J2000, as well as a continuity parameter defined as 
-follows: 
+where `eph` is an [`EphemerisProvider`](@ref) instance. Both functions return the minimum and maximum available time in TDB seconds since J2000, as well as a continuity parameter defined as follows: 
 
 - **0** no SPK or PCK data is available.
 - **1** the quantities of all bodies are available for any time between the first and last time.
@@ -44,8 +42,7 @@ follows:
 
 ## Available Points and Axes
 
-To retrieve the list of NAIF IDs with the points or axes that have available ephemeris data, 
-these function should be called: 
+To retrieve the list of NAIF IDs with the points or axes that have available ephemeris data, these function should be called on an [`EphemerisProvider`] instance:
 ```
 ephem_get_points(eph)
 ephem_get_axes(eph)
@@ -60,7 +57,7 @@ ephem_spk_records(eph)
 ephem_pck_records(eph)
 ```
 
-Both functions return a vector of `EphemRecordSPK` or `EphemRecordPCK` ordered by priority, i.e., they use the highest priority records when there are multiple records that could satisfy the same target, center pair for a given epoch.
+Both functions return a vector of [`Ephemerides.EphemRecordSPK`](@ref) or [`Ephemerides.EphemRecordPCK`](@ref) ordered by priority, i.e., they use the highest priority records when there are multiple records that could satisfy the same target, center pair for a given epoch.
 
 In particular SPK records contain the following information: 
 
@@ -77,6 +74,4 @@ Similarly, PCK records contain these information:
 - t_start: start times of each sub-window, in TDB seconds since J2000
 - t_end: final times of each sub-window, in TDB seconds since J2000
 
-For PCK records, the reference axes ID is set into the `center` field. Please notice that 
-whenever a gap between the data of a given pair of (center, target) objects is present, 
-`t_start` and `t_end` will store the start and end times of each window with available data, respectively.
+For PCK records, the reference axes ID is set into the `center` field. Please notice that whenever a gap between the data of a given pair of (center, target) objects is present, `t_start` and `t_end` will store the start and end times of each window with available data, respectively.

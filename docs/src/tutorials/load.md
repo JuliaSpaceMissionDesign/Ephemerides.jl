@@ -7,7 +7,7 @@ The supported sources of ephemerides are currently limited to binary PCK and SPK
 !!! note 
     Support for IMCCE INPOP ephemerides is yet to be implemented.
 
-Before retrieve position and orientation data of celestial objects, the user is first requierd to load the ephemerides files into an `EphemerisProvider` object. 
+Before retrieving position and orientation data of celestial objects, the user is first required to load the ephemerides files into an [`EphemerisProvider`](@ref) object. 
 
 ```julia
 using Ephemerides 

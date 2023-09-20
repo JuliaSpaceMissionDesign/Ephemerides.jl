@@ -1,7 +1,6 @@
 # Reading Ephemeris Data
 
-This tutorials will walk you through the basic features and interfaces that allow you to 
-compute translation and orientation data from binary ephemeris kernels.
+This tutorials will walk you through the basic features and interfaces that allow you to compute translation and orientation data from binary ephemeris kernels.
 
 ## Computing state vectors
 
@@ -17,14 +16,10 @@ ephem_vector9(eph, from, to, time)
 ephem_vector12(eph, from, to, time)
 ```
 
-They all share the same interface, requiring an `EphemerisProvider` object as the first input.
-`from` and `to` are integer numbers representing the ID of the center and target points that 
-we desired. The `time` argument is expressed in TDB seconds since J2000.0.
+They all share the same interface, requiring an `EphemerisProvider` object as the first input. `from` and `to` are integer numbers representing the ID of the center and target points that we desired. The `time` argument is expressed in TDB seconds since J2000.0.
 
 !!! note
-    Differently, from traditional ephemerides readers, `Ephemerides.jl` is only meant to read the 
-    data stored in the binary kernels and it does not perform any concatenation of state vectors. 
-    This means that if data from point 399 is expressed with respect to point 3, we will only be able to compute the relative position of 339 with respect to 3 or viceversa, but not of 399 with respect to another point. The reason behind this is that `Ephemerides.jl` is meant to be used in combination with [`FrameTransformations.jl`](https://juliaspacemissiondesign.github.io/FrameTransformations.jl/stable/), which already enables tranformations between different user-defined point and axes.
+    Differently, from traditional ephemerides readers, `Ephemerides.jl` is only meant to read the data stored in the binary kernels and it does not perform any concatenation of state vectors. This means that if data from point 399 is expressed with respect to point 3, we will only be able to compute the relative position of 339 with respect to 3 or viceversa, but not of 399 with respect to another point. The reason behind this is that `Ephemerides.jl` is meant to be used in combination with [`FrameTransformations.jl`](https://juliaspacemissiondesign.github.io/FrameTransformations.jl/stable/), which already enables tranformations between different user-defined point and axes.
 
 An example to compute the position of the Moon (399) with respect to the Earth-Moon Barycenter (3) at J2000 (time = 0), is the following: 
 
@@ -52,20 +47,15 @@ pva = ephem_vector9(eph, 3, 399, 0)
 pvaj = ephem_vector12(eph, 3, 399, 0)
 ```
 
-In all these examples, the returned data is always in the form of a `StaticArray` in order to 
-minimise memory allocations.
+In all these examples, the returned data is always in the form of a `StaticArray` in order to minimise memory allocations.
 
 !!! warning 
-    SPK segments of types 1 and 21 do not natively support acceleration and jerk computations.
-    However, these values can be computed by Automatic Differentiation (AD) of the position and/or 
-    velocity components.
+    SPK segments of types 1 and 21 do not natively support acceleration and jerk computations. However, these values can be computed by Automatic Differentiation (AD) of the position and/or velocity components.
 
 
 ## Computing orientation angles
 
-Similarly to position components, `Ephemerides.jl` also allows the computation of orientation 
-angles and their derivatives up to order 3. All these computations are natively 
-thread-safe and compatible with Automatic Differentiation (AD) with respect to time via [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
+Similarly to position components, `Ephemerides.jl` also allows the computation of orientation angles and their derivatives up to order 3. All these computations are natively thread-safe and compatible with Automatic Differentiation (AD) with respect to time via [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
 
 In particular, the following methods are available to compute orientation data: 
 
@@ -76,12 +66,9 @@ ephem_rotation9(eph, from, to, time)
 ephem_rotation12(eph, from, to, time)
 ```
 
-Again, they all share the same interface, requiring an `EphemerisProvider` object as the 
-first input. `from` and `to` are integer numbers representing the ID of the reference and 
-target axes that we desired. The `time` argument is expressed in TDB seconds since J2000.0.
+Again, they all share the same interface, requiring an [`EphemerisProvider`](@ref) object as the first input. `from` and `to` are integer numbers representing the ID of the reference and target axes that we desired. The `time` argument is expressed in TDB seconds since J2000.0.
 
-An example to compute the Euler angles of the PA440 axes (31008) with respect to the ICRF (1) at 
-J2000 (time = 0), is the following: 
+An example to compute the Euler angles of the PA440 axes (31008) with respect to the ICRF (1) at J2000 (time = 0), is the following: 
 
 ```julia
 using Ephemerides
@@ -107,7 +94,4 @@ The returned orientation data is always in the form of a `StaticArray` in order 
 
 
 !!! note 
-    Differently from the translational data contained in SPK kernels, the orientation 
-    angles can only be computed in one direction, i.e., if the orientation of the Moon's 
-    Principal Axes (PA) is defined with respect to the ICRF, it is not possible to compute 
-    the rotation from the PA to the ICRF with this routine. 
+    Differently from the translational data contained in SPK kernels, the orientation angles can only be computed in one direction, i.e., if the orientation of the Moon's Principal Axes (PA) is defined with respect to the ICRF, it is not possible to compute the rotation from the PA to the ICRF with this routine. 
