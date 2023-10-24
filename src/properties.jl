@@ -284,7 +284,6 @@ function get_segment_boundaries(desclist::Vector{DAFSegmentDescriptor})
         ts = initial_time(desc)
         te = final_time(desc)
 
-        # TODO: what happens when the time boundaries match?
         a = findlast(x -> x < ts, t_start)
         b = findfirst(x -> x > te, t_end)
 
