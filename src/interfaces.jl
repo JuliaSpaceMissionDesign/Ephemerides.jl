@@ -53,7 +53,7 @@ function jEph.ephem_compute!(
 )
 
     # Transform time in seconds since J2000.0
-    tsec = 86400*((jd0 + time) - 2451545)
+    tsec = 86400*((jd0 - 2451545) + time)
 
     if order < 2 
         if order == 0
@@ -84,7 +84,7 @@ function jEph.ephem_orient!(
 )
 
     # Transform time in seconds since J2000.0
-    tsec = 86400*((jd0 + time) - 2451545)
+    tsec = 86400*((jd0 - 2451545) + time)
 
     if order < 2 
         if order == 0

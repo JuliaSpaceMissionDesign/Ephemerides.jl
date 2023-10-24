@@ -284,16 +284,15 @@ function get_segment_boundaries(desclist::Vector{DAFSegmentDescriptor})
         ts = initial_time(desc)
         te = final_time(desc)
 
-        # TODO: what happens when the time boundaries match?
         a = findlast(x -> x < ts, t_start)
         b = findfirst(x -> x > te, t_end)
 
         if isnothing(a) && isnothing(b)
             t_start = [ts]
             t_end = [te]
-
+            
         elseif isnothing(a) 
-            c = findlast(x -> x < te, t_start)
+            c = findlast(x -> x <= te, t_start)
 
             if isnothing(c)
                 # The segment is before all the others
@@ -312,7 +311,7 @@ function get_segment_boundaries(desclist::Vector{DAFSegmentDescriptor})
             end
 
         elseif isnothing(b)
-            c = findfirst(x -> x > ts, t_end)
+            c = findfirst(x -> x >= ts, t_end)
 
             if isnothing(c)
                 # The segment is after all the others
@@ -325,21 +324,27 @@ function get_segment_boundaries(desclist::Vector{DAFSegmentDescriptor})
 
                 # Update t_start vector 
                 deleteat!(t_start, a+1:length(t_start))
-                if c != a 
-                    push!(t_start, ts)
-                end
+                
+                c != a && push!(t_start, ts)
 
             end
 
         elseif a != b
+
+            c = findlast(x -> x <= te, t_start)
+            d = findfirst(x -> x >= ts, t_end)
+
             # Update t_start vector 
             deleteat!(t_start, a+1:c)
-            d > a && insertat!(t_start, a+1, ts)
+
+            d > a && push!(t_start, ts)
+            sort!(t_start)
         
             # Update t_end vector 
-            deleteat!(t_end, d:b-1)
-            c < b && insertat!(t_end, c, te)
+            deleteat!(t_end, d:b-1)        
 
+            c < b && push!(t_end, te)
+            sort!(t_end)
         end
 
         # if a == b the segment is discarded because 
