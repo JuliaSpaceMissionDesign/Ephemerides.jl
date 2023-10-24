@@ -293,7 +293,7 @@ function get_segment_boundaries(desclist::Vector{DAFSegmentDescriptor})
             t_end = [te]
 
         elseif isnothing(a) 
-            c = findlast(x -> x < te, t_start)
+            c = findlast(x -> x <= te, t_start)
 
             if isnothing(c)
                 # The segment is before all the others
@@ -312,7 +312,7 @@ function get_segment_boundaries(desclist::Vector{DAFSegmentDescriptor})
             end
 
         elseif isnothing(b)
-            c = findfirst(x -> x > ts, t_end)
+            c = findfirst(x -> x >= ts, t_end)
 
             if isnothing(c)
                 # The segment is after all the others
