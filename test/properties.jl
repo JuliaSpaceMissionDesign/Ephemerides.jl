@@ -89,4 +89,14 @@
     @test ts == [1.0]
     @test te == [1.6]
 
+
+    # Test initial and final times on SPK/PCK records
+    rec_pck = Ephemerides.EphemRecordPCK(10, 20, [1.0, 2.0], [1.6, 2.1])
+    @test Ephemerides.initial_times(rec_pck) == [1.0, 2.0]
+    @test Ephemerides.final_times(rec_pck) == [1.6, 2.1]
+
+    rec_spk = Ephemerides.EphemRecordSPK(10, 20, 2, [1.0, 2.0], [1.6, 2.1])
+    @test Ephemerides.initial_times(rec_spk) == [1.0, 2.0]
+    @test Ephemerides.final_times(rec_spk) == [1.6, 2.1]
+
 end;
