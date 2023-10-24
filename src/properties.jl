@@ -290,7 +290,7 @@ function get_segment_boundaries(desclist::Vector{DAFSegmentDescriptor})
         if isnothing(a) && isnothing(b)
             t_start = [ts]
             t_end = [te]
-
+            
         elseif isnothing(a) 
             c = findlast(x -> x <= te, t_start)
 
@@ -324,21 +324,27 @@ function get_segment_boundaries(desclist::Vector{DAFSegmentDescriptor})
 
                 # Update t_start vector 
                 deleteat!(t_start, a+1:length(t_start))
-                if c != a 
-                    push!(t_start, ts)
-                end
+                
+                c != a && push!(t_start, ts)
 
             end
 
         elseif a != b
+
+            c = findlast(x -> x <= te, t_start)
+            d = findfirst(x -> x >= ts, t_end)
+
             # Update t_start vector 
             deleteat!(t_start, a+1:c)
-            d > a && insertat!(t_start, a+1, ts)
+
+            d > a && push!(t_start, ts)
+            sort!(t_start)
         
             # Update t_end vector 
-            deleteat!(t_end, d:b-1)
-            c < b && insertat!(t_end, c, te)
+            deleteat!(t_end, d:b-1)        
 
+            c < b && push!(t_end, te)
+            sort!(t_end)
         end
 
         # if a == b the segment is discarded because 
