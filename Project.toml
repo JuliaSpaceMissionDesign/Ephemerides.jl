@@ -1,7 +1,7 @@
 name = "Ephemerides"
 uuid = "6a9c3322-c8fe-4c26-8ad6-14a6f8acd2a0"
 authors = ["JSMD Team"]
-version = "1.1.2"
+version = "1.2.0"
 
 [deps]
 JSMDInterfaces = "6b30ee2f-618e-4a15-bf4e-7df7b496e609"
@@ -17,7 +17,7 @@ LazyArtifacts = "1"
 PreallocationTools = "0.4"
 PrecompileTools = "1"
 StaticArrays = "1"
-julia = "1"
+julia = "1.6"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
