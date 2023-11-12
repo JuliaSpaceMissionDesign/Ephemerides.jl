@@ -1,6 +1,6 @@
 # [Low-level API](@id ephemerides_api)
 
-This functions are not meant to be used outside of the package. They are documented 
+These functions are not meant to be used outside of the package. They are documented 
 only to aid future developments of the package.
 
 ## Ephemeris Provider 
