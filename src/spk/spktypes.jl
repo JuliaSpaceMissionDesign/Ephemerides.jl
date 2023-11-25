@@ -330,6 +330,33 @@ end
 @inline header(spk::SPKSegmentType9) = spk.head 
 @inline @inbounds cache(spk::SPKSegmentType9) = spk.cache[Threads.threadid()]
 
+# ----------------------------------
+# SPK TYPE 14
+# ----------------------------------
+
+struct SPKSegmentHeader14 <: AbstractSPKHeader
+    order::Int
+    n::Int 
+    ndirs::Int 
+    epochs::Vector{Float64}
+    etid::Int  # Initial address of the epoch table 
+    ptid::Int  # Initial address of the packet table
+    pktsize::Int # Packet size
+    N::Int 
+end
+
+struct SPKSegmentCache14 <: AbstractSPKCache
+    id::MVector{1, Int}
+    p::MVector{3, Int}
+end
+
+struct SPKSegmentType14 <: AbstractSPKSegment 
+    head::SPKSegmentHeader14 
+    cache::Vector{SPKSegmentCache14}
+end
+
+@inline header(spk::SPKSegmentType14) = spk.head 
+@inline @inbounds cache(spk::SPKSegmentType14) = spk.cache[Threads.threadid()]
 
 # ----------------------------------
 # SPK TYPE 18
@@ -528,9 +555,10 @@ const SPK_SEGMENTLIST_MAPPING = Dict(
     9 => 4,
     12 => 3,
     13 => 4,
-    18 => 5,
-    19 => 5,
-    20 => 6,
+    14 => 5,
+    18 => 6,
+    19 => 6,
+    20 => 7,
     21 => 1,
 )
 
@@ -560,6 +588,7 @@ struct SPKSegmentList
     spk2::Vector{SPKSegmentType2}
     spk8::Vector{SPKSegmentType8}
     spk9::Vector{SPKSegmentType9}
+    spk14::Vector{SPKSegmentType14}
     spk19::Vector{SPKSegmentType19}
     spk20::Vector{SPKSegmentType20}
 
@@ -569,6 +598,7 @@ struct SPKSegmentList
             SPKSegmentType2[], 
             SPKSegmentType8[],
             SPKSegmentType9[],
+            SPKSegmentType14[],
             SPKSegmentType19[],
             SPKSegmentType20[]
         )

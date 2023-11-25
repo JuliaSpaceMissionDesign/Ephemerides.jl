@@ -106,8 +106,10 @@ for (order, pfun1, afun1, pfun2, afun2) in zip(
                     return $(pfun2)(daf, get_segment(segment_list(daf), 4, eid), time)
                 elseif lid == 5
                     return $(pfun2)(daf, get_segment(segment_list(daf), 5, eid), time)
-                else 
+                elseif lid == 6
                     return $(pfun2)(daf, get_segment(segment_list(daf), 6, eid), time)
+                else 
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 7, eid), time)
                 end
             end
         end
