@@ -495,7 +495,7 @@ function parse_daf_comment(array::Vector{UInt8}, header::DAFHeader, fname::Strin
     
         if isnothing(eot)
             if idx == initial_record(header)-1 
-                @warn "Could not find the EOT byte in the DAF $fname comment."
+                @warn "Could not find the EOT byte in the DAF \'$fname\' comment."
             end 
             
             # Remove all the null characters between two successive records
