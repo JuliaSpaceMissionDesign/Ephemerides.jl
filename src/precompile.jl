@@ -11,6 +11,7 @@ PrecompileTools.@setup_workload begin
         "example1spk_seg9.bsp",
         "example1spk_seg12.bsp",
         "example1spk_seg13.bsp",
+        "example1spk_seg14.bsp",
         "example1spk_seg18.bsp",
         "example1spk_seg19.bsp",
         "example1spk_seg20.bsp",

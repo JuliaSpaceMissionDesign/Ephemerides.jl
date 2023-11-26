@@ -330,33 +330,62 @@ end
 @inline header(spk::SPKSegmentType9) = spk.head 
 @inline @inbounds cache(spk::SPKSegmentType9) = spk.cache[Threads.threadid()]
 
+
 # ----------------------------------
 # SPK TYPE 14
 # ----------------------------------
 
+"""
+    SPKSegmentHeader14 <: AbstractSPKHeader
+
+Header instance for SPK segments of type 14.
+
+### Fields 
+- `order` -- `Int` interpolating polynomial degree
+- `n` -- `Int` number of packets in the segment
+- `ndirs` -- `Int` number of epoch directories
+- `epochs` -- Storage for directory epochs or epochs (when ndirs = 0)
+- `etid` -- `Int` initial address for the epoch table (after all the state data)
+- `ptid` -- `Int` initial address for the packet table (after the constants)
+- `pktsize` -- `Int` size of each data packet excluding the packet information area.
+- `pktoff` -- `Int` offset of the packet data from the packet start 
+- `ncomp` -- `Int` number of states coefficients (= 6 for SPK 14)
+- `N` -- `Int` number of polynomial coefficients
+"""
 struct SPKSegmentHeader14 <: AbstractSPKHeader
     order::Int
     n::Int 
     ndirs::Int 
     epochs::Vector{Float64}
-    etid::Int  # Initial address of the epoch table 
-    ptid::Int  # Initial address of the packet table
-    pktsize::Int # Packet size
+    etid::Int 
+    ptid::Int  
+    pktsize::Int 
+    pktoff::Int  
+    ncomp::Int
     N::Int 
 end
 
-struct SPKSegmentCache14 <: AbstractSPKCache
-    id::MVector{1, Int}
-    p::MVector{3, Int}
-end
+""" 
+    SPKSegmentType14 <: AbstractSPKSegment
 
+Segment instance for SPK segments of type 14.
+
+### Fields 
+- `head` -- Segment header 
+- `cache` -- Segment cache 
+
+### References 
+- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
+- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
+"""
 struct SPKSegmentType14 <: AbstractSPKSegment 
     head::SPKSegmentHeader14 
-    cache::Vector{SPKSegmentCache14}
+    cache::Vector{SPKSegmentCache2}
 end
 
 @inline header(spk::SPKSegmentType14) = spk.head 
 @inline @inbounds cache(spk::SPKSegmentType14) = spk.cache[Threads.threadid()]
+
 
 # ----------------------------------
 # SPK TYPE 18

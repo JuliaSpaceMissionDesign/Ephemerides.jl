@@ -1,65 +1,4 @@
 
-
-# function SegmentMetaData(daf::DAF, i0::Int)
-
-#     # Number of meta-data elements
-#     nmeta = Int(get_float(array(daf), i0, endian(daf)))
-
-#     if nmeta != 17 
-#         throw(ErrorException("unsupported number of segment meta data items."))
-#     end
-
-#     # Offset of the packet data from the start of a packet DAF_RECORD_LENGTH
-#     pktoff = Int(get_float(array(daf), i0 - 8, endian(daf)))
-
-#     # Size of the packets 
-#     pktsz = Int(get_float(array(daf), i0 - 16, endian(daf)))
-
-#     # Number of items in the reserved area 
-#     nrsv = Int(get_float(array(daf), i0 - 24, endian(daf)))
-
-#     # Base address of the reserved area 
-#     rsvbas = Int(get_float(array(daf), i0 - 32, endian(daf)))
-
-#     # Number of packets 
-#     npkt = Int(get_float(array(daf), i0 - 40, endian(daf)))
-
-#     # Base address of the packets 
-#     pktbas = Int(get_float(array(daf), i0 - 48, endian(daf)))
-
-#     # Type of the packet directory 
-#     pdrtyp = Int(get_float(array(daf), i0 - 56, endian(daf)))
-
-#     # Number of items in the packet directory 
-#     npdr = Int(get_float(array(daf), i0 - 64, endian(daf)))
-
-#     # Base address of the packet directory 
-#     pdrbas = Int(get_float(array(daf), i0 - 72, endian(daf)))
-
-#     # Number of reference items 
-#     nref = Int(get_float(array(daf), i0 - 80, endian(daf)))
-
-#     # Base address of the reference items 
-#     refbas = Int(get_float(array(daf), i0 - 88, endian(daf)))
-
-#     # Type of the reference directory 
-#     rdrtyp = Int(get_float(array(daf), i0 - 96, endian(daf)))
-
-#     # Number of items in the reference directory 
-#     nrdr = Int(get_float(array(daf), i0 - 104, endian(daf)))
-
-#     # Base address of the reference directory 
-#     rdrbas = Int(get_float(array(daf), i0 - 112, endian(daf)))
-
-#     # Number of constants in the segment 
-#     ncon = Int(get_float(array(daf), i0 - 120, endian(daf)))
-
-#     # Base Address of the constants in a generic segment.
-#     conbas = Int(get_float(array(daf), i0 - 128, endian(daf)))
-    
-# end
-
-
 """ 
     SPKSegmentHeader14(daf::DAF, desc::DAFSegmentDescriptor)
 
@@ -77,8 +16,11 @@ function SPKSegmentHeader14(daf::DAF, desc::DAFSegmentDescriptor)
     nmeta = Int(get_float(array(daf), i0, endian(daf)))
 
     if nmeta != 17 
-        throw(ErrorException("unsupported number of segment meta data items."))
+        throw(ErrorException("unsupported number of SPK Type 14 meta data items."))
     end
+
+    # Offset of the packet data from the start of a packet
+    pktoff = Int(get_float(array(daf), i0 - 8, endian(daf)))
 
     # Size of the packets 
     pktsize = Int(get_float(array(daf), i0 - 16, endian(daf)))
@@ -89,11 +31,13 @@ function SPKSegmentHeader14(daf::DAF, desc::DAFSegmentDescriptor)
     # Number of directory epochs 
     ndirs = Int(get_float(array(daf), i0 - 104, endian(daf)))
 
-    # Retrieve polynomial order 
-    order = get_float(array(daf), 8*(iaa-1), endian(daf))
+    # Number of coefficients of the polynomial: this is wrongly documented in the SPK 
+    # required reading documentation, which states that the polynomial degree rather than 
+    # the number of coefficients is specified.
+    N = get_float(array(daf), 8*(iaa-1), endian(daf))
 
-    # Number of coefficients of the polynomial 
-    N = order + 1
+    # Retrieve polynomial order 
+    order = N - 1
 
     # Base address of the reference epochs  
     refbas = Int(get_float(array(daf), i0 - 88, endian(daf)))
@@ -123,7 +67,7 @@ function SPKSegmentHeader14(daf::DAF, desc::DAFSegmentDescriptor)
         end
     end
 
-    SPKSegmentHeader14(order, n, ndirs, epochs, etid, ptid, pktsize, N)
+    SPKSegmentHeader14(order, n, ndirs, epochs, etid, ptid, pktsize, pktoff, 6, N)
 end
 
 """ 
@@ -131,8 +75,13 @@ end
 
 Initialise the cache for an SPK segment of type 14.
 """
-function SPKSegmentCache14(head::SPKSegmentHeader14) 
-    SPKSegmentCache14(MVector(-1))
+function SPKSegmentCache2(head::SPKSegmentHeader14) 
+    SPKSegmentCache2(
+        zeros(head.ncomp, max(3, head.N)),
+        MVector(0.0, 0.0, 0.0), 
+        InterpCache{Float64}(3, max(3, head.N)),
+        MVector(-1)
+    )
 end
 
 """ 
@@ -144,7 +93,7 @@ function SPKSegmentType14(daf::DAF, desc::DAFSegmentDescriptor)
 
     # Initialise the segment header and cache
     header = SPKSegmentHeader14(daf, desc)
-    caches = [SPKSegmentCache14(header) for _ in 1:Threads.nthreads()]
+    caches = [SPKSegmentCache2(header) for _ in 1:Threads.nthreads()]
 
     SPKSegmentType14(header, caches)
 
@@ -162,7 +111,12 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType14, time::Number)
     index = find_logical_record(daf, head, time)
     get_coefficients!(daf, head, data, index)
 
-    x, y, z = zeros(3)
+    # Normalise the time argument between [-1, 1]
+    t = normalise_time(data, time)
+
+    # Interpolate the polynomials 
+    x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
+
     return SA[x, y, z]
 
 end
@@ -176,7 +130,13 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType14, time::Number)
     index = find_logical_record(daf, head, time)
     get_coefficients!(daf, head, data, index)
 
-    x, y, z, vx, vy, vz = zeros(6)
+    # Normalise the time argument between [-1, 1]
+    t = normalise_time(data, time)
+
+    # Interpolate the polynomials 
+    x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
+    vx, vy, vz = chebyshev(data.buff, data.A, t, 3, head.N)
+
     return SA[x, y, z, vx, vy, vz]
 
 end
@@ -190,7 +150,13 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType14, time::Number)
     index = find_logical_record(daf, head, time)
     get_coefficients!(daf, head, data, index)
 
-    x, y, z, vx, vy, vz, ax, ay, az = zeros(9)
+    # Normalise the time argument between [-1, 1]
+    t = normalise_time(data, time)
+
+    # Interpolate the polynomials 
+    x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
+    vx, vy, vz, ax, ay, az = ∂chebyshev(data.buff, data.A, t, 3, head.N, data.p[3])
+
     return SA[x, y, z, vx, vy, vz, ax, ay, az]
 
 end
@@ -203,8 +169,16 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType14, time::Number)
     # Retrieve coefficients 
     index = find_logical_record(daf, head, time)
     get_coefficients!(daf, head, data, index)
+    
+    # Normalise the time argument between [-1, 1]
+    t = normalise_time(data, time)
 
-    x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz = zeros(12)
+    # Interpolate the polynomials 
+    x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
+    vx, vy, vz, ax, ay, az, jx, jy, jz = ∂²chebyshev(
+        data.buff, data.A, t, 3, head.N, data.p[3]
+    )
+
     return SA[x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz]
     
 end
@@ -223,25 +197,25 @@ function find_logical_record(daf::DAF, head::SPKSegmentHeader14, time::Number)
     index = 0
     if head.ndirs == 0
         # Search through epoch table 
-        @inbounds while (index < head.n - 1 && head.epochs[index+1] < time)
+        while (index < head.n - 1 && time >= head.epochs[index+2])
             index += 1 
         end
+
     else 
         # Here, we first search through epoch directories
         subdir = 0
-        @inbounds while (subdir < head.ndirs && head.epochs[subdir+1] < time)
+        @inbounds while (subdir < head.ndirs && time >= head.epochs[subdir+1])
             subdir += 1
         end
 
-        index = subdir*100
-        stop_idx = min(index + 100, head.n)
+        index = max(0, 100*subdir-1)
+        stop_idx = min(index + 99, head.n)
 
         # Find the actual epoch
         found = false
-        while (index < stop_idx - 1 && !found)
-            epoch = get_float(array(daf), head.etid + 8*index, endian(daf))
-            
-            if epoch >= time 
+        while (index < stop_idx && !found)
+            epoch = get_float(array(daf), head.etid + 8*(index+1), endian(daf))
+            if time < epoch 
                 found = true 
             else 
                 index += 1 
@@ -257,7 +231,7 @@ end
 """
     get_coefficients!(daf::DAF, head::SPKSegmentHeader14, cache::SPKSegmentCache14, index::Int)
 """
-function get_coefficients!(daf::DAF, head::SPKSegmentHeader14, cache::SPKSegmentCache14, 
+function get_coefficients!(daf::DAF, head::SPKSegmentHeader14, cache::SPKSegmentCache2, 
             index::Int)
 
     # Check whether the coefficients for this record are already loaded
@@ -265,7 +239,7 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader14, cache::SPKSegment
     cache.id[1] = index 
 
     # Address of desired packet record 
-    k = head.ptid + 8*head.pktsize*index 
+    k = head.ptid + 8*head.pktoff + 8*index*(head.pktsize + head.pktoff) 
 
     # Retrieve the record mid point and radius 
     cache.p[1] = get_float(array(daf), k, endian(daf))
@@ -276,7 +250,7 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader14, cache::SPKSegment
 
     # # TODO: can we speed-up this part by casting the byte content into the array at once?
     @inbounds for j = 1:head.N 
-        for i = 1:6 
+        for i = 1:head.ncomp
             cache.A[i, j] = get_float(
                 array(daf), k + 8*(j-1) + 8*(i-1)*head.N, endian(daf)
             )
