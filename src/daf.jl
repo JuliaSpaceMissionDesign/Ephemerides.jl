@@ -605,8 +605,12 @@ function create_spk_segment(daf::DAF, desc::DAFSegmentDescriptor)
     elseif mapped_spktype == 6 
         SPKSegmentType19(daf, desc)
 
-    else
+    elseif mapped_spktype == 7
         SPKSegmentType20(daf, desc)
+
+    else 
+        SPKSegmentType17(daf, desc)
+        
     end
     
 end
