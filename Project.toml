@@ -12,7 +12,7 @@ PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
-JSMDInterfaces = "1.2"
+JSMDInterfaces = "1.4"
 LazyArtifacts = "1"
 PreallocationTools = "0.4"
 PrecompileTools = "1"

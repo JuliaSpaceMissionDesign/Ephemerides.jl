@@ -363,7 +363,7 @@ function DAF(filename::String)
 
     # Retrieve DAF file record and comment section
     header = DAFHeader(array)
-    comment = parse_daf_comment(array, header)
+    comment = parse_daf_comment(array, header, filename)
 
     # Retrieve the DAF summaries
     summaries = parse_daf_summaries(array, header)
@@ -484,7 +484,7 @@ Retrieve the comment section of a binary DAF.
 ### See Also 
 See also [`DAF`](@ref), [`DAFHeader`](@ref) and [`parse_daf_summaries`](@ref)
 """
-function parse_daf_comment(array::Vector{UInt8}, header::DAFHeader)
+function parse_daf_comment(array::Vector{UInt8}, header::DAFHeader, fname::String)
 
     cmt = "" 
     @inbounds for idx = 2:initial_record(header)-1
@@ -495,8 +495,7 @@ function parse_daf_comment(array::Vector{UInt8}, header::DAFHeader)
     
         if isnothing(eot)
             if idx == initial_record(header)-1 
-                @warn "Could not find the EOT byte in the DAF comment."
-                # throw(ArgumentError("Could not find the EOT byte in the DAF comment."))
+                @warn "Could not find the EOT byte in the DAF \'$fname\' comment."
             end 
             
             # Remove all the null characters between two successive records
