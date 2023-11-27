@@ -148,6 +148,17 @@ Ephemerides.SPKSegmentType14
 !!! note 
     SPK segments of type 14 have the same cache structure of SPK type 2 and 3.
 
+
+### SPK Type 17
+```@docs
+Ephemerides.SPKSegmentHeader17
+Ephemerides.SPKSegmentType17
+```
+
+!!! note 
+    SPK segments of type 17 do not require a cache structure.
+
+
 ### SPK Type 18 and 19
 ```@docs
 Ephemerides.SPKSegmentHeader18

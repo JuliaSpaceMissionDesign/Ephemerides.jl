@@ -409,18 +409,11 @@ struct SPKSegmentHeader17 <: AbstractSPKHeader
     dlpdt::Float64
     dmldt::Float64 
     dnodedt::Float64
-    ra_pole::Float64
-    de_pole::Float64
+    ra::Float64
+    de::Float64
+    R::SMatrix{3, 3, Float64, 9}
 end
 
-"""
-    SPKSegmentCache17 <: AbstractSPKCache
-
-Cache instance for SPK segments of type 17.
-"""
-struct SPKSegmentCache17 <: AbstractSPKCache
-    id::MVector{1, Int}
-end 
 
 """ 
     SPKSegmentType17 <: AbstractSPKSegment
@@ -429,7 +422,10 @@ Segment instance for SPK segments of type 17.
 
 ### Fields 
 - `head` -- Segment header 
-- `cache` -- Segment cache 
+
+!!! note 
+    SPK segments of type 17 do not require a cache because they do not extract any 
+    additional coefficients at runtime.
 
 ### References 
 - [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
@@ -437,11 +433,9 @@ Segment instance for SPK segments of type 17.
 """
 struct SPKSegmentType17 <: AbstractSPKSegment
     head::SPKSegmentHeader17
-    cache::Vector{SPKSegmentCache17}
 end
 
 @inline header(spk::SPKSegmentType17) = spk.head 
-@inline @inbounds cache(spk::SPKSegmentType17) = spk.cache[Threads.threadid()]
 
 
 # ----------------------------------
