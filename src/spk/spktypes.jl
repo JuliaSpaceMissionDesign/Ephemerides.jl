@@ -388,6 +388,57 @@ end
 
 
 # ----------------------------------
+# SPK TYPE 17
+# ----------------------------------
+
+"""
+    SPKSegmentHeader17 <: AbstractSPKHeader
+
+Header instance for SPK segments of type 17.
+
+### Fields 
+"""
+struct SPKSegmentHeader17 <: AbstractSPKHeader
+    epoch::Float64 
+    sma::Float64 
+    h::Float64 
+    k::Float64 
+    lon::Float64
+    p::Float64 
+    q::Float64 
+    dlpdt::Float64
+    dmldt::Float64 
+    dnodedt::Float64
+    ra::Float64
+    de::Float64
+    R::SMatrix{3, 3, Float64, 9}
+end
+
+
+""" 
+    SPKSegmentType17 <: AbstractSPKSegment
+
+Segment instance for SPK segments of type 17.
+
+### Fields 
+- `head` -- Segment header 
+
+!!! note 
+    SPK segments of type 17 do not require a cache because they do not extract any 
+    additional coefficients at runtime.
+
+### References 
+- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
+- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
+"""
+struct SPKSegmentType17 <: AbstractSPKSegment
+    head::SPKSegmentHeader17
+end
+
+@inline header(spk::SPKSegmentType17) = spk.head 
+
+
+# ----------------------------------
 # SPK TYPE 18
 # ----------------------------------
 
@@ -589,6 +640,7 @@ const SPK_SEGMENTLIST_MAPPING = Dict(
     19 => 6,
     20 => 7,
     21 => 1,
+    17 => 8
 )
 
 # ----------------------------------
@@ -620,6 +672,7 @@ struct SPKSegmentList
     spk14::Vector{SPKSegmentType14}
     spk19::Vector{SPKSegmentType19}
     spk20::Vector{SPKSegmentType20}
+    spk17::Vector{SPKSegmentType17}
 
     function SPKSegmentList()
         new(
@@ -629,7 +682,8 @@ struct SPKSegmentList
             SPKSegmentType9[],
             SPKSegmentType14[],
             SPKSegmentType19[],
-            SPKSegmentType20[]
+            SPKSegmentType20[],
+            SPKSegmentType17[]
         )
     end
 end
