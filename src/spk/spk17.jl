@@ -116,11 +116,11 @@ function spk_vector3(::DAF, seg::SPKSegmentType17, time::Number)
     vg = SA[2*p*q, 1 + p2 - q2, 2q]*dI
 
     # Compute the mean longitude 
-    ml = head.lon + mod(Δt*head.dmldt, 2π)
+    λ = mod(head.lon + Δt*head.dmldt, 2π)
 
     # Compute the eccentric longitude from Kepler's equation
-    # F = kepler_calceph(ml, h, k)
-    F = kepler_spice(ml, h, k)
+    F = kepler_calceph(λ, h, k)
+    # F = kepler_spice(ml, h, k)
     sF, cF = sincos(F)
 
     # Compute Broucke's beta parameter
@@ -146,11 +146,10 @@ function spk_vector3(::DAF, seg::SPKSegmentType17, time::Number)
 
 end
 
-function kepler_calceph(ml, h, k)
+function kepler_calceph(λ, h, k)
 
     # Solve the equinoctial version of Kepler's equation
-
-    F = ml 
+    F = λ
     
     maxiter, tol = 15, 1e-16
 
@@ -158,16 +157,15 @@ function kepler_calceph(ml, h, k)
     iter = 0 
     while err > tol && iter < maxiter 
 
-        sa, ca = sincos(F)
-        se = k*sa - h*ca 
-        fa = F - se - ml 
-        ce = k*ca + h*sa 
-        f1a = 1 - ce 
-        d1 = -fa/f1a 
+        sF, cF = sincos(F)
+        
+        fk = F + h*cF - k*sF - λ 
+        dfk = 1 - h*sF - k*cF  
 
-        F = F + d1
+        ΔF = -fk/dfk 
+        F += ΔF
 
-        err = abs(d1)
+        err = abs(ΔF)
         iter += 1
     end
 
