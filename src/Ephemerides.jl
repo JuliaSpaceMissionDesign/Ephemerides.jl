@@ -27,6 +27,7 @@ include("daf.jl")
 # SPK segments implementations
 include("spk/spk1.jl")
 include("spk/spk2.jl")
+include("spk/spk5.jl")
 include("spk/spk8.jl")
 include("spk/spk9.jl")
 include("spk/spk14.jl")
