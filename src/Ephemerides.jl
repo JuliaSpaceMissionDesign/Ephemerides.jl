@@ -18,6 +18,9 @@ include("interp/hermite.jl")
 include("interp/lagrange.jl")
 include("interp/chebyshev.jl")
 
+# Twobody utilities 
+include("twobody.jl")
+
 # SPK segment types definitions
 include("spk/spktypes.jl")
 

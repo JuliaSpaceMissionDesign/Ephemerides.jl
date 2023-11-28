@@ -212,7 +212,13 @@ end
 Header instance for SPK segments of type 5.
 
 ### Fields 
-
+- `GM` -- `Float64` Gravitational constant 
+- `n` -- `Int` number of states 
+- `ndirs` -- `Int` number of epoch directories
+- `etid` -- `Int` initial address for the epoch table (after all the state data)
+- `epochs` -- Storage for directory epochs or epochs (when ndirs = 0)
+- `iaa` - `Int` initial segment file address 
+- `pairs` -- Vector storing the pairs required for the Stumpff functions evaluation.
 """
 struct SPKSegmentHeader5 <: AbstractSPKHeader
     GM::Float64 
@@ -220,6 +226,8 @@ struct SPKSegmentHeader5 <: AbstractSPKHeader
     ndirs::Int 
     etid::Int
     epochs::Vector{Float64}
+    iaa::Int   
+    pairs::Vector{Float64}
 end
 
 """ 
@@ -228,13 +236,16 @@ end
 Cache instance for SPK segments of type 5.
 
 ### Fields 
-- `id` -- Index of the currently loaded logical record
+- `c1` -- Twobody propagation cache for the left state.
+- `c2` -- Twobody propagation cache for the right state.
+- `epochs` -- Epochs associated to the two states.
+- `id` -- Index of the currently loaded logical record.
 """
-struct SPKSegmentCache5 <: AbstractSPKCache
-    s1::MVector{6, Float64}
-    s2::MVector{6, Float64}
-    ts::MVector{2, Float64}
-    id::MVector{1, Int}
+mutable struct SPKSegmentCache5 <: AbstractSPKCache
+    c1::TwoBodyUniversalCache
+    c2::TwoBodyUniversalCache
+    epochs::MVector{2, Float64}
+    id::Int
 end
 
 """ 
