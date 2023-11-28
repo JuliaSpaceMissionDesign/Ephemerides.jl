@@ -91,7 +91,7 @@ DJ2000 = 2451545
             pos_m[:, j] = ephem_vector3(ephj, cid, tid, tj[j])
         end
 
-        # @test pos ≈ pos_m atol=1e-14 rtol=1e-14
+        @test pos ≈ pos_m atol=1e-14 rtol=1e-14
 
         kclear()
 
