@@ -10,6 +10,7 @@
     include("spk1.jl")
     include("spk2.jl")
     include("spk3.jl")
+    include("spk5.jl")
     include("spk8.jl")
     include("spk9.jl")
     include("spk12.jl")

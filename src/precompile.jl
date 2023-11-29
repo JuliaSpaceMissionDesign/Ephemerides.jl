@@ -7,6 +7,7 @@ PrecompileTools.@setup_workload begin
         "example1spk_seg1.bsp",
         "example1spk_seg2.bsp",
         "example1spk_seg3.bsp",
+        "example1spk_seg5.bsp",
         "example1spk_seg8.bsp",
         "example1spk_seg9.bsp",
         "example1spk_seg12.bsp",
@@ -38,7 +39,7 @@ PrecompileTools.@setup_workload begin
             _ = ephem_vector3(ephj, cid, tid, tj);
             _ = ephem_vector6(ephj, cid, tid, tj);
 
-            if !(segment_type(desc) in (1, 17, 21))
+            if !(segment_type(desc) in (1, 5, 17, 21))
                 _ = ephem_vector9(ephj, cid, tid, tj);
                 _ = ephem_vector12(ephj, cid, tid, tj);
             end

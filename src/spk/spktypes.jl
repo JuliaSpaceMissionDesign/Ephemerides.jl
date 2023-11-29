@@ -203,6 +203,72 @@ end
 
 
 # ----------------------------------
+# SPK TYPE 5
+# ----------------------------------
+
+"""
+    SPKSegmentHeader5 <: AbstractSPKHeader
+
+Header instance for SPK segments of type 5.
+
+### Fields 
+- `GM` -- `Float64` Gravitational constant 
+- `n` -- `Int` number of states 
+- `ndirs` -- `Int` number of epoch directories
+- `etid` -- `Int` initial address for the epoch table (after all the state data)
+- `epochs` -- Storage for directory epochs or epochs (when ndirs = 0)
+- `iaa` - `Int` initial segment file address 
+"""
+struct SPKSegmentHeader5 <: AbstractSPKHeader
+    GM::Float64 
+    n::Int 
+    ndirs::Int 
+    etid::Int
+    epochs::Vector{Float64}
+    iaa::Int   
+end
+
+""" 
+    SPKSegmentCache5 <: AbstractSPKCache 
+
+Cache instance for SPK segments of type 5.
+
+### Fields 
+- `c1` -- Twobody propagation cache for the left state.
+- `c2` -- Twobody propagation cache for the right state.
+- `epochs` -- Epochs associated to the two states.
+- `id` -- Index of the currently loaded logical record.
+"""
+mutable struct SPKSegmentCache5 <: AbstractSPKCache
+    c1::TwoBodyUniversalCache
+    c2::TwoBodyUniversalCache
+    epochs::MVector{2, Float64}
+    id::Int
+end
+
+""" 
+    SPKSegmentType5 <: AbstractSPKSegment
+
+Segment instance for SPK segments of type 5. 
+
+### Fields 
+- `head` -- Segment header 
+- `cache` -- Segment cache 
+
+### References 
+- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
+- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
+"""
+struct SPKSegmentType5 <: AbstractSPKSegment
+    head::SPKSegmentHeader5
+    cache::Vector{SPKSegmentCache5}
+end
+
+@inline header(spk::SPKSegmentType5) = spk.head 
+@inline @inbounds cache(spk::SPKSegmentType5) = spk.cache[Threads.threadid()]
+
+
+# ----------------------------------
 # SPK TYPE 8
 # ----------------------------------
 
@@ -640,7 +706,8 @@ const SPK_SEGMENTLIST_MAPPING = Dict(
     19 => 6,
     20 => 7,
     21 => 1,
-    17 => 8
+    17 => 8,
+    5 => 9
 )
 
 # ----------------------------------
@@ -673,6 +740,7 @@ struct SPKSegmentList
     spk19::Vector{SPKSegmentType19}
     spk20::Vector{SPKSegmentType20}
     spk17::Vector{SPKSegmentType17}
+    spk5::Vector{SPKSegmentType5}
 
     function SPKSegmentList()
         new(
@@ -683,7 +751,8 @@ struct SPKSegmentList
             SPKSegmentType14[],
             SPKSegmentType19[],
             SPKSegmentType20[],
-            SPKSegmentType17[]
+            SPKSegmentType17[], 
+            SPKSegmentType5[],
         )
     end
 end

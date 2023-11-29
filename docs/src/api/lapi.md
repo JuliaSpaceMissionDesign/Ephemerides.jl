@@ -125,6 +125,13 @@ Ephemerides.SPKSegmentCache2
 Ephemerides.SPKSegmentType2
 ```
 
+### SPK Type 5
+```@docs 
+Ephemerides.SPKSegmentHeader5
+Ephemerides.SPKSegmentCache5
+Ephemerides.SPKSegmentType5
+```
+
 ### SPK Type 8 and 12
 ```@docs 
 Ephemerides.SPKSegmentHeader8
@@ -192,8 +199,6 @@ Ephemerides.find_logical_record
 Ephemerides.get_coefficients!
 ```
 
-### Parsing 
-
 ## Interpolating Functions
 
 ### Caches 
@@ -238,5 +243,12 @@ Ephemerides.final_times
 Ephemerides.analyse_timespan 
 ```
 
+## TwoBody Routines 
+```@docs 
+Ephemerides.TwoBodyUniversalCache 
+Ephemerides.update_cache!
+Ephemerides.propagate_twobody
+Ephemerides.stumpff
+```
 
 
