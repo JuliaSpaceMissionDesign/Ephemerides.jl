@@ -21,11 +21,22 @@ mutable struct TwoBodyUniversalCache
     bound::Float64
 
     μ::Float64
+    p::Vector{Float64}
 
 end
 
-function TwoBodyUniversalCache(μ)
-    TwoBodyUniversalCache(zeros(3), zeros(3), 0, 0, 0, 0, 0, 0, μ)
+function TwoBodyUniversalCache(μ::Number, deg::Int=11)
+
+    # Pre-compute the pairs required for the Stumpff functions series evaluation.
+    # The truncation degree is set to 11, similarly to SPICE.
+    
+    p = zeros(2(deg-1))
+    @inbounds for j in eachindex(p)
+        p[j] = 1/(j*(j+1))
+    end
+
+    TwoBodyUniversalCache(zeros(3), zeros(3), 0, 0, 0, 0, 0, 0, μ, p)
+
 end
 
 
@@ -106,7 +117,7 @@ Kepler's Equation and the Lagrange coefficients f and g.
 ### References 
 - [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
 """
-function propagate_twobody(cache::TwoBodyUniversalCache, Δt, p)
+function propagate_twobody(cache::TwoBodyUniversalCache, Δt)
 
     # There is no need to propagate
     if Δt == 0 
@@ -126,7 +137,7 @@ function propagate_twobody(cache::TwoBodyUniversalCache, Δt, p)
     Fx² = F*x*x
 
     # Compute the Stumpff functions 
-    c0, c1, c2, c3 = stumpff(Fx², p)
+    c0, c1, c2, c3 = stumpff(Fx², cache.p)
 
     # Compute Kepler's equation
     kfun = x*(br0*c1 + x*(bv*c2 + x*bq*c3))
@@ -154,7 +165,7 @@ function propagate_twobody(cache::TwoBodyUniversalCache, Δt, p)
             end
 
             Fx² = F*x*x
-            c0, c1, c2, c3 = stumpff(Fx², p)
+            c0, c1, c2, c3 = stumpff(Fx², cache.p)
             kfun = x*(br0*c1 + x*(bv*c2 + x*bq*c3))
         end
 
@@ -177,7 +188,7 @@ function propagate_twobody(cache::TwoBodyUniversalCache, Δt, p)
             end
             
             Fx² = F*x*x
-            c0, c1, c2, c3 = stumpff(Fx², p)
+            c0, c1, c2, c3 = stumpff(Fx², cache.p)
             kfun = x*(br0*c1 + x*(bv*c2 + x*bq*c3))
         end
     end
@@ -186,7 +197,7 @@ function propagate_twobody(cache::TwoBodyUniversalCache, Δt, p)
     x = min(ub, max(lb, (ub+lb)/2))
 
     Fx² = F*x*x
-    c0, c1, c2, c3 = stumpff(Fx², p)
+    c0, c1, c2, c3 = stumpff(Fx², cache.p)
 
     # TODO: why don't we add a tolerance limit on the actual value of the root or on 
     # the increment between two consecutive roots or on the actual interval size? 
@@ -208,7 +219,7 @@ function propagate_twobody(cache::TwoBodyUniversalCache, Δt, p)
         x = min(ub, max(lb, (ub+lb)/2))
         Fx² = F*x*x 
 
-        c0, c1, c2, c3 = stumpff(Fx², p)
+        c0, c1, c2, c3 = stumpff(Fx², cache.p)
 
         iter += 1
 

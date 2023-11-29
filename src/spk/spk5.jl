@@ -39,16 +39,7 @@ function SPKSegmentHeader5(daf::DAF, desc::DAFSegmentDescriptor)
 
     end
 
-    # Pre-compute the pairs required for the Stumpff functions series evaluation.
-    # The truncation degree is set to 11, similarly to SPICE.
-    deg = 11  
-    
-    p = zeros(2(deg-1))
-    @inbounds for j in eachindex(p)
-        p[j] = 1/(j*(j+1))
-    end
-
-    SPKSegmentHeader5(GM, n, ndirs, etid, epochs, iaa, p)
+    SPKSegmentHeader5(GM, n, ndirs, etid, epochs, iaa)
 
 end
 
@@ -100,8 +91,8 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType5, time::Number)
     Δt2 = time - t2
 
     # Propagate the two states
-    p1, _ = propagate_twobody(data.c1, Δt1, head.pairs)
-    p2, _ = propagate_twobody(data.c2, Δt2, head.pairs)
+    p1, _ = propagate_twobody(data.c1, Δt1)
+    p2, _ = propagate_twobody(data.c2, Δt2)
 
     # Compute the weighting coefficient
     k = π/(t2 - t1)
@@ -131,8 +122,8 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType5, time::Number)
     Δt2 = time - t2
 
     # Propagate the two states
-    p1, v1 = propagate_twobody(data.c1, Δt1, head.pairs)
-    p2, v2 = propagate_twobody(data.c2, Δt2, head.pairs)
+    p1, v1 = propagate_twobody(data.c1, Δt1)
+    p2, v2 = propagate_twobody(data.c2, Δt2)
 
     # Compute the weighting coefficient and its derivative 
     k = π/(t2 - t1)

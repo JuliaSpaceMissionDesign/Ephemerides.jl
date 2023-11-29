@@ -218,7 +218,6 @@ Header instance for SPK segments of type 5.
 - `etid` -- `Int` initial address for the epoch table (after all the state data)
 - `epochs` -- Storage for directory epochs or epochs (when ndirs = 0)
 - `iaa` - `Int` initial segment file address 
-- `pairs` -- Vector storing the pairs required for the Stumpff functions evaluation.
 """
 struct SPKSegmentHeader5 <: AbstractSPKHeader
     GM::Float64 
@@ -227,7 +226,6 @@ struct SPKSegmentHeader5 <: AbstractSPKHeader
     etid::Int
     epochs::Vector{Float64}
     iaa::Int   
-    pairs::Vector{Float64}
 end
 
 """ 
