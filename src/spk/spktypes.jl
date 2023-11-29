@@ -462,7 +462,20 @@ end
 
 Header instance for SPK segments of type 17.
 
-### Fields 
+### Fields
+- `epoch`: epoch of periapsis (s)
+- `sma`: semi-major axis (km)
+- `h`: H term of the equinoctial elements
+- `k`: K term of the equinoctial elements 
+- `lon`: mean longitude at epoch (rad)
+- `p`: P term of the equinoctial elements 
+- `q`: Q term of the equinoctial elements 
+- `dlpdt`: rate of longitude of the periapse (rad/s)
+- `dmldt`: mean longitude rate (mean motion rate), (rad/s)
+- `dnodedt`: longitude of the ascending node rate (rad/s)
+- `ra`: equatorial pole right ascension (rad)
+- `de`: equatorial pole declination (rad)
+- `R`: Rotation matrix from planetary equator to inertial reference frame
 """
 struct SPKSegmentHeader17 <: AbstractSPKHeader
     epoch::Float64 
