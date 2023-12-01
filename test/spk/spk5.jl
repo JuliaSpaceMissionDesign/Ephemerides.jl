@@ -6,8 +6,9 @@ DJ2000 = 2451545
 
     # The first kernel doesnt contains a directory epoch, the second one does
     kernels = [
-        joinpath(test_dir, "example1spk_seg5.bsp"), 
-        joinpath(test_dir, "example2spk_seg5.bsp")
+        joinpath(test_dir, "spk5_ex1.bsp"), 
+        joinpath(test_dir, "spk5_ex2.bsp"),
+        joinpath(test_dir, "spk5_ex3.bsp") # test hyperbolic orbits
     ]
 
     for kernel in kernels 

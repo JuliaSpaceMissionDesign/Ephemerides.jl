@@ -5,7 +5,7 @@ DJ2000 = 2451545
 @testset "SPK Type 14" verbose=true begin 
 
     # The first kernel has a directory epoch, the second does not
-    kernel = joinpath(test_dir, "example1spk_seg14.bsp")
+    kernel = joinpath(test_dir, "spk14_ex1.bsp")
 
     ephj = EphemerisProvider(kernel);
     furnsh(kernel)

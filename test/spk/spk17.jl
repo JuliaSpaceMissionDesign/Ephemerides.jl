@@ -5,7 +5,7 @@ DJ2000 = 2451545
 @testset "SPK Type 17" verbose=true begin 
 
     # The first kernel contains an odd-sized window, the second one an even-size window
-    kernel = joinpath(test_dir, "example1spk_seg17.bsp")
+    kernel = joinpath(test_dir, "spk17_ex1.bsp")
     
     ephj = EphemerisProvider(kernel);
     # ephc = CalcephProvider(kernel);

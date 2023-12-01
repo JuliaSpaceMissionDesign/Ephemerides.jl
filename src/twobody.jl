@@ -94,7 +94,7 @@ function update_cache!(c::TwoBodyUniversalCache)
     if c.F < 0 
         f = log(dpmax / 2) - log(maxc)
         rF = sqrt(-c.F)
-        c.bound = min(f/rF, (f + 3/2*log(-F))/rF)
+        c.bound = min(f/rF, (f + 3/2*log(-c.F))/rF)
     else
         c.bound = exp((log(3/2) + log(dpmax) - log(maxc))/3)
     end

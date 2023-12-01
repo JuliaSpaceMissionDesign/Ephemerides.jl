@@ -6,8 +6,8 @@ DJ2000 = 2451545
 
     # Each kernel contains segments both with and without epoch directories. 
     # Different descriptors are tested to include epoch directories and even/odd windows
-    kernels = [joinpath(test_dir, "example1spk_seg13.bsp"), 
-               joinpath(test_dir, "example2spk_seg13.bsp")]
+    kernels = [joinpath(test_dir, "spk13_ex1.bsp"), 
+               joinpath(test_dir, "spk13_ex2.bsp")]
     
     # Desired descriptors 
     descidj = [(1, 2), (3, 4)]

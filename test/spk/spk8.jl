@@ -5,8 +5,8 @@ DJ2000 = 2451545
 @testset "SPK Type 8" verbose=true begin 
 
     # The first kernel contains an even-sized window, the second one an odd-size window
-    kernels = [joinpath(test_dir, "example1spk_seg8.bsp"),
-               joinpath(test_dir, "example2spk_seg8.bsp")]
+    kernels = [joinpath(test_dir, "spk8_ex1.bsp"),
+               joinpath(test_dir, "spk8_ex2.bsp")]
 
     for kernel in kernels
         ephj = EphemerisProvider(kernel);
