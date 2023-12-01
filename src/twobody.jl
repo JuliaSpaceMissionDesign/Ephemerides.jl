@@ -104,7 +104,7 @@ end
 
 
 """
-    propagate_twobody(cache::TwoBodyUniversalCache, Δt::Number, p::AbstractVector)
+    propagate_twobody(cache::TwoBodyUniversalCache, Δt::Number)
 
 Propagate the state vector in `cache` of `Δt` using the universal variables formulation for 
 Kepler's Equation and the Lagrange coefficients f and g.
