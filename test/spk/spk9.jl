@@ -7,10 +7,10 @@ DJ2000 = 2451545
     axes = Dict(1 => "J2000", 17 => "ECLIPJ2000")
 
     # The first kernel has a directory epoch, the second does not
-    kernels = [joinpath(test_dir, "example1spk_seg9.bsp"),  # even, epoch dir
-               joinpath(test_dir, "example2spk_seg9.bsp"),  # even, no epoch dir 
-               joinpath(test_dir, "example3spk_seg9.bsp"),  # uneven, epoch dir
-               joinpath(test_dir, "example4spk_seg9.bsp")]  # uneven no epoch dir 
+    kernels = [joinpath(test_dir, "spk9_ex1.bsp"),  # even, epoch dir
+               joinpath(test_dir, "spk9_ex2.bsp"),  # even, no epoch dir 
+               joinpath(test_dir, "spk9_ex3.bsp"),  # uneven, epoch dir
+               joinpath(test_dir, "spk9_ex4.bsp")]  # uneven no epoch dir 
 
     for kernel in kernels 
 

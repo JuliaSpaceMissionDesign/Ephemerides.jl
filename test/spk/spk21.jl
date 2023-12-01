@@ -8,8 +8,8 @@ DJ2000 = 2451545
     # computations on SPK types 21 (they differ from those of SPICE)
 
     # The first kernel has no epoch directories, whereas the second one does
-    kernels = [joinpath(test_dir, "example1spk_seg21.bsp"), 
-               joinpath(test_dir, "example2spk_seg21.bsp")]
+    kernels = [joinpath(test_dir, "spk21_ex1.bsp"), 
+               joinpath(test_dir, "spk21_ex2.bsp")]
 
     yc1 = zeros(3)
 
