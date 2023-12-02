@@ -156,6 +156,16 @@ Ephemerides.SPKSegmentType14
     SPK segments of type 14 have the same cache structure of SPK type 2 and 3.
 
 
+### SPK Type 15
+```@docs
+Ephemerides.SPKSegmentHeader15
+Ephemerides.SPKSegmentType15
+```
+
+!!! note 
+    The cache of SPK Type 15 segments is made of [`Ephemerides.TwoBodyUniversalCache`](@ref) objects.
+
+
 ### SPK Type 17
 ```@docs
 Ephemerides.SPKSegmentHeader17
