@@ -39,6 +39,14 @@ function TwoBodyUniversalCache(μ::Number, deg::Int=11)
 
 end
 
+function TwoBodyUniversalCache(μ::Number, pos, vel, deg::Int=11)
+    c = TwoBodyUniversalCache(μ, deg)
+    c.pos[:] = pos 
+    c.vel[:] = vel 
+    update_cache!(c)
+    return c 
+end
+
 
 """
     update_cache!(c::TwoBodyUniversalCache)
@@ -47,31 +55,17 @@ Update the precomputed values in the cache using the position and velocity in `c
 """
 function update_cache!(c::TwoBodyUniversalCache)
 
-    @inbounds begin 
+    # Compute the initial position vector magnitude and radial velocity  
+    r0 = vnorm(c.pos)
+    vr = vdot(c.pos, c.vel)
 
-        # Compute the initial position vector magnitude and radial velocity  
-        r0 = sqrt(c.pos[1]^2 + c.pos[2]^2 + c.pos[3]^2)
-        vr = c.pos[1]*c.vel[1] + c.pos[2]*c.vel[2] + c.pos[3]*c.vel[3]
+    # Compute the angular momentum
+    h0 = vcross(c.pos, c.vel)
+    h2 = vdot(h0, h0)
 
-        # Compute the angular momentum 
-        h0 = SA[
-            c.pos[2]*c.vel[3] - c.pos[3]*c.vel[2], 
-            c.pos[3]*c.vel[1] - c.pos[1]*c.vel[3], 
-            c.pos[1]*c.vel[2] - c.pos[2]*c.vel[1]
-        ]
-
-        h2 = h0[1]^2 + h0[2]^2 + h0[3]^2
-
-        # Compute the eccentricity from the eccentricity vector 
-        eᵥ = SA[
-            (c.vel[2]*h0[3] - c.vel[3]*h0[2])/c.μ - c.pos[1]/r0, 
-            (c.vel[3]*h0[1] - c.vel[1]*h0[3])/c.μ - c.pos[2]/r0, 
-            (c.vel[1]*h0[2] - c.vel[2]*h0[1])/c.μ - c.pos[3]/r0
-        ]
-
-        ecc = sqrt(eᵥ[1]^2 + eᵥ[2]^2 + eᵥ[3]^2)
-
-    end
+    # Compute the eccentricity from the eccentricity vector 
+    @inbounds eᵥ = vcross(c.vel, h0)/c.μ - SA[c.pos[1], c.pos[2], c.pos[3]]/r0
+    ecc = vnorm(eᵥ)
 
     # Compute Q = a * (1-e)
     q = h2/(c.μ*(1+ecc))
@@ -104,7 +98,7 @@ end
 
 
 """
-    propagate_twobody(cache::TwoBodyUniversalCache, Δt::Number, p::AbstractVector)
+    propagate_twobody(cache::TwoBodyUniversalCache, Δt::Number)
 
 Propagate the state vector in `cache` of `Δt` using the universal variables formulation for 
 Kepler's Equation and the Lagrange coefficients f and g.

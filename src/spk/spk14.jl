@@ -71,7 +71,7 @@ function SPKSegmentHeader14(daf::DAF, desc::DAFSegmentDescriptor)
 end
 
 """ 
-    SPKSegmentCache14(head::SPKSegmentHeader2)
+    SPKSegmentCache14(head::SPKSegmentHeader14)
 
 Initialise the cache for an SPK segment of type 14.
 """

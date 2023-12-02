@@ -454,6 +454,70 @@ end
 
 
 # ----------------------------------
+# SPK TYPE 15
+# ----------------------------------
+
+"""
+    SPKSegmentHeader15 <: AbstractSPKHeader
+
+Header instance for SPK segments of type 15.
+
+### Fields 
+- `epoch` -- Epoch of periapsis 
+- `tp` -- Trajectory pole, i.e., vector parallel to the angular momentum of the orbit
+- `pv` -- Central body north pole unit vector 
+- `pa` -- Periapsis unit vector at epoch 
+- `p` -- Semi-latus rectum 
+- `ecc` -- Eccentricity 
+- `j2f` -- J2 processing flag 
+- `vj2` -- J2 validation flag, true if the orbit shape is compliant with J2 pertubations.
+- `GM` -- Central body gravitational constant (km³/s²)
+- `J2` -- Central body J2 
+- `R` -- Central body radius (km)
+- `dmdt` -- Mean anomaly rate of change (rad/s)
+- `kn` -- Gain factor for the regression of the nodes 
+- `kp` -- Gain factor for the precession of the pericenter
+"""
+struct SPKSegmentHeader15 <: AbstractSPKHeader
+    epoch::Float64 
+    tp::SVector{3, Float64}  
+    pv::SVector{3, Float64}
+    pa::SVector{3, Float64}  
+    p::Float64 
+    ecc::Float64
+    j2f::Float64
+    vj2::Bool
+    GM::Float64 
+    J2::Float64
+    R::Float64 
+    dmdt::Float64
+    kn::Float64
+    kp::Float64
+end
+
+""" 
+    SPKSegmentType15 <: AbstractSPKSegment
+
+Segment instance for SPK segments of type 15.
+
+### Fields 
+- `head` -- Segment header 
+- `cache` -- Segment cache 
+
+### References 
+- [SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
+- [SPICE Toolkit](https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html)
+"""
+struct SPKSegmentType15 <: AbstractSPKSegment
+    head::SPKSegmentHeader15
+    cache::Vector{TwoBodyUniversalCache}
+end
+
+@inline header(spk::SPKSegmentType15) = spk.head 
+@inline @inbounds cache(spk::SPKSegmentType15) = spk.cache[Threads.threadid()]
+
+
+# ----------------------------------
 # SPK TYPE 17
 # ----------------------------------
 
@@ -720,7 +784,8 @@ const SPK_SEGMENTLIST_MAPPING = Dict(
     20 => 7,
     21 => 1,
     17 => 8,
-    5 => 9
+    5 => 9,
+    15 => 10
 )
 
 # ----------------------------------
@@ -754,6 +819,7 @@ struct SPKSegmentList
     spk20::Vector{SPKSegmentType20}
     spk17::Vector{SPKSegmentType17}
     spk5::Vector{SPKSegmentType5}
+    spk15::Vector{SPKSegmentType15}
 
     function SPKSegmentList()
         new(
@@ -766,6 +832,7 @@ struct SPKSegmentList
             SPKSegmentType20[],
             SPKSegmentType17[], 
             SPKSegmentType5[],
+            SPKSegmentType15[]
         )
     end
 end
