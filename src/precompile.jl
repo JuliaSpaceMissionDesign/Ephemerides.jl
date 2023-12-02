@@ -13,6 +13,7 @@ PrecompileTools.@setup_workload begin
         "spk12_ex1.bsp",
         "spk13_ex1.bsp",
         "spk14_ex1.bsp",
+        "spk15_ex1.bsp",
         "spk17_ex1.bsp",
         "spk18_ex1.bsp",
         "spk19_ex1.bsp",
@@ -39,7 +40,7 @@ PrecompileTools.@setup_workload begin
             _ = ephem_vector3(ephj, cid, tid, tj);
             _ = ephem_vector6(ephj, cid, tid, tj);
 
-            if !(segment_type(desc) in (1, 5, 17, 21))
+            if !(segment_type(desc) in (1, 5, 15, 17, 21))
                 _ = ephem_vector9(ephj, cid, tid, tj);
                 _ = ephem_vector12(ephj, cid, tid, tj);
             end
