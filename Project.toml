@@ -1,7 +1,7 @@
 name = "Ephemerides"
 uuid = "6a9c3322-c8fe-4c26-8ad6-14a6f8acd2a0"
 authors = ["JSMD Team"]
-version = "1.2.0"
+version = "1.2.1"
 
 [deps]
 JSMDInterfaces = "6b30ee2f-618e-4a15-bf4e-7df7b496e609"
