@@ -44,7 +44,7 @@ Initialise the cache for an SPK segment of type 2 and 3.
 function SPKSegmentCache2(head::SPKSegmentHeader2) 
     SPKSegmentCache2(
         zeros(head.ncomp, max(3, head.N)), 
-        MVector(0.0, 0.0, 0.0),
+        MVector{3}(0.0, 0.0, 0.0),
         InterpCache{Float64}(4, max(3, head.N)),
         -1
     )
