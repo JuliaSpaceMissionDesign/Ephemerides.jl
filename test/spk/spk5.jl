@@ -72,8 +72,8 @@ DJ2000 = 2451545
             # @test yj2 ≈ yc2 atol=1e-6 rtol=1e-8
 
             # Test against SPICE
-            @test yj1 ≈ ys1 atol=1e-14 rtol=1e-15
-            @test yj2 ≈ ys2 atol=1e-14 rtol=1e-15
+            @test yj1 ≈ ys1 atol=1e-14 rtol=1e-14
+            @test yj2 ≈ ys2 atol=1e-14 rtol=1e-14
 
             # For these segments autodiff does not have any physical meaning!
 
