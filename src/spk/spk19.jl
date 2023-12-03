@@ -108,12 +108,12 @@ function SPKSegmentCache19(daf::DAF, head::SPKSegmentHeader19)
         InterpCache{Float64}(nbuff, buffsize)
     )
 
-    id = MVector(-1)
+    id = -1
     
     if head.type == 18 
         # Update the header with the single type 18 information 
         update_header!(minihead, daf, head.iaa, head.etid, head.type)
-        @inbounds id[1] = 0 # Update the cached index
+        id = 0 # Update the cached index
     end
 
     return SPKSegmentCache19(minihead, minidata, id)
@@ -258,8 +258,8 @@ function load_minisegment!(daf::DAF, head::SPKSegmentHeader19, cache::SPKSegment
 
     # Check whether the desired mini-segment has already been loaded (i.e., equal to the 
     # one used in the previous call)
-    @inbounds cache.id[1] == index && return nothing 
-    @inbounds cache.id[1] = index
+    cache.id == index && return nothing 
+    cache.id = index
 
     # Retrive the initial and final addresses (1-based and not in byte) using the pointers
     iaa = head.iaa + Int(get_float(array(daf), head.ptid + 8*index, endian(daf))) - 1

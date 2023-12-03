@@ -51,7 +51,7 @@ Initialise the cache for an SPK segment of type 20.
 """
 function SPKSegmentCache20(head::SPKSegmentHeader20) 
     SPKSegmentCache20(
-        MVector(-1), 
+        -1, 
         MVector(0.0, 0.0, 0.0), 
         zeros(3, max(3, head.N)),
         InterpCache{Float64}(4, max(3, head.N+1))
@@ -219,8 +219,8 @@ function get_coefficients!(
     )
 
     # Check whether the coefficients for this record are already loaded
-    index == cache.id[1] && return nothing
-    cache.id[1] = index 
+    index == cache.id && return nothing
+    cache.id = index 
 
     # Address of desired logical record 
     k = 8*(head.iaa-1) + head.recsize*index
