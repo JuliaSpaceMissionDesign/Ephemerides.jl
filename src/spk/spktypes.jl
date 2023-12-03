@@ -86,15 +86,29 @@ end
 
 Cache instance for SPK segments of type 1 and 21. The fields contained within this cache 
 are taken from the FORTRAN NAIF's SPICE implementation for type 1 SPK segments. 
+
+### Fields 
+- `tl` -- Reference epoch of the difference line.
+- `g` -- Stepsize function vector.
+- `refpos` -- Reference position vector.
+- `refvel` -- Reference velocity vector.
+- `dt` -- Modified Divided Difference arrays, with size (maxdim, 3)
+- `kqmax` -- Maximum integration order plus 1.
+- `kq` -- Integration order array.
+- `id` -- Index of the currently loaded logical record.
+- `fc` -- Buffer for the MDA computations.
+- `wc` -- Buffer for the MDA computations.
+- `w` -- Buffer for the MDA computations.
+- `vct` -- Buffer for the MDA computations.
 """
 mutable struct SPKSegmentCache1 <: AbstractSPKCache
     
-    tl::Vector{Float64}
+    tl::Float64
     g::Vector{Float64}
     refpos::Vector{Float64}
     refvel::Vector{Float64}
     dt::Matrix{Float64}
-    kqmax::Vector{Int}
+    kqmax::Int
     kq::Vector{Int}
     id::Int
     fc::DiffCache{Vector{Float64}, Vector{Float64}} 
@@ -302,6 +316,11 @@ end
     SPKSegmentCache8 <: AbstractSPKCache
 
 Cache instance for SPK segments of type 8 and 12.
+
+### Fields 
+- `states` -- Matrix storing the states of the interpolating points.
+- `buff` -- Buffers to compute the interpolating polynomials.
+- `id` -- Index of the currently loaded logical record.
 """
 mutable struct SPKSegmentCache8 <: AbstractSPKCache
     states::Matrix{Float64}
@@ -367,6 +386,12 @@ end
     SPKSegmentCache9 <: AbstractSPKCache
 
 Cache instance for SPK segments of type 9 and 13.
+
+### Fields 
+- `epochs` -- Epochs of the interpolating points. 
+- `states` -- Matrix storing the states of the interpolating points. 
+- `buff` -- Buffers to compute the interpolating polynomials.
+- `id` -- Index of the currently loaded logical record.
 """
 mutable struct SPKSegmentCache9 <: AbstractSPKCache
     epochs::Vector{Float64}
@@ -617,6 +642,12 @@ end
     SPKSegmentCache18 <: AbstractSPKCache
 
 Cache instance for SPK segments of type 18.
+
+### Fields 
+- `p` -- Vector storing indexes of the first and last points as well as the window size.
+- `epochs` -- Epochs of the interpolating points. 
+- `states` -- Matrix storing the states of the interpolating points. 
+- `buff` -- Buffers to compute the interpolating polynomials.
 """
 mutable struct SPKSegmentCache18 <: AbstractSPKCache
     p::MVector{3, Int}
@@ -660,6 +691,11 @@ end
     SPKSegmentCache19 <: AbstractSPKCache
 
 Cache instance for SPK segments of type 19.
+
+### Fields 
+- `minihead` -- Header with the mini-segment properties.
+- `minidata` -- Cache for the mini-segment.
+- `id` -- Index of the currently loaded mini-segment.
 """
 mutable struct SPKSegmentCache19 <: AbstractSPKCache
     minihead::SPKSegmentHeader18
@@ -723,7 +759,7 @@ struct SPKSegmentHeader20 <: AbstractSPKHeader
 end
 
 """ 
-    SPKSegmentCache2 <: AbstractSPKCache 
+    SPKSegmentCache20 <: AbstractSPKCache 
 
 Cache instance for SPK segments of type 20.
 
@@ -732,7 +768,6 @@ Cache instance for SPK segments of type 20.
 - `p` -- Stores the record position constants
 - `A` -- Chebyshev's polynomial coefficients, with size (ncomp, order)
 - `buff` -- Stores the buffers for the Chebyshev polynomials
-
 """
 mutable struct SPKSegmentCache20 <: AbstractSPKCache
     id::Int
