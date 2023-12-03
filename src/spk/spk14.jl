@@ -80,7 +80,7 @@ function SPKSegmentCache2(head::SPKSegmentHeader14)
         zeros(head.ncomp, max(3, head.N)),
         MVector(0.0, 0.0, 0.0), 
         InterpCache{Float64}(3, max(3, head.N)),
-        MVector(-1)
+        -1
     )
 end
 
@@ -235,8 +235,8 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader14, cache::SPKSegment
             index::Int)
 
     # Check whether the coefficients for this record are already loaded
-    index == cache.id[1] && return nothing
-    cache.id[1] = index 
+    index == cache.id && return nothing
+    cache.id = index 
 
     # Address of desired packet record 
     k = head.ptid + 8*head.pktoff + 8*index*(head.pktsize + head.pktoff) 

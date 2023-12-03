@@ -53,7 +53,7 @@ function SPKSegmentCache8(head::SPKSegmentHeader8)
     SPKSegmentCache8(
         zeros(head.N, 6), 
         InterpCache{Float64}(nbuff, buffsize),
-        MVector(-1)
+        -1
     )
 end
 
@@ -228,8 +228,8 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader8, cache::SPKSegmentC
             index::Int)
 
     # Check whether the coefficients for this record are already loaded
-    index == cache.id[1] && return nothing
-    cache.id[1] = index 
+    index == cache.id && return nothing
+    cache.id = index 
 
     # Address of desired logical record 
     i0 = 8*(head.iaa - 1) + 48*(index-1) # 6*8*(index - 1)

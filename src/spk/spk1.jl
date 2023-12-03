@@ -59,7 +59,7 @@ Initialise the cache for an SPK segment of type 1.
 function SPKSegmentCache1(head::SPKSegmentHeader1)
     SPKSegmentCache1(
         Int[0.0], zeros(head.maxdim), zeros(3), zeros(3), zeros(head.maxdim, 3), 
-        Int[0.0], zeros(Int, 3), MVector(-1), 
+        Int[0.0], zeros(Int, 3), -1, 
         DiffCache(zeros(head.maxdim-1)), DiffCache(zeros(head.maxdim-2)), 
         DiffCache(zeros(head.maxdim+2)), DiffCache(zeros(3))
     )
@@ -179,8 +179,8 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader1, cache::SPKSegmentC
             index::Int)
     
     # Check whether the coefficients for this record are already loaded
-    index == cache.id[1] && return nothing
-    cache.id[1] = index 
+    index == cache.id && return nothing
+    cache.id = index 
 
     # Initial record address 
     i0 = 8*(head.iaa - 1) + 8*head.recsize*index

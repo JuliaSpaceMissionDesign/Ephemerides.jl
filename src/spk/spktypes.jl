@@ -87,7 +87,7 @@ end
 Cache instance for SPK segments of type 1 and 21. The fields contained within this cache 
 are taken from the FORTRAN NAIF's SPICE implementation for type 1 SPK segments. 
 """
-struct SPKSegmentCache1 <: AbstractSPKCache
+mutable struct SPKSegmentCache1 <: AbstractSPKCache
     
     tl::Vector{Float64}
     g::Vector{Float64}
@@ -96,7 +96,7 @@ struct SPKSegmentCache1 <: AbstractSPKCache
     dt::Matrix{Float64}
     kqmax::Vector{Int}
     kq::Vector{Int}
-    id::MVector{1, Int}
+    id::Int
     fc::DiffCache{Vector{Float64}, Vector{Float64}} 
     wc::DiffCache{Vector{Float64}, Vector{Float64}}     
     w::DiffCache{Vector{Float64},  Vector{Float64}}     
@@ -171,11 +171,11 @@ Cache instance for SPK segments of type 2 and 3.
 - `buff` -- Stores the buffers for the Chebyshev polynomials
 - `id` -- Index of the currently loaded logical record
 """
-struct SPKSegmentCache2 <: AbstractSPKCache
+mutable struct SPKSegmentCache2 <: AbstractSPKCache
     A::Matrix{Float64}
     p::MVector{3, Float64} 
     buff::InterpCache{Float64}
-    id::MVector{1, Int}
+    id::Int
 end
 
 """ 
@@ -303,10 +303,10 @@ end
 
 Cache instance for SPK segments of type 8 and 12.
 """
-struct SPKSegmentCache8 <: AbstractSPKCache
+mutable struct SPKSegmentCache8 <: AbstractSPKCache
     states::Matrix{Float64}
     buff::InterpCache{Float64}
-    id::MVector{1, Int}
+    id::Int
 end 
 
 """ 
@@ -368,11 +368,11 @@ end
 
 Cache instance for SPK segments of type 9 and 13.
 """
-struct SPKSegmentCache9 <: AbstractSPKCache
+mutable struct SPKSegmentCache9 <: AbstractSPKCache
     epochs::Vector{Float64}
     states::Matrix{Float64}
     buff::InterpCache{Float64}
-    id::MVector{1, Int}
+    id::Int
 end 
 
 """ 
@@ -618,7 +618,7 @@ end
 
 Cache instance for SPK segments of type 18.
 """
-struct SPKSegmentCache18 <: AbstractSPKCache
+mutable struct SPKSegmentCache18 <: AbstractSPKCache
     p::MVector{3, Int}
     epochs::Vector{Float64}
     states::Matrix{Float64}
@@ -661,10 +661,10 @@ end
 
 Cache instance for SPK segments of type 19.
 """
-struct SPKSegmentCache19 <: AbstractSPKCache
+mutable struct SPKSegmentCache19 <: AbstractSPKCache
     minihead::SPKSegmentHeader18
     minidata::SPKSegmentCache18
-    id::MVector{1, Int}
+    id::Int
 end 
 
 """ 
@@ -734,8 +734,8 @@ Cache instance for SPK segments of type 20.
 - `buff` -- Stores the buffers for the Chebyshev polynomials
 
 """
-struct SPKSegmentCache20 <: AbstractSPKCache
-    id::MVector{1, Int}
+mutable struct SPKSegmentCache20 <: AbstractSPKCache
+    id::Int
     p::MVector{3, Float64}
     A::Matrix{Float64}
     buff::InterpCache{Float64}
