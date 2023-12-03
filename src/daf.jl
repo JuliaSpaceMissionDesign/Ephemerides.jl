@@ -588,25 +588,34 @@ function create_spk_segment(daf::DAF, desc::DAFSegmentDescriptor)
 
     mapped_spktype = SPK_SEGMENTLIST_MAPPING[segment_type(desc)]
     if mapped_spktype == 1
-        SPKSegmentType1(daf, desc)
-
-    elseif mapped_spktype == 2
         SPKSegmentType2(daf, desc)
 
-    elseif mapped_spktype == 3 
-        SPKSegmentType8(daf, desc)
-
-    elseif mapped_spktype == 4 
+    elseif mapped_spktype == 2
         SPKSegmentType9(daf, desc)
 
-    elseif mapped_spktype == 5
+    elseif mapped_spktype == 3 
+        SPKSegmentType1(daf, desc)
+
+    elseif mapped_spktype == 4 
         SPKSegmentType14(daf, desc)
 
+    elseif mapped_spktype == 5
+        SPKSegmentType15(daf, desc)
+
     elseif mapped_spktype == 6 
+        SPKSegmentType8(daf, desc)
+
+    elseif mapped_spktype == 7
         SPKSegmentType19(daf, desc)
 
-    else
+    elseif mapped_spktype == 8
         SPKSegmentType20(daf, desc)
+        
+    elseif mapped_spktype == 9
+        SPKSegmentType5(daf, desc)
+        
+    else 
+        SPKSegmentType17(daf, desc)
     end
     
 end

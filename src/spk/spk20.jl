@@ -51,7 +51,7 @@ Initialise the cache for an SPK segment of type 20.
 """
 function SPKSegmentCache20(head::SPKSegmentHeader20) 
     SPKSegmentCache20(
-        MVector(-1), 
+        -1, 
         MVector(0.0, 0.0, 0.0), 
         zeros(3, max(3, head.N)),
         InterpCache{Float64}(4, max(3, head.N+1))
@@ -94,8 +94,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType20, time::Number)
     # Compute the position 
     x, y, z = ∫chebyshev(data.buff, data.A, t, head.N, Δt, head.tlen, data.p)
 
-    return SA[Δl*x, Δl*y, Δl*z]
-    
+    return SVector{3}(Δl*x, Δl*y, Δl*z) 
 
 end
 
@@ -124,7 +123,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType20, time::Number)
     # Compute the position 
     x, y, z = ∫chebyshev(data.buff, data.A, t, head.N, Δt, head.tlen, data.p, 2)
 
-    return SA[Δl*x, Δl*y, Δl*z, Δlt*vx, Δlt*vy, Δlt*vz]
+    return SVector{6}(Δl*x, Δl*y, Δl*z, Δlt*vx, Δlt*vy, Δlt*vz)
 
 end
 
@@ -152,9 +151,11 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType20, time::Number)
     # Compute the position 
     x, y, z = ∫chebyshev(data.buff, data.A, t, head.N, Δt, head.tlen, data.p, 2)
 
-    return SA[Δl*x, Δl*y, Δl*z, 
-              Δlt*vx, Δlt*vy, Δlt*vz, 
-              Δlt*ax, Δlt*ay, Δlt*az]
+    return SVector{9}(
+        Δl*x, Δl*y, Δl*z, 
+        Δlt*vx, Δlt*vy, Δlt*vz, 
+        Δlt*ax, Δlt*ay, Δlt*az
+    )
 
 end
 
@@ -184,10 +185,12 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType20, time::Number)
     # Compute the position 
     x, y, z = ∫chebyshev(data.buff, data.A, t, head.N, Δt, head.tlen, data.p, 2)
 
-    return SA[Δl*x, Δl*y, Δl*z, 
-              Δlt*vx, Δlt*vy, Δlt*vz, 
-              Δlt*ax, Δlt*ay, Δlt*az, 
-              Δlt*jx, Δlt*jy, Δlt*jz]
+    return SVector{12}(
+        Δl*x, Δl*y, Δl*z, 
+        Δlt*vx, Δlt*vy, Δlt*vz, 
+        Δlt*ax, Δlt*ay, Δlt*az, 
+        Δlt*jx, Δlt*jy, Δlt*jz
+    )
 
 end
 
@@ -216,8 +219,8 @@ function get_coefficients!(
     )
 
     # Check whether the coefficients for this record are already loaded
-    index == cache.id[1] && return nothing
-    cache.id[1] = index 
+    index == cache.id && return nothing
+    cache.id = index 
 
     # Address of desired logical record 
     k = 8*(head.iaa-1) + head.recsize*index

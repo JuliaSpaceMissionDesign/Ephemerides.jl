@@ -5,8 +5,8 @@ DJ2000 = 2451545
 @testset "SPK Type 12" verbose=true begin 
 
     # The first kernel contains an odd-sized window, the second one an even-size window
-    kernels = [joinpath(test_dir, "example1spk_seg12.bsp"), 
-               joinpath(test_dir, "example2spk_seg12.bsp")]
+    kernels = [joinpath(test_dir, "spk12_ex1.bsp"), 
+               joinpath(test_dir, "spk12_ex2.bsp")]
         
     for kernel in kernels
 

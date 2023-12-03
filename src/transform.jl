@@ -93,23 +93,29 @@ for (order, pfun1, afun1, pfun2, afun2) in zip(
             eid = element_id(link)
             
             # Use binary search to reduce the time spent within the if\cycle
-            if lid < 4  
+            if lid < 6
                 if lid == 1 
                     return $(pfun2)(daf, get_segment(segment_list(daf), 1, eid), time)
                 elseif lid == 2
                     return $(pfun2)(daf, get_segment(segment_list(daf), 2, eid), time)
-                else
+                elseif lid == 3
                     return $(pfun2)(daf, get_segment(segment_list(daf), 3, eid), time)
+                elseif lid == 4
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 4, eid), time)
+                else 
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 5, eid), time)
                 end
             else
-                if lid == 4
-                    return $(pfun2)(daf, get_segment(segment_list(daf), 4, eid), time)
-                elseif lid == 5
-                    return $(pfun2)(daf, get_segment(segment_list(daf), 5, eid), time)
-                elseif lid == 6
+                if lid == 6
                     return $(pfun2)(daf, get_segment(segment_list(daf), 6, eid), time)
-                else 
+                elseif lid == 7
                     return $(pfun2)(daf, get_segment(segment_list(daf), 7, eid), time)
+                elseif lid == 8
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 8, eid), time)
+                elseif lid == 9
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 9, eid), time)
+                else 
+                    return $(pfun2)(daf, get_segment(segment_list(daf), 10, eid), time)
                 end
             end
         end
@@ -121,10 +127,10 @@ for (order, pfun1, afun1, pfun2, afun2) in zip(
             lid = list_id(link)
             eid = element_id(link)
             
-            if lid == 2 
-                return $(pfun2)(daf, get_segment(segment_list(daf), 2, eid), time)
+            if lid == 1 
+                return $(pfun2)(daf, get_segment(segment_list(daf), 1, eid), time)
             else
-                return $(pfun2)(daf, get_segment(segment_list(daf), 6, eid), time)
+                return $(pfun2)(daf, get_segment(segment_list(daf), 8, eid), time)
             end
 
         end

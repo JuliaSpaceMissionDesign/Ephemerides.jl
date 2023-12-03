@@ -18,6 +18,10 @@ Retrieve a whole DAF record at position `index`.
     @inbounds return array[1+DAF_RECORD_LENGTH*(index-1):DAF_RECORD_LENGTH*index]
 end
 
+
+# Parsing Utils 
+# =====================
+
 """
     is_little_endian(array::Vector{UInt8})
 
@@ -54,4 +58,29 @@ function get_float(array, address::Integer, lend::Bool)
     # address is in 0-index notation!
     ptr = unsafe_load(Ptr{Float64}(pointer(array, address+1)))
     get_num(ptr, lend)
+end
+
+
+# Vector Utils 
+# =====================
+
+vhat(u) = u/vnorm(u)
+vnorm(u) = sqrt(vdot(u, u))
+vsep(u, v) = acos(min(1, max(-1, vdot(vhat(u), vhat(v)))))
+
+@inbounds vdot(u, v) = u[1]*v[1] + u[2]*v[2] + u[3]*v[3]
+function vcross(u, v)
+    return @inbounds SVector{3}(
+        u[2]*v[3]-u[3]*v[2], u[3]*v[1]-u[1]*v[3], u[1]*v[2]-u[2]*v[1]
+    )
+end
+
+function vrot(v1, k, θ)
+
+    s, c = sincos(θ)
+    u = vcross(k, v1)
+
+    # Apply Rodrigues rotation formula to rotate `v1` around `k` of an angle `θ`
+    return v1 + (1-c)*vcross(k, u) + s*u
+
 end

@@ -125,6 +125,13 @@ Ephemerides.SPKSegmentCache2
 Ephemerides.SPKSegmentType2
 ```
 
+### SPK Type 5
+```@docs 
+Ephemerides.SPKSegmentHeader5
+Ephemerides.SPKSegmentCache5
+Ephemerides.SPKSegmentType5
+```
+
 ### SPK Type 8 and 12
 ```@docs 
 Ephemerides.SPKSegmentHeader8
@@ -147,6 +154,27 @@ Ephemerides.SPKSegmentType14
 
 !!! note 
     SPK segments of type 14 have the same cache structure of SPK type 2 and 3.
+
+
+### SPK Type 15
+```@docs
+Ephemerides.SPKSegmentHeader15
+Ephemerides.SPKSegmentType15
+```
+
+!!! note 
+    The cache of SPK Type 15 segments is made of [`Ephemerides.TwoBodyUniversalCache`](@ref) objects.
+
+
+### SPK Type 17
+```@docs
+Ephemerides.SPKSegmentHeader17
+Ephemerides.SPKSegmentType17
+```
+
+!!! note 
+    SPK segments of type 17 do not require a cache structure.
+
 
 ### SPK Type 18 and 19
 ```@docs
@@ -180,8 +208,6 @@ Ephemerides.normalise_time
 Ephemerides.find_logical_record 
 Ephemerides.get_coefficients!
 ```
-
-### Parsing 
 
 ## Interpolating Functions
 
@@ -227,5 +253,12 @@ Ephemerides.final_times
 Ephemerides.analyse_timespan 
 ```
 
+## TwoBody Routines 
+```@docs 
+Ephemerides.TwoBodyUniversalCache 
+Ephemerides.update_cache!
+Ephemerides.propagate_twobody
+Ephemerides.stumpff
+```
 
 

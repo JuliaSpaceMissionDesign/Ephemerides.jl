@@ -5,7 +5,7 @@ using LazyArtifacts
 using Mmap
 using PreallocationTools
 using PrecompileTools: PrecompileTools
-using StaticArrays
+using StaticArraysCore
 
 import JSMDInterfaces.Ephemeris as jEph
 
@@ -18,6 +18,9 @@ include("interp/hermite.jl")
 include("interp/lagrange.jl")
 include("interp/chebyshev.jl")
 
+# Twobody utilities 
+include("twobody.jl")
+
 # SPK segment types definitions
 include("spk/spktypes.jl")
 
@@ -27,9 +30,12 @@ include("daf.jl")
 # SPK segments implementations
 include("spk/spk1.jl")
 include("spk/spk2.jl")
+include("spk/spk5.jl")
 include("spk/spk8.jl")
 include("spk/spk9.jl")
 include("spk/spk14.jl")
+include("spk/spk15.jl")
+include("spk/spk17.jl")
 include("spk/spk18.jl")
 include("spk/spk19.jl")
 include("spk/spk20.jl")

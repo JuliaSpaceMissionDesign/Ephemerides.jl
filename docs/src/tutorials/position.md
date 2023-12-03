@@ -50,7 +50,7 @@ pvaj = ephem_vector12(eph, 3, 399, 0)
 In all these examples, the returned data is always in the form of a `StaticArray` in order to minimise memory allocations.
 
 !!! warning 
-    SPK segments of types 1 and 21 do not natively support acceleration and jerk computations. However, these values can be computed by Automatic Differentiation (AD) of the position and/or velocity components.
+    SPK segments of types 1 5, 15, 17 and 21 do not natively support acceleration and jerk computations. However, these values can be computed by Automatic Differentiation (AD) of the position and/or velocity components.
 
 
 ## Computing orientation angles

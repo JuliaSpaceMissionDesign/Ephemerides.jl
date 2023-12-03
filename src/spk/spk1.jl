@@ -58,8 +58,8 @@ Initialise the cache for an SPK segment of type 1.
 """
 function SPKSegmentCache1(head::SPKSegmentHeader1)
     SPKSegmentCache1(
-        Int[0.0], zeros(head.maxdim), zeros(3), zeros(3), zeros(head.maxdim, 3), 
-        Int[0.0], zeros(Int, 3), MVector(-1), 
+        0.0, zeros(head.maxdim), zeros(3), zeros(3), zeros(head.maxdim, 3), 
+        0, zeros(Int, 3), -1, 
         DiffCache(zeros(head.maxdim-1)), DiffCache(zeros(head.maxdim-2)), 
         DiffCache(zeros(head.maxdim+2)), DiffCache(zeros(3))
     )
@@ -89,7 +89,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType1, time::Number)
     # Retrieve the MDA coefficients 
     get_coefficients!(daf, header(seg), cache(seg), index)
 
-    Δ = time - cache(seg).tl[1]
+    Δ = time - cache(seg).tl
 
     # Compute MDA position coefficients
     compute_mda_pos_coefficients!(cache(seg), Δ)
@@ -105,7 +105,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType1, time::Number)
     # Retrieve the MDA coefficients 
     get_coefficients!(daf, header(seg), cache(seg), index)
   
-    Δ = time - cache(seg).tl[1]
+    Δ = time - cache(seg).tl
 
     # Compute MDA position coefficients
     compute_mda_pos_coefficients!(cache(seg), Δ)
@@ -115,10 +115,10 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType1, time::Number)
     compute_mda_vel_coefficients!(cache(seg), Δ)
     vel = compute_mda_velocity(cache(seg), Δ)
 
-    return @inbounds SA[
+    return @inbounds SVector{6}(
         pos[1], pos[2], pos[3], 
         vel[1], vel[2], vel[3]
-    ]
+    )
 end
 
 function spk_vector9(::DAF, ::SPKSegmentType1, ::Number)
@@ -179,12 +179,12 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader1, cache::SPKSegmentC
             index::Int)
     
     # Check whether the coefficients for this record are already loaded
-    index == cache.id[1] && return nothing
-    cache.id[1] = index 
+    index == cache.id && return nothing
+    cache.id = index 
 
     # Initial record address 
     i0 = 8*(head.iaa - 1) + 8*head.recsize*index
-    cache.tl[1] = get_float(array(daf), i0, endian(daf))
+    cache.tl = get_float(array(daf), i0, endian(daf))
 
     @inbounds for k = 1:head.maxdim 
         cache.g[k] = get_float(array(daf), i0 + 8k, endian(daf))    
@@ -207,7 +207,7 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader1, cache::SPKSegmentC
     end
     
     i4 = i3 + 3*head.maxdim*8
-    cache.kqmax[1] = Int(get_float(array(daf), i4, endian(daf)))
+    cache.kqmax = Int(get_float(array(daf), i4, endian(daf)))
     
     @inbounds for j = 1:3 
         cache.kq[j] = get_float(array(daf), i4 + 8j, endian(daf))
@@ -228,11 +228,11 @@ function compute_mda_position(cache::SPKSegmentCache1, Δ::Number)
     end
 
     # At this point by definition of the above while loop, ks will always be = 1
-    return SA[
+    return SVector{3}(
         cache.refpos[1] + Δ*(cache.refvel[1] + Δ*get_tmp(cache.vct, Δ)[1]),
         cache.refpos[2] + Δ*(cache.refvel[2] + Δ*get_tmp(cache.vct, Δ)[2]),
         cache.refpos[3] + Δ*(cache.refvel[3] + Δ*get_tmp(cache.vct, Δ)[3])
-    ]
+    )
 
 end
 
@@ -249,11 +249,11 @@ function compute_mda_velocity(cache::SPKSegmentCache1, Δ::Number)
     end
 
     # At this point by definition of the above while loop, ks will always be = 0
-    return SA[
+    return SVector{3}(
         cache.refvel[1] + Δ*get_tmp(cache.vct, Δ)[1],
         cache.refvel[2] + Δ*get_tmp(cache.vct, Δ)[2],
         cache.refvel[3] + Δ*get_tmp(cache.vct, Δ)[3]
-    ]
+    )
 
 end
 
@@ -262,8 +262,8 @@ end
 @inbounds function compute_mda_pos_coefficients!(cache::SPKSegmentCache1, Δ::Number)
 
     tp = Δ
-    mq2 = cache.kqmax[1] - 2
-    ks = cache.kqmax[1] - 1
+    mq2 = cache.kqmax - 2
+    ks = cache.kqmax - 1
     
     get_tmp(cache.fc, Δ)[1] = 1.0
     for j = 1:mq2
@@ -273,7 +273,7 @@ end
     end
     
     # compute inverse coefficients 
-    for j = 1:cache.kqmax[1]
+    for j = 1:cache.kqmax
         get_tmp(cache.w, Δ)[j] = 1.0 / j
     end
     
@@ -297,7 +297,7 @@ end
 # This function is such that the output ks = 0
 @inbounds function compute_mda_vel_coefficients!(cache::SPKSegmentCache1, Δ::Number)
 
-    for j = 1:cache.kqmax[1]
+    for j = 1:cache.kqmax
         get_tmp(cache.w, Δ)[j+1] = get_tmp(cache.fc, Δ)[j+1]*get_tmp(cache.w, Δ)[j] - get_tmp(cache.wc, Δ)[j]*get_tmp(cache.w, Δ)[j+1]
     end
     

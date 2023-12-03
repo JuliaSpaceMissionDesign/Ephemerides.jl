@@ -4,6 +4,7 @@ using Test
 using CalcephEphemeris
 using JSMDUtils.Math: D¹, D², D³
 using LazyArtifacts
+using LinearAlgebra
 using Random
 using SPICE
 
@@ -19,4 +20,6 @@ end;
     include("spk/spk.jl")
     include("properties.jl")
     include("interfaces.jl")
+    include("twobody.jl")
+    include("utils.jl")
 end;

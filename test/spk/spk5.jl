@@ -2,33 +2,39 @@
 test_dir = artifact"testdata"
 DJ2000 = 2451545
 
-@testset "SPK Type 21" verbose=true begin 
+@testset "SPK Type 5" verbose=true begin 
+
+    # The first kernel doesnt contains a directory epoch, the second one does
+    kernels = [
+        joinpath(test_dir, "spk5_ex1.bsp"), 
+        joinpath(test_dir, "spk5_ex2.bsp"),
+        joinpath(test_dir, "spk5_ex3.bsp") # test hyperbolic orbits
+    ]
+
+    for kernel in kernels 
     
-    # These kernels are tested against SPICE because CALCEPH performs erroneous 
-    # computations on SPK types 21 (they differ from those of SPICE)
-
-    # The first kernel has no epoch directories, whereas the second one does
-    kernels = [joinpath(test_dir, "spk21_ex1.bsp"), 
-               joinpath(test_dir, "spk21_ex2.bsp")]
-
-    yc1 = zeros(3)
-
-    for kernel in kernels
-
         ephj = EphemerisProvider(kernel);
         furnsh(kernel)
 
         desc = ephj.files[1].desc[1]
-        head = ephj.files[1].seglist.spk1[1].head
-
-        # Center and target bodies 
-        cid = Int(desc.cid)
-        tid = Int(desc.tid)
 
         t1j, t2j = desc.tstart, desc.tend
 
-        ep = t1j:1:t2j
-        for j in 1:3000
+        head = ephj.files[1].seglist.spk5[1].head
+
+        cid = Int(desc.cid)
+        tid = Int(desc.tid)
+        
+        # Check errors 
+        @test_throws jEphem.EphemerisError ephem_vector9(ephj, cid, tid, t1j)
+        @test_throws jEphem.EphemerisError ephem_vector12(ephj, cid, tid, t1j)  
+
+        # Test values 
+        yc1 = zeros(3);
+        yc2 = zeros(6);
+
+        ep = t1j:0.1:t2j
+        for j in 1:2000
             
             if iseven(j) 
                 cid, tid = tid, cid 
@@ -42,36 +48,34 @@ DJ2000 = 2451545
                 tj = t2j 
             elseif j < 100
                 # Test values at the directory epochs
-                tj = rand(head.epochs)
+                tj = min(t2j, max(t1j, rand(head.epochs)))
             elseif j < 500
                 # Test directory handling close to the borders
                 tj = min(t2j, max(rand(head.epochs) + randn(), t1j))
             else 
                 tj = rand(ep)
             end
+            
             tc = tj/86400
 
-            # Test with Julia
             yj1 = ephem_vector3(ephj, cid, tid, tj);
             yj2 = ephem_vector6(ephj, cid, tid, tj);
 
-            # Test with SPICE
+            # jEphem.ephem_compute!(yc1, ephc, DJ2000, tc, tid, cid, 0);
+            # jEphem.ephem_compute!(yc2, ephc, DJ2000, tc, tid, cid, 1);
+            
             ys1 = spkpos("$tid", tj, "J2000", "NONE", "$cid")[1]
             ys2 = spkezr("$tid", tj, "J2000", "NONE", "$cid")[1]
 
-            @test yj1 ≈ ys1 atol=1e-13 rtol=1e-14
-            @test yj2 ≈ ys2 atol=1e-13 rtol=1e-14
+            # Test against CALCEPH
+            # @test yj1 ≈ yc1 atol=1e-6 rtol=1e-8
+            # @test yj2 ≈ yc2 atol=1e-6 rtol=1e-8
 
-            # Test if AUTODIFF works 
-            @test D¹(t->ephem_vector3(ephj, cid, tid, t), tj) ≈ yj2[4:end] atol=1e-9 rtol=1e-13
+            # Test against SPICE
+            @test yj1 ≈ ys1 atol=1e-14 rtol=1e-14
+            @test yj2 ≈ ys2 atol=1e-14 rtol=1e-14
 
-            # TODO: implement the acceleration and jerk. This functions below cannot be tested!
-            # D²(t->ephem_vector3(ephj, cid, tid, t), tj)
-            # D³(t->ephem_vector3(ephj, cid, tid, t), tj)
-
-            # D¹(t->ephem_vector6(ephj, cid, tid, t), tj)
-            # D²(t->ephem_vector6(ephj, cid, tid, t), tj)
-            # D³(t->ephem_vector6(ephj, cid, tid, t), tj)
+            # For these segments autodiff does not have any physical meaning!
 
         end
 
@@ -82,7 +86,7 @@ DJ2000 = 2451545
         for j in eachindex(tj)
             pos[:, j] =  ephem_vector3(ephj, cid, tid, tj[j])
         end
-    
+
         pos_m = zeros(3, length(tj))
         Threads.@threads for j in eachindex(tj)
             pos_m[:, j] = ephem_vector3(ephj, cid, tid, tj[j])
@@ -92,6 +96,9 @@ DJ2000 = 2451545
 
         kclear()
 
-    end
+    end 
 
-end
+
+end;
+
+

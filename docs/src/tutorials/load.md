@@ -2,7 +2,7 @@
 
 This tutorial will walk you through the basic features and interfaces that allow you to load binary ephemeris kernels.
 
-The supported sources of ephemerides are currently limited to binary PCK and SPK segments of type: 1, 2, 3, 8, 9, 12, 13, 18, 19, 20 and 21. 
+The supported sources of ephemerides are currently limited to binary PCK and SPK segments of type: 1, 2, 3, 5, 8, 9, 12, 13, 14, 15, 17, 18, 19, 20, and 21. 
 
 !!! note 
     Support for IMCCE INPOP ephemerides is yet to be implemented.

@@ -4,7 +4,7 @@ DJ2000 = 2451545
 
 @testset "SPK Type 1" verbose=true begin 
 
-    kernel = joinpath(test_dir, "example1spk_seg1.bsp")
+    kernel = joinpath(test_dir, "spk1_ex1.bsp")
 
     # TODO: missing segment with epoch directory
 

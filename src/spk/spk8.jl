@@ -53,7 +53,7 @@ function SPKSegmentCache8(head::SPKSegmentHeader8)
     SPKSegmentCache8(
         zeros(head.N, 6), 
         InterpCache{Float64}(nbuff, buffsize),
-        MVector(-1)
+        -1
     )
 end
 
@@ -98,7 +98,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType8, time::Number)
         z = hermite(data.buff, data.states, Δt, 3, head.N, head.tlen)
     end
 
-    return SA[x, y, z]
+    return SVector{3}(x, y, z)
 
 end
 
@@ -131,7 +131,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType8, time::Number)
         z, vz = ∂hermite(data.buff, data.states, Δt, 3, head.N, head.tlen)
     end
 
-    return SA[x, y, z, vx, vy, vz]
+    return SVector{6}(x, y, z, vx, vy, vz)
 
 end
 
@@ -164,7 +164,7 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType8, time::Number)
         z, vz, az = ∂²hermite(data.buff, data.states, Δt, 3, head.N, head.tlen)
     end
 
-    return SA[x, y, z, vx, vy, vz, ax, ay, az]
+    return SVector{9}(x, y, z, vx, vy, vz, ax, ay, az)
 
 end
 
@@ -197,7 +197,7 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType8, time::Number)
         z, vz, az, jz = ∂³hermite(data.buff, data.states, Δt, 3, head.N, head.tlen)
     end
     
-    return SA[x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz]
+    return SVector{12}(x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz)
 end
 
 
@@ -228,8 +228,8 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader8, cache::SPKSegmentC
             index::Int)
 
     # Check whether the coefficients for this record are already loaded
-    index == cache.id[1] && return nothing
-    cache.id[1] = index 
+    index == cache.id && return nothing
+    cache.id = index 
 
     # Address of desired logical record 
     i0 = 8*(head.iaa - 1) + 48*(index-1) # 6*8*(index - 1)

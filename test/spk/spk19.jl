@@ -12,8 +12,8 @@ DJ2000 = 2451545
 
     # TODO: missing a test kernel with a boundary flag to select the first interval 
     
-    kernels = [joinpath(test_dir, "example1spk_seg19.bsp"),  # subtype = 2 no directory
-               joinpath(test_dir, "example2spk_seg19.bsp")]  # subtype = 0 has directory
+    kernels = [joinpath(test_dir, "spk19_ex1.bsp"),  # subtype = 2 no directory
+               joinpath(test_dir, "spk19_ex2.bsp")]  # subtype = 0 has directory
 
 
     for (ik, kernel) in enumerate(kernels)

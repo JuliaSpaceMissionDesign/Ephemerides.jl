@@ -4,18 +4,21 @@ PrecompileTools.@setup_workload begin
     test_dir = artifact"testdata"
 
     spks = [
-        "example1spk_seg1.bsp",
-        "example1spk_seg2.bsp",
-        "example1spk_seg3.bsp",
-        "example1spk_seg8.bsp",
-        "example1spk_seg9.bsp",
-        "example1spk_seg12.bsp",
-        "example1spk_seg13.bsp",
-        "example1spk_seg14.bsp",
-        "example1spk_seg18.bsp",
-        "example1spk_seg19.bsp",
-        "example1spk_seg20.bsp",
-        "example1spk_seg21.bsp",
+        "spk1_ex1.bsp",
+        "spk2_ex1.bsp",
+        "spk3_ex1.bsp",
+        "spk5_ex1.bsp",
+        "spk8_ex1.bsp",
+        "spk9_ex1.bsp",
+        "spk12_ex1.bsp",
+        "spk13_ex1.bsp",
+        "spk14_ex1.bsp",
+        "spk15_ex1.bsp",
+        "spk17_ex1.bsp",
+        "spk18_ex1.bsp",
+        "spk19_ex1.bsp",
+        "spk20_ex1.bsp",
+        "spk21_ex1.bsp",
     ]
 
     pcks = [
@@ -37,7 +40,7 @@ PrecompileTools.@setup_workload begin
             _ = ephem_vector3(ephj, cid, tid, tj);
             _ = ephem_vector6(ephj, cid, tid, tj);
 
-            if !(segment_type(desc) in (1, 21))
+            if !(segment_type(desc) in (1, 5, 15, 17, 21))
                 _ = ephem_vector9(ephj, cid, tid, tj);
                 _ = ephem_vector12(ephj, cid, tid, tj);
             end

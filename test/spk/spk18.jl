@@ -9,9 +9,9 @@ DJ2000 = 2451545
     # Different descriptors are tested to include epoch directories and a number 
     # of points smaller than the interpolating window
 
-    kernels = [joinpath(test_dir, "example1spk_seg18.bsp"),  # subtype = 0
-               joinpath(test_dir, "example2spk_seg18.bsp"),  # subtype = 0
-               joinpath(test_dir, "example3spk_seg18.bsp")]  # subtype = 0, with n < N
+    kernels = [joinpath(test_dir, "spk18_ex1.bsp"),  # subtype = 0
+               joinpath(test_dir, "spk18_ex2.bsp"),  # subtype = 0
+               joinpath(test_dir, "spk18_ex3.bsp")]  # subtype = 0, with n < N
 
     # Desired descriptors 
     descidj = [(1, 2), (2, 3, 4), (1,)]

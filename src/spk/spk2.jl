@@ -44,9 +44,9 @@ Initialise the cache for an SPK segment of type 2 and 3.
 function SPKSegmentCache2(head::SPKSegmentHeader2) 
     SPKSegmentCache2(
         zeros(head.ncomp, max(3, head.N)), 
-        MVector(0.0, 0.0, 0.0),
+        MVector{3}(0.0, 0.0, 0.0),
         InterpCache{Float64}(4, max(3, head.N)),
-        MVector(-1)
+        -1
     )
 end
 
@@ -79,7 +79,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType2, time::Number)
     t = normalise_time(data, time)
 
     x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
-    return SA[x, y, z]
+    return SVector{3}(x, y, z)
 
 end
 
@@ -102,7 +102,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType2, time::Number)
         vx, vy, vz = chebyshev(data.buff, data.A, t, 3, head.N)
     end
 
-    return SA[x, y, z, vx, vy, vz]
+    return SVector{6}(x, y, z, vx, vy, vz)
 
 end
 
@@ -127,7 +127,7 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType2, time::Number)
         vx, vy, vz, ax, ay, az = ∂chebyshev(data.buff, data.A, t, 3, head.N, data.p[3])
     end
 
-    return SA[x, y, z, vx, vy, vz, ax, ay, az]
+    return SVector{9}(x, y, z, vx, vy, vz, ax, ay, az)
 
 end
 
@@ -154,7 +154,7 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType2, time::Number)
         )
     end
 
-    return SA[x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz]
+    return SVector{12}(x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz)
 
 end
 
@@ -185,8 +185,8 @@ function get_coefficients!(daf::DAF, head::SPKSegmentHeader2, cache::SPKSegmentC
     index = find_logical_record(head, time)
 
     # Check whether the coefficients for this record are already loaded
-    index == cache.id[1] && return nothing
-    cache.id[1] = index 
+    index == cache.id && return nothing
+    cache.id = index 
 
     # Address of desired logical record 
     k = 8*(head.iaa-1) + head.recsize*index
