@@ -5,7 +5,7 @@ using LazyArtifacts
 using Mmap
 using PreallocationTools
 using PrecompileTools: PrecompileTools
-using StaticArrays
+using StaticArraysCore
 
 import JSMDInterfaces.Ephemeris as jEph
 

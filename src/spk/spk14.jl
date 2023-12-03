@@ -117,7 +117,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType14, time::Number)
     # Interpolate the polynomials 
     x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
 
-    return SA[x, y, z]
+    return SVector{3}(x, y, z)
 
 end
 
@@ -137,7 +137,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType14, time::Number)
     x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
     vx, vy, vz = chebyshev(data.buff, data.A, t, 3, head.N)
 
-    return SA[x, y, z, vx, vy, vz]
+    return SVector{6}(x, y, z, vx, vy, vz)
 
 end
 
@@ -157,7 +157,7 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType14, time::Number)
     x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
     vx, vy, vz, ax, ay, az = ∂chebyshev(data.buff, data.A, t, 3, head.N, data.p[3])
 
-    return SA[x, y, z, vx, vy, vz, ax, ay, az]
+    return SVector{9}(x, y, z, vx, vy, vz, ax, ay, az)
 
 end
 
@@ -179,7 +179,7 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType14, time::Number)
         data.buff, data.A, t, 3, head.N, data.p[3]
     )
 
-    return SA[x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz]
+    return SVector{12}(x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz)
     
 end
 

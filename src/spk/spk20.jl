@@ -94,8 +94,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType20, time::Number)
     # Compute the position 
     x, y, z = ∫chebyshev(data.buff, data.A, t, head.N, Δt, head.tlen, data.p)
 
-    return SA[Δl*x, Δl*y, Δl*z]
-    
+    return SVector{3}(Δl*x, Δl*y, Δl*z) 
 
 end
 
@@ -124,7 +123,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType20, time::Number)
     # Compute the position 
     x, y, z = ∫chebyshev(data.buff, data.A, t, head.N, Δt, head.tlen, data.p, 2)
 
-    return SA[Δl*x, Δl*y, Δl*z, Δlt*vx, Δlt*vy, Δlt*vz]
+    return SVector{6}(Δl*x, Δl*y, Δl*z, Δlt*vx, Δlt*vy, Δlt*vz)
 
 end
 
@@ -152,9 +151,11 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType20, time::Number)
     # Compute the position 
     x, y, z = ∫chebyshev(data.buff, data.A, t, head.N, Δt, head.tlen, data.p, 2)
 
-    return SA[Δl*x, Δl*y, Δl*z, 
-              Δlt*vx, Δlt*vy, Δlt*vz, 
-              Δlt*ax, Δlt*ay, Δlt*az]
+    return SVector{9}(
+        Δl*x, Δl*y, Δl*z, 
+        Δlt*vx, Δlt*vy, Δlt*vz, 
+        Δlt*ax, Δlt*ay, Δlt*az
+    )
 
 end
 
@@ -184,10 +185,12 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType20, time::Number)
     # Compute the position 
     x, y, z = ∫chebyshev(data.buff, data.A, t, head.N, Δt, head.tlen, data.p, 2)
 
-    return SA[Δl*x, Δl*y, Δl*z, 
-              Δlt*vx, Δlt*vy, Δlt*vz, 
-              Δlt*ax, Δlt*ay, Δlt*az, 
-              Δlt*jx, Δlt*jy, Δlt*jz]
+    return SVector{12}(
+        Δl*x, Δl*y, Δl*z, 
+        Δlt*vx, Δlt*vy, Δlt*vz, 
+        Δlt*ax, Δlt*ay, Δlt*az, 
+        Δlt*jx, Δlt*jy, Δlt*jz
+    )
 
 end
 

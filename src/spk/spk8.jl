@@ -98,7 +98,7 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType8, time::Number)
         z = hermite(data.buff, data.states, Δt, 3, head.N, head.tlen)
     end
 
-    return SA[x, y, z]
+    return SVector{3}(x, y, z)
 
 end
 
@@ -131,7 +131,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType8, time::Number)
         z, vz = ∂hermite(data.buff, data.states, Δt, 3, head.N, head.tlen)
     end
 
-    return SA[x, y, z, vx, vy, vz]
+    return SVector{6}(x, y, z, vx, vy, vz)
 
 end
 
@@ -164,7 +164,7 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType8, time::Number)
         z, vz, az = ∂²hermite(data.buff, data.states, Δt, 3, head.N, head.tlen)
     end
 
-    return SA[x, y, z, vx, vy, vz, ax, ay, az]
+    return SVector{9}(x, y, z, vx, vy, vz, ax, ay, az)
 
 end
 
@@ -197,7 +197,7 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType8, time::Number)
         z, vz, az, jz = ∂³hermite(data.buff, data.states, Δt, 3, head.N, head.tlen)
     end
     
-    return SA[x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz]
+    return SVector{12}(x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz)
 end
 
 
