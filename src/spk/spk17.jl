@@ -109,7 +109,7 @@ function spk_vector6(::DAF, seg::SPKSegmentType17, time::Number)
     x =  X*vf +  Y*vg
 
     # Compute the velocity by accounting for the motion of the node 
-    dnode = SA[-head.dnodedt*x[2], head.dnodedt*x[1], 0]
+    dnode = SVector{3}(-head.dnodedt*x[2], head.dnodedt*x[1], 0)
     v = dX*vf + dY*vg + dnode
 
     # Rotate the positions and velocities to the inertial reference frame
@@ -157,8 +157,8 @@ function equinoctial_pv(head::SPKSegmentHeader17, time::Number)
     # Construct the coordinate axes 
     dI = 1/(1 + p2 + q2)
 
-    vf = SA[1 - p2 + q2, 2*p*q, -2p]*dI 
-    vg = SA[2*p*q, 1 + p2 - q2, 2q]*dI
+    vf = SVector{3}(1 - p2 + q2, 2*p*q, -2p)*dI 
+    vg = SVector{3}(2*p*q, 1 + p2 - q2, 2q)*dI
 
     # Compute the mean longitude 
     λ = mod(head.lon + Δt*head.dmldt, 2π)

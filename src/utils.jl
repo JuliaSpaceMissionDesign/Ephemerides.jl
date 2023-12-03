@@ -69,7 +69,11 @@ vnorm(u) = sqrt(vdot(u, u))
 vsep(u, v) = acos(min(1, max(-1, vdot(vhat(u), vhat(v)))))
 
 @inbounds vdot(u, v) = u[1]*v[1] + u[2]*v[2] + u[3]*v[3]
-@inbounds vcross(u, v) = SA[u[2]*v[3]-u[3]*v[2], u[3]*v[1]-u[1]*v[3], u[1]*v[2]-u[2]*v[1]]
+function vcross(u, v)
+    return @inbounds SVector{3}(
+        u[2]*v[3]-u[3]*v[2], u[3]*v[1]-u[1]*v[3], u[1]*v[2]-u[2]*v[1]
+    )
+end
 
 function vrot(v1, k, θ)
 

@@ -115,10 +115,10 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType1, time::Number)
     compute_mda_vel_coefficients!(cache(seg), Δ)
     vel = compute_mda_velocity(cache(seg), Δ)
 
-    return @inbounds SA[
+    return @inbounds SVector{6}(
         pos[1], pos[2], pos[3], 
         vel[1], vel[2], vel[3]
-    ]
+    )
 end
 
 function spk_vector9(::DAF, ::SPKSegmentType1, ::Number)
@@ -228,11 +228,11 @@ function compute_mda_position(cache::SPKSegmentCache1, Δ::Number)
     end
 
     # At this point by definition of the above while loop, ks will always be = 1
-    return SA[
+    return SVector{3}(
         cache.refpos[1] + Δ*(cache.refvel[1] + Δ*get_tmp(cache.vct, Δ)[1]),
         cache.refpos[2] + Δ*(cache.refvel[2] + Δ*get_tmp(cache.vct, Δ)[2]),
         cache.refpos[3] + Δ*(cache.refvel[3] + Δ*get_tmp(cache.vct, Δ)[3])
-    ]
+    )
 
 end
 
@@ -249,11 +249,11 @@ function compute_mda_velocity(cache::SPKSegmentCache1, Δ::Number)
     end
 
     # At this point by definition of the above while loop, ks will always be = 0
-    return SA[
+    return SVector{3}(
         cache.refvel[1] + Δ*get_tmp(cache.vct, Δ)[1],
         cache.refvel[2] + Δ*get_tmp(cache.vct, Δ)[2],
         cache.refvel[3] + Δ*get_tmp(cache.vct, Δ)[3]
-    ]
+    )
 
 end
 

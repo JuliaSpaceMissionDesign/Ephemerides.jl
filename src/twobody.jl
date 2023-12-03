@@ -64,7 +64,7 @@ function update_cache!(c::TwoBodyUniversalCache)
     h2 = vdot(h0, h0)
 
     # Compute the eccentricity from the eccentricity vector 
-    @inbounds eᵥ = vcross(c.vel, h0)/c.μ - SA[c.pos[1], c.pos[2], c.pos[3]]/r0
+    @inbounds eᵥ = vcross(c.vel, h0)/c.μ - SVector{3}(c.pos)/r0
     ecc = vnorm(eᵥ)
 
     # Compute Q = a * (1-e)
