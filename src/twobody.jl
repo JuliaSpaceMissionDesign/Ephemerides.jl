@@ -193,11 +193,9 @@ function propagate_twobody(cache::TwoBodyUniversalCache, Δt)
     Fx² = F*x*x
     c0, c1, c2, c3 = stumpff(Fx², cache.p)
 
-    # TODO: why don't we add a tolerance limit on the actual value of the root or on 
-    # the increment between two consecutive roots or on the actual interval size? 
-
-    iter, maxiter = 0, 1000
-    while iter < maxiter && x > lb && x < ub
+    tol, maxiter = 1e-14, 100
+    iter, err  = 0, tol + 1
+    while iter < maxiter && err > tol && x > lb && x < ub
 
         # Compute Kepler's equation
         fun = x*(br0*c1 + x*(bv*c2 + x*bq*c3)) - Δt
@@ -210,12 +208,13 @@ function propagate_twobody(cache::TwoBodyUniversalCache, Δt)
             ub, lb = x, x
         end
 
-        x = min(ub, max(lb, (ub+lb)/2))
-        Fx² = F*x*x 
+        xold, x = x, min(ub, max(lb, (ub+lb)/2))
 
+        Fx² = F*x*x 
         c0, c1, c2, c3 = stumpff(Fx², cache.p)
 
         iter += 1
+        err = abs(x - xold)
 
     end
 
