@@ -771,21 +771,21 @@ end
 A dictionary mapping SPK segment types to the field index of the [`SPKSegmentList`](@ref).
 """
 const SPK_SEGMENTLIST_MAPPING = Dict(
-    1 => 1,
-    2 => 2,
-    3 => 2,
-    8 => 3,
-    9 => 4,
-    12 => 3,
-    13 => 4,
-    14 => 5,
-    18 => 6,
-    19 => 6,
-    20 => 7,
-    21 => 1,
-    17 => 8,
+    1 => 3,
+    2 => 1,
+    3 => 1,
+    8 => 6,
+    9 => 2,
+    12 => 6,
+    13 => 2,
+    14 => 4,
+    18 => 7,
+    19 => 7,
+    20 => 8,
+    21 => 3,
+    17 => 10,
     5 => 9,
-    15 => 10
+    15 => 5
 )
 
 # ----------------------------------
@@ -809,30 +809,30 @@ See also [`Ephemerides.add_segment!`](@ref)
 
 """
 struct SPKSegmentList
-    
-    spk1::Vector{SPKSegmentType1}
-    spk2::Vector{SPKSegmentType2}
-    spk8::Vector{SPKSegmentType8}
-    spk9::Vector{SPKSegmentType9}
-    spk14::Vector{SPKSegmentType14}
-    spk19::Vector{SPKSegmentType19}
-    spk20::Vector{SPKSegmentType20}
-    spk17::Vector{SPKSegmentType17}
-    spk5::Vector{SPKSegmentType5}
-    spk15::Vector{SPKSegmentType15}
 
+    spk2::Vector{SPKSegmentType2} 
+    spk9::Vector{SPKSegmentType9} 
+    spk1::Vector{SPKSegmentType1} 
+    spk14::Vector{SPKSegmentType14} 
+    spk15::Vector{SPKSegmentType15}
+    spk8::Vector{SPKSegmentType8}
+    spk19::Vector{SPKSegmentType19} 
+    spk20::Vector{SPKSegmentType20} 
+    spk5::Vector{SPKSegmentType5} 
+    spk17::Vector{SPKSegmentType17}
+    
     function SPKSegmentList()
         new(
-            SPKSegmentType1[], 
             SPKSegmentType2[], 
-            SPKSegmentType8[],
-            SPKSegmentType9[],
+            SPKSegmentType9[], 
+            SPKSegmentType1[],
             SPKSegmentType14[],
+            SPKSegmentType15[],
+            SPKSegmentType8[],
             SPKSegmentType19[],
-            SPKSegmentType20[],
-            SPKSegmentType17[], 
+            SPKSegmentType20[], 
             SPKSegmentType5[],
-            SPKSegmentType15[]
+            SPKSegmentType17[]
         )
     end
 end
