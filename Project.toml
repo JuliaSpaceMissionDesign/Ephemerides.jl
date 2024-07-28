@@ -11,6 +11,12 @@ PreallocationTools = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
 
+[weakdeps]
+TaylorSeries = "6aa5eb33-94cf-58f4-a9d0-e4b2c4fc25ea"
+
+[extensions]
+TaylorSeriesExt = ["TaylorSeries"]
+
 [compat]
 JSMDInterfaces = "1.4"
 LazyArtifacts = "1"
