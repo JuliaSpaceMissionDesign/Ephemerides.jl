@@ -67,10 +67,32 @@ DJ2000 = 2451545
 
         # Acceleration 
         @test D¹(t->ephem_vector9(ephj, cid, tid,  t), tj)[4:9] ≈ yj4[7:12] atol=1e-8 rtol=1e-12
+        
+        # ----
+        # TaylorSeries Extension Test
+        
+        t = Taylor1(5)
+
+        tj = rand(ep)
+
+        pt = ephem_vector3(ephj, cid, tid, t + tj)
+        vt = ephem_vector6(ephj, cid, tid, t + tj)[4:6]
+        at = differentiate.(vt)
+        jt = differentiate.(at)
+
+        se = ephem_vector12(ephj, cid, tid, tj)
+
+        @test evaluate(pt) ≈ se[1:3] atol=1e-12 rtol=1e-12
+        @test evaluate(vt) ≈ se[4:6] atol=1e-12 rtol=1e-12
+        @test evaluate(at) ≈ se[7:9] atol=1e-12 rtol=1e-12
+        @test evaluate(jt) ≈ se[10:12] atol=1e-12 rtol=1e-12
 
     end
 
+
+    # ---
     # Thread-safe testing 
+
     tj = shuffle(collect(LinRange(t1j, t2j, 200)))
 
     pos = zeros(3, length(tj))

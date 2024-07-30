@@ -1,7 +1,7 @@
 name = "Ephemerides"
 uuid = "6a9c3322-c8fe-4c26-8ad6-14a6f8acd2a0"
 authors = ["JSMD Team"]
-version = "1.2.1"
+version = "1.2.2"
 
 [deps]
 JSMDInterfaces = "6b30ee2f-618e-4a15-bf4e-7df7b496e609"
@@ -11,16 +11,23 @@ PreallocationTools = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
 
+[weakdeps]
+TaylorSeries = "6aa5eb33-94cf-58f4-a9d0-e4b2c4fc25ea"
+
+[extensions]
+TaylorSeriesExt = ["TaylorSeries"]
+
 [compat]
 JSMDInterfaces = "1.4"
 LazyArtifacts = "1"
-PreallocationTools = "0.4"
+PreallocationTools = ">=0.4"
 PrecompileTools = "1"
 StaticArraysCore = "1.4"
-julia = "1.7"
+TaylorSeries = ">=0.15"
+julia = "1.9"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Test", "TaylorSeries"]

@@ -75,7 +75,25 @@ DJ2000 = 2451545
 
         end
 
+        # ----
+        # TaylorSeries Extension Test
+        
+        t = Taylor1(5)
+
+        tj = rand(ep)
+
+        pt = ephem_vector3(ephj, cid, tid, t + tj)
+        vt = differentiate.(pt)
+
+        se = ephem_vector6(ephj, cid, tid, tj)
+
+        @test evaluate(pt) ≈ se[1:3] atol=1e-9 rtol=1e-8
+        @test evaluate(vt) ≈ se[4:6] atol=1e-9 rtol=1e-8
+
+
+        # ---
         # Thread-safe testing 
+
         tj = shuffle(collect(LinRange(t1j, t2j, 200)))
 
         pos = zeros(3, length(tj))

@@ -26,6 +26,7 @@ DJ2000 = 2451545
     @test_throws jEphem.EphemerisError ephem_vector9(ephj, cid, tid, t1j)
     @test_throws jEphem.EphemerisError ephem_vector12(ephj, cid, tid, t1j)
 
+
     ep = t1j:1:t2j
     for j in 1:3000
 
@@ -73,9 +74,27 @@ DJ2000 = 2451545
         # D²(t->ephem_vector6(ephj, cid, tid, t), tj)
         # D³(t->ephem_vector6(ephj, cid, tid, t), tj)
 
+        # ----
+        # TaylorSeries Extension Test
+        
+        t = Taylor1(5)
+
+        tj = rand(head.epochs)
+
+        pt = ephem_vector3(ephj, cid, tid, t + tj)
+        vt = differentiate.(pt)
+
+        se = ephem_vector6(ephj, cid, tid, tj)
+
+        @test evaluate(pt) ≈ se[1:3] atol=1e-12 rtol=1e-12
+        @test evaluate(vt) ≈ se[4:6] atol=1e-12 rtol=1e-12
+        
     end
 
+
+    # ---
     # Thread-safe testing 
+
     tj = shuffle(collect(LinRange(t1j, t2j, 200)))
 
     pos = zeros(3, length(tj))

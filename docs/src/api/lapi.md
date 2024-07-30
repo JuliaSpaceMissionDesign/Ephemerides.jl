@@ -80,6 +80,7 @@ Ephemerides.file_id
 Ephemerides.list_id
 Ephemerides.element_id
 Ephemerides.factor
+Ephemerides.check_linktime
 Ephemerides.reverse_link
 Ephemerides.create_linktables
 Ephemerides.add_spklinks!

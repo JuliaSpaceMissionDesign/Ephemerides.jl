@@ -57,6 +57,12 @@ DJ2000 = 2451545
 
         end
 
+        # ----
+        # TaylorSeries Extension Test
+        
+        # Doesn't make sense as the autodiff comment above 
+
+        # ---
         # Thread-safe testing 
         tj = shuffle(collect(LinRange(t1j, t2j, 200)))
 
