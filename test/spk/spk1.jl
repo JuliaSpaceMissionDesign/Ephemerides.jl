@@ -74,22 +74,23 @@ DJ2000 = 2451545
         # D²(t->ephem_vector6(ephj, cid, tid, t), tj)
         # D³(t->ephem_vector6(ephj, cid, tid, t), tj)
 
+        # ----
+        # TaylorSeries Extension Test
+        
+        t = Taylor1(5)
+
+        tj = rand(head.epochs)
+
+        pt = ephem_vector3(ephj, cid, tid, t + tj)
+        vt = differentiate.(pt)
+
+        se = ephem_vector6(ephj, cid, tid, tj)
+
+        @test evaluate(pt) ≈ se[1:3] atol=1e-12 rtol=1e-12
+        @test evaluate(vt) ≈ se[4:6] atol=1e-12 rtol=1e-12
+        
     end
 
-    # ----
-    # TaylorSeries Extension Test
-    
-    t = Taylor1(5)
-
-    tj = rand(head.epochs)
-
-    pt = ephem_vector3(ephj, cid, tid, t + tj)
-    vt = differentiate.(pt)
-
-    se = ephem_vector6(ephj, cid, tid, tj)
-
-    @test evaluate(pt) ≈ se[1:3] atol=1e-12 rtol=1e-12
-    @test evaluate(vt) ≈ se[4:6] atol=1e-12 rtol=1e-12
 
     # ---
     # Thread-safe testing 
