@@ -7,6 +7,7 @@ using LazyArtifacts
 using LinearAlgebra
 using Random
 using SPICE
+using TaylorSeries
 
 import JSMDInterfaces.Ephemeris as jEphem
 
@@ -17,7 +18,7 @@ end;
 
 
 @testset "Ephemerides" verbose=true begin 
-    include("spk/spk.jl")
+    include(joinpath("spk", "spk.jl"))
     include("properties.jl")
     include("interfaces.jl")
     include("twobody.jl")
