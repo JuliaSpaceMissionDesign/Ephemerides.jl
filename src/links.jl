@@ -74,6 +74,16 @@ segment associated to this link, in seconds since J2000.0
 """
 @inline final_time(link::SPKLink) = final_time(descriptor(link))
 
+"""
+    check_linktime(link::SPKLink, time::Number)
+
+Return whether `time`, expressed in seconds since J2000.0 is within the SPK link bounds. 
+"""
+@inline function check_linktime(link::SPKLink, time::Number) 
+    return initial_time(link) <= time <= final_time(link)
+end 
+
+
 """ 
     reverse_link(link::SPKLink)
 

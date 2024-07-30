@@ -1,11 +1,14 @@
 module TaylorSeriesExt 
 
-import Ephemerides: find_logical_record
-using Ephemerides: DAF, 
+import Ephemerides: find_logical_record, check_linktime
+
+using Ephemerides: DAF, SPKLink, 
                    SPKSegmentHeader2, SPKSegmentHeader8, SPKSegmentHeader20,
                    SPKSegmentHeader1, SPKSegmentHeader5, SPKSegmentHeader9,
                    SPKSegmentHeader14, SPKSegmentHeader18
+
 using TaylorSeries: constant_term, Taylor1
+
 
 function find_logical_record(head::SPKSegmentHeader2, time::Taylor1{<:Real})
     return find_logical_record(head, constant_term(time))
@@ -37,6 +40,10 @@ end
 
 function find_logical_record(daf::DAF, head::SPKSegmentHeader18, time::Taylor1{<:Real})
     return find_logical_record(daf, head, constant_term(time))
+end
+
+function check_linktime(link::SPKLink, time::Taylor1{<:Real})
+    return check_linktime(link, constant_term(time))
 end
 
 end

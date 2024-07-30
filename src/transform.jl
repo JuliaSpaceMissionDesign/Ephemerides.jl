@@ -24,7 +24,7 @@ for (order, pfun1, afun1, pfun2, afun2) in zip(
             links = spk_links(eph)
             if haskey(links, to) && haskey(links[to], from)
                 for link in links[to][from] 
-                    if initial_time(link) <= time <= final_time(link)   
+                    if check_linktime(link, time)
                         return factor(link)*$(pfun2)(get_daf(eph, file_id(link)), link, time)
                     end
                 end
@@ -63,7 +63,7 @@ for (order, pfun1, afun1, pfun2, afun2) in zip(
             links = pck_links(eph)
             if haskey(links, to) && haskey(links[to], from)
                 for link in links[to][from] 
-                    if initial_time(link) <= time <= final_time(link)   
+                    if check_linktime(link, time)
                         return $(afun2)(get_daf(eph, file_id(link)), link, time)
                     end
                 end
