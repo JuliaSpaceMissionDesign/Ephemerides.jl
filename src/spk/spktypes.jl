@@ -209,11 +209,12 @@ is normally used for planet barycenters, and for satellites whose ephemerides ar
 """
 struct SPKSegmentType2 <: AbstractSPKSegment
     head::SPKSegmentHeader2
-    cache::Vector{SPKSegmentCache2}
+    cache::Channel{SPKSegmentCache2}
 end
 
 @inline header(spk::SPKSegmentType2) = spk.head 
-@inline @inbounds cache(spk::SPKSegmentType2) = spk.cache[Threads.threadid()]
+@inline @inbounds take!(spk::SPKSegmentType2) = take!(spk.cache)
+@inline @inbounds put!(spk::SPKSegmentType2, cache::SPKSegmentCache2) = put!(spk.cache, cache)    
 
 
 # ----------------------------------

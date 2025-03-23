@@ -8,6 +8,7 @@ using PrecompileTools: PrecompileTools
 using StaticArraysCore
 
 import JSMDInterfaces.Ephemeris as jEph
+import OhMyThreads: Channel, take!, put!
 
 # Utilities
 include("utils.jl")
