@@ -56,13 +56,14 @@ end
 Create the object representing an SPK segment of type 2.
 """
 function SPKSegmentType2(daf::DAF, desc::DAFSegmentDescriptor)
-
     # Initialise the segment header and cache
     header = SPKSegmentHeader2(daf, desc)
-    caches = [SPKSegmentCache2(header) for _ in 1:Threads.nthreads()]
-
-    SPKSegmentType2(header, caches)
-
+    nbuffers = Threads.nthreads()
+    caches = Channel{SPKSegmentCache2}(nbuffers)
+    foreach(1:nbuffers) do _
+        put!(caches, SPKSegmentCache2(header))
+    end
+    return SPKSegmentType2(header, caches)
 end
 
 @inline spk_field(::SPKSegmentType2) = SPK_SEGMENTLIST_MAPPING[2]
@@ -70,7 +71,7 @@ end
 function spk_vector3(daf::DAF, seg::SPKSegmentType2, time::Number) 
 
     head = header(seg)
-    data = cache(seg)
+    data = take!(seg)
 
     # Retrieve Chebyshev coefficients 
     get_coefficients!(daf, head, data, time)
@@ -79,6 +80,8 @@ function spk_vector3(daf::DAF, seg::SPKSegmentType2, time::Number)
     t = normalise_time(data, time)
 
     x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
+    put!(seg, data)
+
     return SVector{3}(x, y, z)
 
 end
@@ -87,7 +90,7 @@ end
 function spk_vector6(daf::DAF, seg::SPKSegmentType2, time::Number)
 
     head = header(seg)
-    data = cache(seg)
+    data = take!(seg)
 
     # Retrieve Chebyshev coefficients 
     get_coefficients!(daf, head, data, time)
@@ -101,6 +104,7 @@ function spk_vector6(daf::DAF, seg::SPKSegmentType2, time::Number)
         x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
         vx, vy, vz = chebyshev(data.buff, data.A, t, 3, head.N)
     end
+    put!(seg, data)
 
     return SVector{6}(x, y, z, vx, vy, vz)
 
@@ -109,7 +113,7 @@ end
 function spk_vector9(daf::DAF, seg::SPKSegmentType2, time::Number)
 
     head = header(seg)
-    data = cache(seg)
+    data = take!(seg)
 
     # Retrieve Chebyshev coefficients 
     get_coefficients!(daf, head, data, time)
@@ -126,6 +130,7 @@ function spk_vector9(daf::DAF, seg::SPKSegmentType2, time::Number)
         x, y, z = chebyshev(data.buff, data.A, t, 0, head.N)
         vx, vy, vz, ax, ay, az = ∂chebyshev(data.buff, data.A, t, 3, head.N, data.p[3])
     end
+    put!(seg, data)
 
     return SVector{9}(x, y, z, vx, vy, vz, ax, ay, az)
 
@@ -134,7 +139,7 @@ end
 function spk_vector12(daf::DAF, seg::SPKSegmentType2, time::Number)
 
     head = header(seg)
-    data = cache(seg)
+    data = take!(seg)
 
     # Retrieve Chebyshev coefficients 
     get_coefficients!(daf, head, data, time)
@@ -153,6 +158,7 @@ function spk_vector12(daf::DAF, seg::SPKSegmentType2, time::Number)
             data.buff, data.A, t, 3, head.N, data.p[3]
         )
     end
+    put!(seg, data)
 
     return SVector{12}(x, y, z, vx, vy, vz, ax, ay, az, jx, jy, jz)
 
